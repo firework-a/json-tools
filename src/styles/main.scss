@@ -1,0 +1,312 @@
+@use './variables' as *;
+@use './mixins' as *;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: $bg-primary;
+  color: $text-primary;
+  font-size: $font-size-md;
+  overflow: hidden;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+.layout {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-header {
+  @include flex-between;
+  height: 48px;
+  padding: 0 $spacing-lg;
+  background-color: $bg-secondary;
+  border-bottom: 1px solid $border-color;
+  
+  .logo {
+    font-size: $font-size-lg;
+    font-weight: 600;
+    color: $text-primary;
+  }
+  
+  .header-actions {
+    @include flex-center;
+    gap: $spacing-md;
+    
+    .version {
+      font-size: $font-size-sm;
+      color: $text-secondary;
+    }
+  }
+}
+
+.layout-main {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.tab-bar {
+  display: flex;
+  height: 40px;
+  background-color: $bg-secondary;
+  border-bottom: 1px solid $border-color;
+  padding: 0 $spacing-md;
+}
+
+.tab-item {
+  padding: $spacing-md $spacing-lg;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: $text-secondary;
+  font-size: $font-size-md;
+  cursor: pointer;
+  @include transition(all);
+  
+  &:hover {
+    color: $text-primary;
+    background-color: $bg-hover;
+  }
+  
+  &.active {
+    color: $text-primary;
+    border-bottom-color: $accent-primary;
+    background-color: $tab-active-bg;
+  }
+}
+
+.content-area {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tool-panel {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  @include flex-between;
+  height: 56px;
+  padding: $spacing-md $spacing-lg;
+  background-color: $bg-secondary;
+  border-bottom: 1px solid $border-color;
+  
+  h3 {
+    font-size: $font-size-lg;
+    font-weight: 600;
+    color: $text-primary;
+  }
+  
+  .panel-actions {
+    @include flex-center;
+    gap: $spacing-sm;
+  }
+}
+
+.editor-area {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  
+  .json-editor {
+    height: calc(100vh - 48px - 40px - 56px);
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  .cm-editor {
+    height: 100% !important;
+    width: 100%;
+    overflow: hidden !important;
+    border-radius: 0 0 8px 8px !important;
+    
+    
+    .cm-scroller {
+      overflow: auto !important;
+      height: 100% !important;
+      @include scrollable;
+    }
+    
+    .cm-content {
+      padding: 10px 0;
+    }
+  }
+}
+
+.editor-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-lg;
+  height: 100%;
+  
+  &.compare-container {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.editor-label {
+  font-size: $font-size-sm;
+  color: $text-secondary;
+  font-weight: 500;
+}
+
+.btn {
+  @include button-base;
+  
+  &.btn-primary {
+    background-color: $accent-primary;
+    color: white;
+    
+    &:hover {
+      background-color: $accent-hover;
+    }
+  }
+  
+  &.btn-secondary {
+    background-color: $bg-tertiary;
+    color: $text-primary;
+    border: 1px solid $border-color;
+    
+    &:hover {
+      background-color: $bg-active;
+    }
+  }
+  
+  &.btn-danger {
+    background-color: transparent;
+    color: $accent-danger;
+    border: 1px solid $accent-danger;
+    
+    &:hover {
+      background-color: $accent-danger;
+      color: white;
+    }
+  }
+}
+
+.mode-select {
+  padding: $spacing-sm $spacing-md;
+  background-color: $bg-tertiary;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  color: $text-primary;
+  font-size: $font-size-md;
+  cursor: pointer;
+  @include transition(all);
+  
+  &:hover {
+    border-color: $accent-primary;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: $accent-primary;
+  }
+}
+
+.error-message {
+  position: absolute;
+  bottom: $spacing-md;
+  left: $spacing-md;
+  right: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  background-color: rgba($accent-danger, 0.95);
+  border-radius: $border-radius;
+  color: white;
+  font-size: $font-size-sm;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.diff-result {
+  margin-top: $spacing-lg;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  overflow: hidden;
+}
+
+.diff-content {
+  @include scrollable;
+  max-height: 400px;
+  background-color: $editor-bg;
+}
+
+.diff-line {
+  padding: $spacing-xs $spacing-sm;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: $font-size-sm;
+  line-height: 1.5;
+  
+  &.added {
+    background-color: rgba($accent-success, 0.2);
+  }
+  
+  &.removed {
+    background-color: rgba($accent-danger, 0.2);
+  }
+  
+  .diff-marker {
+    display: inline-block;
+    width: 20px;
+    font-weight: bold;
+    user-select: none;
+  }
+  
+  pre {
+    display: inline;
+    margin: 0;
+    font-family: inherit;
+  }
+}
+
+// CodeMirror 样式覆盖
+.cm-editor {
+  border: 1px solid $border-color !important;
+  border-radius: $border-radius !important;
+  
+  &.cm-focused {
+    border-color: $accent-primary !important;
+  }
+}
+
+.cm-scroller {
+  @include scrollable;
+}
