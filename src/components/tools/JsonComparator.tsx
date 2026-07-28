@@ -1,102 +1,111 @@
-import { useState } from 'react'
-import CodeMirror from '@uiw/react-codemirror'
-import { json } from '@codemirror/lang-json'
-import { vscodeDark } from '@uiw/codemirror-theme-vscode'
-import { diffLines } from 'diff'
-
-interface Difference {
-  value: string
-  added?: boolean
-  removed?: boolean
-}
+import { useState, useEffect, useMemo } from 'react'
+import DiffEditor from '../common/DiffEditor'
+import Toolbar from '../common/Toolbar'
+import Button from '../common/Button'
+import { JsonDiffer } from '../../utils/jsonDiffer'
 
 function JsonComparator() {
   const [leftJson, setLeftJson] = useState('')
   const [rightJson, setRightJson] = useState('')
-  const [differences, setDifferences] = useState<Difference[]>([])
+  const [leftDiffLines, setLeftDiffLines] = useState<Set<number>>(new Set())
+  const [rightDiffLines, setRightDiffLines] = useState<Set<number>>(new Set())
+  const [stats, setStats] = useState({ added: 0, deleted: 0 })
+  const [leftError, setLeftError] = useState<string | null>(null)
+  const [rightError, setRightError] = useState<string | null>(null)
 
-  const compareJson = () => {
-    try {
-      const leftParsed = JSON.parse(leftJson || '{}')
-      const rightParsed = JSON.parse(rightJson || '{}')
-      
-      const leftFormatted = JSON.stringify(leftParsed, null, 2)
-      const rightFormatted = JSON.stringify(rightParsed, null, 2)
-      
-      const diff = diffLines(leftFormatted, rightFormatted)
-      setDifferences(diff)
-    } catch (err) {
-      console.error('JSON 解析错误:', err)
-    }
-  }
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // 先验证两侧 JSON 是否合法
+      let leftValid = true
+      let rightValid = true
+      setLeftError(null)
+      setRightError(null)
+
+      if (leftJson.trim()) {
+        try {
+          JSON.parse(leftJson)
+        } catch {
+          leftValid = false
+          setLeftError('JSON 1 格式错误')
+        }
+      }
+      if (rightJson.trim()) {
+        try {
+          JSON.parse(rightJson)
+        } catch {
+          rightValid = false
+          setRightError('JSON 2 格式错误')
+        }
+      }
+
+      if (!leftValid || !rightValid) {
+        setLeftDiffLines(new Set())
+        setRightDiffLines(new Set())
+        setStats({ added: 0, deleted: 0 })
+        return
+      }
+
+      const result = JsonDiffer.compare(leftJson, rightJson)
+      setLeftDiffLines(result.leftDiffLines)
+      setRightDiffLines(result.rightDiffLines)
+      setStats(result.stats)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [leftJson, rightJson])
 
   const clearAll = () => {
     setLeftJson('')
     setRightJson('')
-    setDifferences([])
+    setLeftDiffLines(new Set())
+    setRightDiffLines(new Set())
+    setStats({ added: 0, deleted: 0 })
+    setLeftError(null)
+    setRightError(null)
   }
+
+  const hasDiff = stats.added > 0 || stats.deleted > 0
+  const hasContent = leftJson.trim() || rightJson.trim()
+  const summary = useMemo(() => JsonDiffer.generateSummary(stats), [stats])
 
   return (
     <div className="tool-panel">
-      <div className="panel-header">
-        <h3>JSON 对比</h3>
-        <div className="panel-actions">
-          <button className="btn btn-primary" onClick={compareJson}>对比</button>
-          <button className="btn btn-danger" onClick={clearAll}>清空</button>
+      <Toolbar title="JSON 对比">
+        {hasDiff && <span className="diff-badge">{stats.added + stats.deleted} 处差异</span>}
+        <Button variant="danger" onClick={clearAll}>清空</Button>
+      </Toolbar>
+
+      {hasContent && !leftError && !rightError && (
+        <div className={`diff-summary ${hasDiff ? 'has-diff' : 'no-diff'}`}>
+          <span className="summary-text">{summary}</span>
         </div>
-      </div>
+      )}
 
-      <div className="panel-body">
-        <div className="editor-container compare-container">
-          <div className="editor-section">
-            <div className="editor-label">JSON 1</div>
-            <CodeMirror
-              value={leftJson}
-              height="400px"
-              extensions={[json()]}
-              theme={vscodeDark}
-              onChange={setLeftJson}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-              }}
-            />
+      <div className="compare-area">
+        <div className="compare-editor">
+          <div className="editor-label">
+            <span>JSON 1</span>
+            {leftError && <span className="editor-error">{leftError}</span>}
           </div>
-
-          <div className="editor-section">
-            <div className="editor-label">JSON 2</div>
-            <CodeMirror
-              value={rightJson}
-              height="400px"
-              extensions={[json()]}
-              theme={vscodeDark}
-              onChange={setRightJson}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-              }}
-            />
-          </div>
+          <DiffEditor
+            value={leftJson}
+            onChange={setLeftJson}
+            diffLines={{ deleted: leftDiffLines }}
+            editorId="left"
+          />
         </div>
-
-        {differences.length > 0 && (
-          <div className="diff-result">
-            <div className="editor-label">差异结果</div>
-            <div className="diff-content">
-              {differences.map((diff, index) => (
-                <div
-                  key={index}
-                  className={`diff-line ${diff.added ? 'added' : diff.removed ? 'removed' : ''}`}
-                >
-                  {diff.added && <span className="diff-marker">+</span>}
-                  {diff.removed && <span className="diff-marker">-</span>}
-                  {!diff.added && !diff.removed && <span className="diff-marker"> </span>}
-                  <pre>{diff.value}</pre>
-                </div>
-              ))}
-            </div>
+        <div className="compare-editor">
+          <div className="editor-label">
+            <span>JSON 2</span>
+            {rightError && <span className="editor-error">{rightError}</span>}
           </div>
-        )}
+          <DiffEditor
+            value={rightJson}
+            onChange={setRightJson}
+            diffLines={{ added: rightDiffLines }}
+            editorId="right"
+          />
+        </div>
       </div>
     </div>
   )

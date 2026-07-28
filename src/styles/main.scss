@@ -1,10 +1,16 @@
 @use './variables' as *;
 @use './mixins' as *;
 
-* {
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
@@ -15,14 +21,10 @@ body {
   background-color: $bg-primary;
   color: $text-primary;
   font-size: $font-size-md;
-  overflow: hidden;
+  line-height: 1.5;
 }
 
-#root {
-  width: 100vw;
-  height: 100vh;
-}
-
+/* ---------- Layout ---------- */
 .layout {
   width: 100%;
   height: 100%;
@@ -32,36 +34,35 @@ body {
 
 .layout-header {
   @include flex-between;
-  height: 48px;
+  height: 42px;
+  flex-shrink: 0;
   padding: 0 $spacing-lg;
   background-color: $bg-secondary;
   border-bottom: 1px solid $border-color;
-  
+
   .logo {
-    font-size: $font-size-lg;
+    font-size: $font-size-md;
     font-weight: 600;
     color: $text-primary;
+    letter-spacing: 0.3px;
   }
-  
-  .header-actions {
-    @include flex-center;
-    gap: $spacing-md;
-    
-    .version {
-      font-size: $font-size-sm;
-      color: $text-secondary;
-    }
+
+  .version {
+    font-size: $font-size-xs;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 }
 
 .layout-main {
   flex: 1;
-  overflow: hidden;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
+/* ---------- Tabs ---------- */
 .app-container {
   width: 100%;
   height: 100%;
@@ -72,241 +73,295 @@ body {
 
 .tab-bar {
   display: flex;
-  height: 40px;
+  height: 38px;
+  flex-shrink: 0;
   background-color: $bg-secondary;
   border-bottom: 1px solid $border-color;
   padding: 0 $spacing-md;
+  gap: 2px;
 }
 
 .tab-item {
-  padding: $spacing-md $spacing-lg;
+  padding: 0 $spacing-lg;
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
   color: $text-secondary;
-  font-size: $font-size-md;
+  font-size: $font-size-sm;
   cursor: pointer;
   @include transition(all);
-  
+  position: relative;
+
   &:hover {
     color: $text-primary;
     background-color: $bg-hover;
   }
-  
+
   &.active {
     color: $text-primary;
     border-bottom-color: $accent-primary;
-    background-color: $tab-active-bg;
   }
 }
 
 .content-area {
   flex: 1;
-  overflow: hidden;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
+/* ---------- Tool panel ---------- */
 .tool-panel {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .panel-header {
   @include flex-between;
-  height: 56px;
-  padding: $spacing-md $spacing-lg;
+  height: 44px;
+  flex-shrink: 0;
+  padding: 0 $spacing-lg;
   background-color: $bg-secondary;
   border-bottom: 1px solid $border-color;
-  
+
   h3 {
-    font-size: $font-size-lg;
+    font-size: $font-size-md;
     font-weight: 600;
     color: $text-primary;
   }
-  
+
   .panel-actions {
     @include flex-center;
     gap: $spacing-sm;
   }
 }
 
+/* ---------- Diff summary ---------- */
+.diff-summary {
+  flex-shrink: 0;
+  padding: $spacing-sm $spacing-lg;
+  font-size: $font-size-sm;
+  border-bottom: 1px solid $border-color;
+
+  &.has-diff {
+    background-color: $accent-warning-bg;
+    color: $accent-warning;
+  }
+
+  &.no-diff {
+    background-color: $accent-success-bg;
+    color: $accent-success;
+  }
+
+  .summary-text {
+    font-weight: 500;
+  }
+}
+
+.diff-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background-color: rgba($accent-danger, 0.15);
+  color: $accent-danger;
+  border-radius: 10px;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  margin-right: $spacing-sm;
+}
+
+/* ---------- Editor area ---------- */
 .editor-area {
   flex: 1;
   min-height: 0;
   position: relative;
-  overflow: hidden;
-  
-  .json-editor {
-    height: calc(100vh - 48px - 40px - 56px);
-    width: 100%;
-    overflow: hidden;
-  }
-  
-  .cm-editor {
-    height: 100% !important;
-    width: 100%;
-    overflow: hidden !important;
-    border-radius: 0 0 8px 8px !important;
-    
-    
-    .cm-scroller {
-      overflow: auto !important;
-      height: 100% !important;
-      @include scrollable;
-    }
-    
-    .cm-content {
-      padding: 10px 0;
-    }
-  }
+  padding: $spacing-md;
 }
 
-.editor-container {
+/* ---------- Compare area ---------- */
+.compare-area {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: $spacing-lg;
+  gap: $spacing-md;
+  padding: $spacing-md;
+
+  .compare-editor {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+
+    .editor-label {
+      @include flex-between;
+      flex-shrink: 0;
+      padding: $spacing-xs $spacing-sm;
+      font-size: $font-size-xs;
+      color: $text-secondary;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background-color: $bg-tertiary;
+      border: 1px solid $border-color;
+      border-bottom: none;
+      border-radius: $border-radius $border-radius 0 0;
+
+      .editor-error {
+        color: $accent-danger;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: 0;
+      }
+    }
+
+    .json-editor {
+      flex: 1;
+      min-height: 0;
+    }
+  }
+}
+
+/* ---------- Json editor ---------- */
+.json-editor {
   height: 100%;
-  
-  &.compare-container {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.editor-section {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-sm;
-}
-
-.editor-label {
-  font-size: $font-size-sm;
-  color: $text-secondary;
-  font-weight: 500;
-}
-
-.btn {
-  @include button-base;
-  
-  &.btn-primary {
-    background-color: $accent-primary;
-    color: white;
-    
-    &:hover {
-      background-color: $accent-hover;
-    }
-  }
-  
-  &.btn-secondary {
-    background-color: $bg-tertiary;
-    color: $text-primary;
-    border: 1px solid $border-color;
-    
-    &:hover {
-      background-color: $bg-active;
-    }
-  }
-  
-  &.btn-danger {
-    background-color: transparent;
-    color: $accent-danger;
-    border: 1px solid $accent-danger;
-    
-    &:hover {
-      background-color: $accent-danger;
-      color: white;
-    }
-  }
-}
-
-.mode-select {
-  padding: $spacing-sm $spacing-md;
-  background-color: $bg-tertiary;
-  border: 1px solid $border-color;
-  border-radius: $border-radius;
-  color: $text-primary;
-  font-size: $font-size-md;
-  cursor: pointer;
-  @include transition(all);
-  
-  &:hover {
-    border-color: $accent-primary;
-  }
-  
-  &:focus {
-    outline: none;
-    border-color: $accent-primary;
-  }
-}
-
-.error-message {
-  position: absolute;
-  bottom: $spacing-md;
-  left: $spacing-md;
-  right: $spacing-md;
-  padding: $spacing-sm $spacing-md;
-  background-color: rgba($accent-danger, 0.95);
-  border-radius: $border-radius;
-  color: white;
-  font-size: $font-size-sm;
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.diff-result {
-  margin-top: $spacing-lg;
-  border: 1px solid $border-color;
-  border-radius: $border-radius;
+  width: 100%;
   overflow: hidden;
 }
 
-.diff-content {
-  @include scrollable;
-  max-height: 400px;
-  background-color: $editor-bg;
+// Used by formatter/compressor standalone editor
+.editor-area > .json-editor .cm-editor {
+  height: 100% !important;
 }
 
-.diff-line {
-  padding: $spacing-xs $spacing-sm;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: $font-size-sm;
-  line-height: 1.5;
-  
-  &.added {
-    background-color: rgba($accent-success, 0.2);
-  }
-  
-  &.removed {
-    background-color: rgba($accent-danger, 0.2);
-  }
-  
-  .diff-marker {
-    display: inline-block;
-    width: 20px;
-    font-weight: bold;
-    user-select: none;
-  }
-  
-  pre {
-    display: inline;
-    margin: 0;
-    font-family: inherit;
-  }
-}
-
-// CodeMirror 样式覆盖
+/* ---------- CodeMirror ---------- */
 .cm-editor {
+  height: 100% !important;
   border: 1px solid $border-color !important;
   border-radius: $border-radius !important;
-  
+  overflow: hidden;
+  background-color: $editor-bg !important;
+
   &.cm-focused {
     border-color: $accent-primary !important;
   }
+
+  .cm-scroller {
+    overflow: auto !important;
+    @include scrollable;
+  }
+
+  .cm-content {
+    padding: 8px 0;
+    font-family: 'Consolas', 'Menlo', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .cm-gutters {
+    background-color: $bg-secondary !important;
+    border-right: 1px solid $border-color !important;
+  }
 }
 
-.cm-scroller {
-  @include scrollable;
+/* Compare editors have label above, so no top radius */
+.compare-editor .cm-editor {
+  border-radius: 0 0 $border-radius $border-radius !important;
+}
+
+/* ---------- Diff highlight ---------- */
+.cm-diff-added {
+  background-color: rgba(137, 209, 133, 0.1) !important;
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background-color: $accent-success;
+  }
+}
+
+.cm-diff-deleted {
+  background-color: rgba(244, 135, 113, 0.1) !important;
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background-color: $accent-danger;
+  }
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  @include button-base;
+
+  &.btn-primary {
+    background-color: $accent-primary;
+    color: white;
+
+    &:hover { background-color: $accent-primary-hover; }
+  }
+
+  &.btn-secondary {
+    background-color: $accent-secondary;
+    color: $text-primary;
+    border: 1px solid $border-color;
+
+    &:hover {
+      background-color: $bg-active;
+      border-color: $text-muted;
+    }
+  }
+
+  &.btn-danger {
+    background-color: transparent;
+    color: $accent-danger;
+    border: 1px solid rgba($accent-danger, 0.4);
+
+    &:hover {
+      background-color: $accent-danger-bg;
+      border-color: $accent-danger;
+    }
+  }
+}
+
+/* ---------- Select ---------- */
+.mode-select {
+  padding: $spacing-xs $spacing-md;
+  height: 28px;
+  background-color: $accent-secondary;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  color: $text-primary;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  @include transition(all);
+
+  &:hover { border-color: $text-muted; }
+  &:focus { outline: none; border-color: $accent-primary; }
+
+  option {
+    background-color: $bg-tertiary;
+    color: $text-primary;
+  }
+}
+
+/* ---------- Error message ---------- */
+.error-message {
+  position: absolute;
+  bottom: $spacing-lg;
+  left: $spacing-lg;
+  right: $spacing-lg;
+  padding: $spacing-sm $spacing-md;
+  background-color: rgba(112, 38, 38, 0.95);
+  border: 1px solid $accent-danger;
+  border-radius: $border-radius;
+  color: $accent-danger;
+  font-size: $font-size-sm;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import Toolbar from '../common/Toolbar'
 import JsonEditor from '../common/JsonEditor'
-import ErrorMessage from '../common/ErrorMessage'
 import Button from '../common/Button'
 import { processJson, type CompressMode } from '../../utils/jsonCompressor'
 import { copyToClipboard } from '../../utils/json'
@@ -15,33 +14,34 @@ const modeLabels: Record<CompressMode, string> = {
 }
 
 function JsonCompressor() {
-  const [input, setInput] = useState('')
-  const [output, setOutput] = useState('')
+  const [value, setValue] = useState('')
   const [mode, setMode] = useState<CompressMode>('compress')
   const [error, setError] = useState<string | null>(null)
 
   const handleProcess = () => {
-    const { result, error: err } = processJson(input, mode)
-    setOutput(result)
-    setError(err)
+    const { result, error: err } = processJson(value, mode)
+    if (err) setError(err)
+    else {
+      setError(null)
+      setValue(result)
+    }
   }
 
   const handleClear = () => {
-    setInput('')
-    setOutput('')
+    setValue('')
     setError(null)
   }
 
   const handleCopy = async () => {
-    await copyToClipboard(output)
+    if (value) await copyToClipboard(value)
   }
 
   return (
     <div className="tool-panel">
       <Toolbar title="JSON 压缩/转义">
-        <select 
-          className="mode-select" 
-          value={mode} 
+        <select
+          className="mode-select"
+          value={mode}
           onChange={(e) => setMode(e.target.value as CompressMode)}
         >
           {Object.entries(modeLabels).map(([key, label]) => (
@@ -49,20 +49,13 @@ function JsonCompressor() {
           ))}
         </select>
         <Button variant="primary" onClick={handleProcess}>执行</Button>
-        <Button onClick={handleCopy}>复制结果</Button>
+        <Button onClick={handleCopy}>复制</Button>
         <Button variant="danger" onClick={handleClear}>清空</Button>
       </Toolbar>
 
       <div className="editor-area">
-        <JsonEditor
-          value={output || input}
-          onChange={(value) => {
-            setInput(value)
-            setOutput('')
-            setError(null)
-          }}
-        />
-        <ErrorMessage message={error} />
+        <JsonEditor value={value} onChange={(v) => { setValue(v); setError(null) }} />
+        {error && <div className="error-message">{error}</div>}
       </div>
     </div>
   )

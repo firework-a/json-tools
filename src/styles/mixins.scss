@@ -1,5 +1,3 @@
-// Mixins
-
 @use './variables' as *;
 
 @mixin flex-center {
@@ -19,41 +17,49 @@
 }
 
 @mixin button-base {
-  padding: $spacing-sm $spacing-md;
+  height: 28px;
+  padding: 0 $spacing-md;
   border: none;
   border-radius: $border-radius;
-  font-size: $font-size-md;
+  font-size: $font-size-sm;
+  font-weight: 500;
   cursor: pointer;
   @include transition(all);
-  
-  &:hover {
-    opacity: 0.9;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
-  
-  &:active {
-    transform: scale(0.98);
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
   }
 }
 
 @mixin scrollable {
-  overflow-y: auto;
-  overflow-x: hidden;
-  
   &::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
-  
+
   &::-webkit-scrollbar-track {
-    background: $bg-secondary;
+    background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
-    background: $bg-active;
+    background: rgba(255, 255, 255, 0.15);
     border-radius: 5px;
-    
+    border: 2px solid transparent;
+    background-clip: padding-box;
+
     &:hover {
-      background: $text-muted;
+      background: rgba(255, 255, 255, 0.25);
+      background-clip: padding-box;
     }
   }
 }
