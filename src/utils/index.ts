@@ -1,3 +1,4 @@
 export * from './json'
-export * from './jsonCompressor'
-export * from './jsonDiffer'
+export * from './jsonToTs'
+export * from './jsonSchema'
+export * from './jsonYaml'

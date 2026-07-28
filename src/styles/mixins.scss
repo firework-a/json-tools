@@ -1,65 +1,16 @@
 @use './variables' as *;
 
-@mixin flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+@mixin flex-center { display: flex; align-items: center; justify-content: center; }
+@mixin flex-between { display: flex; align-items: center; justify-content: space-between; }
 
-@mixin flex-between {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-@mixin transition($property: all) {
-  transition: $property $transition-speed ease;
-}
-
-@mixin button-base {
-  height: 28px;
-  padding: 0 $spacing-md;
-  border: none;
-  border-radius: $border-radius;
-  font-size: $font-size-sm;
-  font-weight: 500;
-  cursor: pointer;
-  @include transition(all);
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  &:active:not(:disabled) {
-    transform: scale(0.97);
-  }
-}
-
-@mixin scrollable {
-  &::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
+@mixin scroll {
+  &::-webkit-scrollbar { width: 10px; height: 10px; }
+  &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255,255,255,0.08);
     border-radius: 5px;
     border: 2px solid transparent;
     background-clip: padding-box;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.25);
-      background-clip: padding-box;
-    }
+    &:hover { background: rgba(255,255,255,0.18); background-clip: padding-box; }
   }
 }

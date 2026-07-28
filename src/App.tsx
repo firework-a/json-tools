@@ -1,48 +1,25 @@
-import { useState } from 'react'
-import Layout from './components/Layout'
-import { JsonFormatter, JsonComparator, JsonCompressor } from './components/tools'
+import Toolbar from './components/Toolbar'
+import EditorArea from './components/EditorArea'
+import TreeView from './components/TreeView'
+import StatusBar from './components/StatusBar'
+import { useAppStore } from './store'
 
 function App() {
-  const [activeTab, setActiveTab] = useState('formatter')
-
-  const tabs = [
-    { id: 'formatter', label: 'JSON 格式化' },
-    { id: 'comparator', label: 'JSON 对比' },
-    { id: 'compressor', label: 'JSON 压缩/转义' },
-  ]
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'formatter':
-        return <JsonFormatter />
-      case 'comparator':
-        return <JsonComparator />
-      case 'compressor':
-        return <JsonCompressor />
-      default:
-        return <JsonFormatter />
-    }
-  }
+  const mode = useAppStore((s) => s.mode)
+  // edit 模式显示完整工具栏 + 树形视图；工具模式进入独立双栏界面
+  const isEditMode = mode === 'edit'
 
   return (
-    <Layout>
-      <div className="app-container">
-        <div className="tab-bar">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              className={`tab-item ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
+    <div className="app">
+      {isEditMode && <Toolbar />}
+      <div className="app-body">
+        <div className="app-main">
+          <EditorArea />
         </div>
-        <div className="content-area">
-          {renderContent()}
-        </div>
+        {isEditMode && <TreeView />}
       </div>
-    </Layout>
+      <StatusBar />
+    </div>
   )
 }
 

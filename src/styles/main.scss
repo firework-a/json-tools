@@ -1,367 +1,500 @@
 @use './variables' as *;
 @use './mixins' as *;
 
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body, #root { width: 100%; height: 100%; overflow: hidden; background: $bg-app; color: $text-primary; }
+body { font-family: $font-ui; font-size: 13px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+button { font-family: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+input, select { font-family: inherit; color: inherit; }
 
-html, body, #root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
+.app { display: flex; flex-direction: column; width: 100%; height: 100%; }
+.app-body { flex: 1; min-height: 0; display: flex; background: $bg-app; }
+.app-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: $bg-primary;
-  color: $text-primary;
-  font-size: $font-size-md;
-  line-height: 1.5;
-}
-
-/* ---------- Layout ---------- */
-.layout {
-  width: 100%;
-  height: 100%;
+/* =================== 工具栏 =================== */
+.toolbar {
   display: flex;
-  flex-direction: column;
-}
-
-.layout-header {
-  @include flex-between;
-  height: 42px;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 10px;
+  background: $bg-toolbar;
+  border-bottom: 1px solid $border;
   flex-shrink: 0;
-  padding: 0 $spacing-lg;
-  background-color: $bg-secondary;
-  border-bottom: 1px solid $border-color;
-
-  .logo {
-    font-size: $font-size-md;
-    font-weight: 600;
-    color: $text-primary;
-    letter-spacing: 0.3px;
-  }
-
-  .version {
-    font-size: $font-size-xs;
-    color: $text-muted;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
+  overflow-x: auto;
+  white-space: nowrap;
+  &::-webkit-scrollbar { display: none; }
 }
-
-.layout-main {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ---------- Tabs ---------- */
-.app-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.tab-bar {
-  display: flex;
-  height: 38px;
-  flex-shrink: 0;
-  background-color: $bg-secondary;
-  border-bottom: 1px solid $border-color;
-  padding: 0 $spacing-md;
-  gap: 2px;
-}
-
-.tab-item {
-  padding: 0 $spacing-lg;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: $text-secondary;
-  font-size: $font-size-sm;
-  cursor: pointer;
-  @include transition(all);
-  position: relative;
-
-  &:hover {
-    color: $text-primary;
-    background-color: $bg-hover;
-  }
-
-  &.active {
-    color: $text-primary;
-    border-bottom-color: $accent-primary;
-  }
-}
-
-.content-area {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ---------- Tool panel ---------- */
-.tool-panel {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.panel-header {
-  @include flex-between;
-  height: 44px;
-  flex-shrink: 0;
-  padding: 0 $spacing-lg;
-  background-color: $bg-secondary;
-  border-bottom: 1px solid $border-color;
-
-  h3 {
-    font-size: $font-size-md;
-    font-weight: 600;
-    color: $text-primary;
-  }
-
-  .panel-actions {
-    @include flex-center;
-    gap: $spacing-sm;
-  }
-}
-
-/* ---------- Diff summary ---------- */
-.diff-summary {
-  flex-shrink: 0;
-  padding: $spacing-sm $spacing-lg;
-  font-size: $font-size-sm;
-  border-bottom: 1px solid $border-color;
-
-  &.has-diff {
-    background-color: $accent-warning-bg;
-    color: $accent-warning;
-  }
-
-  &.no-diff {
-    background-color: $accent-success-bg;
-    color: $accent-success;
-  }
-
-  .summary-text {
-    font-weight: 500;
-  }
-}
-
-.diff-badge {
+/* 分组是深色圆角矩形容器，类似 segmented control */
+.tb-group {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  background-color: rgba($accent-danger, 0.15);
-  color: $accent-danger;
-  border-radius: 10px;
-  font-size: $font-size-xs;
-  font-weight: 600;
-  margin-right: $spacing-sm;
+  gap: 0;
+  height: 30px;
+  padding: 3px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid $border;
+  border-radius: 8px;
+}
+.tb-spacer { flex: 1 1 0; min-width: 8px; }
+.tb-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* ---------- Editor area ---------- */
-.editor-area {
+.tb {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 5px;
+  background: transparent;
+  color: $text-secondary;
+  font-size: 12px;
+  transition: background 0.1s, color 0.1s;
+  white-space: nowrap;
+  .tb-icon { display: inline-flex; align-items: center; line-height: 0; }
+  &:hover { background: rgba(255,255,255,0.06); color: $text-primary; }
+  &.active {
+    background: rgba($green, 0.12);
+    color: $green;
+  }
+}
+.tb-icon-btn {
+  @include flex-center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  color: $text-secondary;
+  transition: background 0.1s;
+  &:hover { background: rgba(255,255,255,0.06); color: $text-primary; }
+}
+
+/* =================== Edit 单栏（编辑器铺满，无 padding，无 border） =================== */
+.editor-shell.single {
   flex: 1;
   min-height: 0;
-  position: relative;
-  padding: $spacing-md;
+  display: flex;
+  background: $bg-editor;
+}
+.pane-full {
+  flex: 1;
+  min-height: 0;
+  background: $bg-editor;
+  .cm-editor { height: 100% !important; background: $bg-editor !important; font-family: $font-mono; font-size: 13px; }
+  .cm-scroller { overflow: auto !important; @include scroll; font-family: $font-mono; }
+  .cm-content { padding: 8px 0 12px 0; }
+  .cm-gutters { background: $bg-editor !important; border-right: 1px solid $border !important; color: #5a6170; }
+  .cm-lineNumbers .cm-gutterElement { padding-left: 12px; min-width: 40px; }
+  .cm-activeLine { background: rgba(255,255,255,0.025); }
+  .cm-focused { outline: none !important; }
+  // 活动行左侧蓝色细条（仅 gutter）
+  .cm-activeLineGutter {
+    background: rgba(90, 156, 240, 0.08);
+    position: relative;
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: $blue;
+    }
+  }
 }
 
-/* ---------- Compare area ---------- */
-.compare-area {
+/* =================== 工具模式（双栏铺满） =================== */
+.tool-shell {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: $bg-toolbar;
+}
+.tool-pane-wrap {
   flex: 1;
   min-height: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: $spacing-md;
-  padding: $spacing-md;
-
-  .compare-editor {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    min-width: 0;
-
-    .editor-label {
-      @include flex-between;
-      flex-shrink: 0;
-      padding: $spacing-xs $spacing-sm;
-      font-size: $font-size-xs;
-      color: $text-secondary;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      background-color: $bg-tertiary;
-      border: 1px solid $border-color;
-      border-bottom: none;
-      border-radius: $border-radius $border-radius 0 0;
-
-      .editor-error {
-        color: $accent-danger;
-        font-weight: 500;
-        text-transform: none;
-        letter-spacing: 0;
-      }
-    }
-
-    .json-editor {
-      flex: 1;
-      min-height: 0;
-    }
-  }
+  position: relative;
+}
+.tool-pane {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background: $bg-editor;
+  border-right: 1px solid $border;
+  display: flex;
+  flex-direction: column;
+  &:last-child { border-right: none; }
+  &.is-empty { background: #1f232c; }
 }
 
-/* ---------- Json editor ---------- */
-.json-editor {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
+/* 工具模式顶部条（和编辑区分开） */
+.tool-topbar {
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  background: $bg-toolbar;
+  border-bottom: 1px solid $border;
+  gap: 8px;
 }
-
-// Used by formatter/compressor standalone editor
-.editor-area > .json-editor .cm-editor {
-  height: 100% !important;
+.tool-topbar-left, .tool-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-
-/* ---------- CodeMirror ---------- */
-.cm-editor {
-  height: 100% !important;
-  border: 1px solid $border-color !important;
-  border-radius: $border-radius !important;
-  overflow: hidden;
-  background-color: $editor-bg !important;
-
-  &.cm-focused {
-    border-color: $accent-primary !important;
-  }
-
-  .cm-scroller {
-    overflow: auto !important;
-    @include scrollable;
-  }
-
-  .cm-content {
-    padding: 8px 0;
-    font-family: 'Consolas', 'Menlo', 'Monaco', 'Courier New', monospace;
-    font-size: 13px;
-    line-height: 1.5;
-  }
-
-  .cm-gutters {
-    background-color: $bg-secondary !important;
-    border-right: 1px solid $border-color !important;
-  }
-}
-
-/* Compare editors have label above, so no top radius */
-.compare-editor .cm-editor {
-  border-radius: 0 0 $border-radius $border-radius !important;
-}
-
-/* ---------- Diff highlight ---------- */
-.cm-diff-added {
-  background-color: rgba(137, 209, 133, 0.1) !important;
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background-color: $accent-success;
-  }
-}
-
-.cm-diff-deleted {
-  background-color: rgba(244, 135, 113, 0.1) !important;
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background-color: $accent-danger;
-  }
-}
-
-/* ---------- Buttons ---------- */
-.btn {
-  @include button-base;
-
-  &.btn-primary {
-    background-color: $accent-primary;
-    color: white;
-
-    &:hover { background-color: $accent-primary-hover; }
-  }
-
-  &.btn-secondary {
-    background-color: $accent-secondary;
-    color: $text-primary;
-    border: 1px solid $border-color;
-
-    &:hover {
-      background-color: $bg-active;
-      border-color: $text-muted;
+.tool-pane-body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  .cm-editor { height: 100% !important; background: transparent !important; font-family: $font-mono; font-size: 13px; }
+  .cm-scroller { overflow: auto !important; @include scroll; }
+  .cm-content { padding: 8px 0 12px 0; }
+  .cm-gutters { background: transparent !important; border-right: 1px solid $border !important; color: #5a6170; }
+  .cm-lineNumbers .cm-gutterElement { padding-left: 12px; min-width: 40px; }
+  .cm-activeLine { background: rgba(255,255,255,0.025); }
+  .cm-activeLineGutter {
+    background: rgba(90, 156, 240, 0.08);
+    position: relative;
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: $blue;
     }
   }
-
-  &.btn-danger {
-    background-color: transparent;
-    color: $accent-danger;
-    border: 1px solid rgba($accent-danger, 0.4);
-
-    &:hover {
-      background-color: $accent-danger-bg;
-      border-color: $accent-danger;
-    }
-  }
+  .cm-focused { outline: none !important; }
 }
-
-/* ---------- Select ---------- */
-.mode-select {
-  padding: $spacing-xs $spacing-md;
-  height: 28px;
-  background-color: $accent-secondary;
-  border: 1px solid $border-color;
-  border-radius: $border-radius;
-  color: $text-primary;
-  font-size: $font-size-sm;
-  cursor: pointer;
-  @include transition(all);
-
-  &:hover { border-color: $text-muted; }
-  &:focus { outline: none; border-color: $accent-primary; }
-
-  option {
-    background-color: $bg-tertiary;
-    color: $text-primary;
-  }
-}
-
-/* ---------- Error message ---------- */
-.error-message {
+.tool-pane-stripes {
   position: absolute;
-  bottom: $spacing-lg;
-  left: $spacing-lg;
-  right: $spacing-lg;
-  padding: $spacing-sm $spacing-md;
-  background-color: rgba(112, 38, 38, 0.95);
-  border: 1px solid $accent-danger;
-  border-radius: $border-radius;
-  color: $accent-danger;
-  font-size: $font-size-sm;
-  z-index: 10;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  top: 0; left: 0; right: 0;
+  height: 20px;
+  pointer-events: none;
+  background: repeating-linear-gradient(-45deg, transparent, transparent 5px, rgba(255,255,255,0.06) 5px, rgba(255,255,255,0.06) 7px);
+}
+
+/* 顶部条（和编辑器分离） */
+.pane-topbar {
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  background: $bg-toolbar;
+  border-bottom: 1px solid $border;
+  gap: 6px;
+}
+
+.tool-back-flat {
+  @include flex-center;
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  background: transparent;
+  color: $text-secondary;
+  transition: background 0.1s;
+  flex-shrink: 0;
+  &:hover { background: rgba(255,255,255,0.07); color: $text-primary; }
+}
+
+.tool-copy-flat {
+  @include flex-center;
+  width: 28px; height: 28px;
+  margin-left: auto;
+  border-radius: 5px;
+  color: $text-muted;
+  transition: all 0.1s;
+  flex-shrink: 0;
+  &:hover { color: $text-primary; background: rgba(255,255,255,0.06); }
+}
+
+/* 通用 pill 样式 */
+.pill {
+  @include flex-center;
+  height: 24px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  background: rgba(13,15,20,0.8);
+  border: 1px solid $border;
+  color: $text-secondary;
+  white-space: nowrap;
+  transition: all 0.12s;
+  &:hover { color: $text-primary; border-color: $border-strong; }
+}
+.pill-json { color: $green; border-color: rgba($green, 0.35); background: rgba($green, 0.08); }
+.pill-purple { color: $purple; border-color: rgba($purple, 0.35); background: rgba($purple, 0.1); gap: 5px; padding: 0 10px; }
+.pill.active { color: #fff; border-color: transparent; }
+.pill.active.blue { background: $blue; }
+.pill.active.purple { background: rgba($purple, 0.25); color: $purple; border-color: rgba($purple, 0.5); }
+.pill.dd { gap: 5px; padding: 0 10px 0 12px; cursor: pointer; }
+
+/* pill 组（转换模式） */
+.pill-group {
+  display: inline-flex;
+  background: rgba(13,15,20,0.8);
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 2px;
+  backdrop-filter: blur(4px);
+  .pill {
+    background: transparent;
+    border: none;
+    height: 22px;
+    padding: 0 13px;
+    border-radius: 8px;
+    &.active { background: $blue; color: #fff; }
+  }
+}
+
+/* TS 接口名输入 */
+.name-input {
+  height: 26px;
+  padding: 0 10px;
+  background: rgba($red, 0.12);
+  border: 1px solid rgba($red, 0.4);
+  border-radius: 6px;
+  color: $red;
+  font-size: 12px;
+  font-family: $font-mono;
+  font-weight: 600;
+  width: 110px;
+  outline: none;
+  backdrop-filter: blur(4px);
+  &:focus { border-color: $red; background: rgba($red, 0.18); }
+}
+
+/* Schema 按钮 */
+.action-btn {
+  @include flex-center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  transition: all 0.12s;
+  &.gen {
+    background: rgba($yellow, 0.15);
+    border: 1px solid rgba($yellow, 0.5);
+    color: $yellow;
+    box-shadow: 0 0 12px rgba($yellow, 0.15);
+    &:hover { background: rgba($yellow, 0.25); box-shadow: 0 0 16px rgba($yellow, 0.25); }
+  }
+  &.chk {
+    background: rgba(13,15,20,0.7);
+    border: 1px solid $border;
+    color: $text-secondary;
+    &:hover { color: $text-primary; border-color: $border-strong; }
+  }
+}
+
+/* 中央浮动按钮（圆形） */
+.tool-fab {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #222735;
+  border: 2px solid #2e3445;
+  color: $blue;
+  z-index: 20;
+  transform: translate(-50%, -50%);
+  @include flex-center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  transition: all 0.15s;
+  &.circle { border-radius: 50%; }
+  &:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+    background: #2a3042;
+    border-color: currentColor;
+  }
+  &.blue { color: $blue; border-color: rgba($blue, 0.35); }
+  &.purple { color: $purple; border-color: rgba($purple, 0.35); }
+  &.yellow { color: $yellow; border-color: rgba($yellow, 0.4); }
+}
+
+.diff-stat {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 14px;
+  background: rgba(13,15,20,0.9);
+  border: 1px solid $border-strong;
+  border-radius: 14px;
+  font-size: 12px;
+  color: $green;
+  backdrop-filter: blur(4px);
+  z-index: 15;
+  strong { color: $yellow; font-weight: 700; }
+}
+
+/* =================== Diff 行高亮 =================== */
+.cm-diff-added {
+  background: rgba(95, 212, 120, 0.1) !important;
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: $green;
+  }
+}
+.cm-diff-removed {
+  background: rgba(232, 104, 104, 0.12) !important;
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: $red;
+  }
+}
+
+/* =================== 树形视图 =================== */
+.tree-panel {
+  width: 340px;
+  flex-shrink: 0;
+  background: $bg-panel;
+  border-left: 1px solid $border;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.tree-header {
+  @include flex-between;
+  height: 38px;
+  padding: 0 12px;
+  border-bottom: 1px solid $border;
+  flex-shrink: 0;
+  .tree-title-wrap {
+    display: flex; align-items: center; gap: 8px; flex: 1;
+    .tree-icon {
+      @include flex-center;
+      width: 22px; height: 22px;
+      border-radius: 4px;
+      background: rgba($green, 0.1);
+    }
+    .tree-title { font-weight: 600; font-size: 13px; }
+  }
+}
+.tree-icon-btn {
+  @include flex-center;
+  width: 24px; height: 24px;
+  border-radius: 4px;
+  color: $text-muted;
+  &:hover { background: rgba(255,255,255,0.05); color: $text-primary; }
+}
+.tree-search {
+  @include flex-between;
+  padding: 7px 10px;
+  gap: 6px;
+  border-bottom: 1px solid $border;
+  flex-shrink: 0;
+  .tree-search-box {
+    flex: 1;
+    display: flex; align-items: center;
+    height: 26px;
+    padding: 0 8px;
+    background: $bg-input;
+    border: 1px solid $border;
+    border-radius: 4px;
+    gap: 6px;
+    &:focus-within { border-color: $blue; }
+    input {
+      flex: 1;
+      background: transparent;
+      border: none; outline: none;
+      font-size: 12px; color: $text-primary;
+      &::placeholder { color: $text-muted; }
+    }
+  }
+  .tree-lang {
+    height: 26px;
+    padding: 0 7px;
+    background: $bg-input;
+    border: 1px solid $border;
+    border-radius: 4px;
+    color: $text-primary;
+    font-size: 11px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+  }
+}
+.tree-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 0;
+  font-family: $font-mono;
+  font-size: 12px;
+  @include scroll;
+}
+.tree-empty {
+  @include flex-center;
+  flex-direction: column;
+  height: 100%;
+  color: $text-muted;
+  gap: 6px;
+  padding: 24px;
+  .tree-empty-title { color: $text-secondary; font-family: $font-ui; font-size: 13px; margin-top: 4px; }
+  .tree-empty-tip { font-family: $font-ui; font-size: 11px; opacity: 0.5; }
+}
+.tree-row {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  height: 20px;
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: default;
+  padding-right: 8px;
+  &:hover { background: rgba(255,255,255,0.03); }
+}
+.tree-arrow {
+  @include flex-center;
+  width: 12px;
+  font-size: 8px;
+  color: $text-muted;
+  flex-shrink: 0;
+  &.open, &.closed { cursor: pointer; color: $text-secondary; }
+  &.leaf { color: transparent; }
+}
+.tree-key { color: $blue; }
+.tree-sep { color: $text-muted; }
+.tree-prev { margin-left: 2px; }
+
+/* =================== 状态栏 =================== */
+.status-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 22px;
+  background: $bg-toolbar;
+  border-top: 1px solid $border;
+  padding: 0 12px;
+  font-size: 11px;
+  color: $text-secondary;
+  font-family: $font-mono;
+  flex-shrink: 0;
+  .status-left { display: flex; align-items: center; gap: 4px; }
+  .status-right { display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
+  .status-center { text-align: center; color: $green; strong { color: $yellow; font-weight: 700; } }
+  .status-sep { color: $text-muted; margin: 0 4px; }
+  .status-filename { color: $text-primary; font-weight: 500; }
+  .status-error { color: $red; }
 }

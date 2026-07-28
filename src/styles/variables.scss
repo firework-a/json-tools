@@ -1,43 +1,27 @@
-// VS Code Dark+ 风格
-$bg-primary: #1e1e1e;
-$bg-secondary: #252526;
-$bg-tertiary: #2d2d30;
-$bg-hover: #2a2d2e;
-$bg-active: #37373d;
+// 精确取色（参照截图）
+$bg-app:       #15171c;   // 主背景
+$bg-toolbar:   #0d0f14;   // 顶部工具栏/状态栏
+$bg-editor:    #1a1d24;   // 编辑器背景
+$bg-panel:     #171a21;   // 树形面板
+$bg-input:     #1f2330;   // 输入框/搜索框
+$bg-hover:     #232733;   // hover
+$bg-active:    #2a2f3d;   // active
 
-$text-primary: #e0e0e0;
-$text-secondary: #9d9d9d;
-$text-muted: #6a6a6a;
+$border:       #23272f;
+$border-strong:#343a48;
 
-$border-color: #3e3e42;
-$border-active: #007fd4;
+$text-primary: #d4d7dd;
+$text-secondary:#8b92a1;
+$text-muted:   #5a6170;
 
-$accent-primary: #0e639c;
-$accent-primary-hover: #1177bb;
-$accent-secondary: #3a3d41;
-$accent-danger: #f48771;
-$accent-danger-bg: rgba(244, 135, 113, 0.12);
-$accent-success: #89d185;
-$accent-success-bg: rgba(137, 209, 133, 0.1);
-$accent-warning: #cca700;
-$accent-warning-bg: rgba(204, 167, 0, 0.08);
+// 更柔和的功能色（截图风格）
+$green:   #5fd478;
+$yellow:  #f0b840;
+$purple:  #b578f0;
+$blue:    #5a9cf0;
+$red:     #e86868;
+$cyan:    #4ec9e0;
+$pink:    #f078a0;
 
-$tab-active-bg: #1e1e1e;
-
-$editor-bg: #1e1e1e;
-
-$spacing-xs: 4px;
-$spacing-sm: 8px;
-$spacing-md: 12px;
-$spacing-lg: 16px;
-$spacing-xl: 24px;
-
-$font-size-xs: 11px;
-$font-size-sm: 12px;
-$font-size-md: 13px;
-$font-size-lg: 14px;
-$font-size-xl: 16px;
-
-$border-radius: 4px;
-$border-radius-lg: 6px;
-$transition-speed: 0.15s;
+$font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+$font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', 'Menlo', 'Courier New', monospace;
