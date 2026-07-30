@@ -1,12 +1,14 @@
-import { useEffect, useRef, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
-import { vscodeDark } from '@uiw/codemirror-theme-vscode'
+import { vscodeDark, vscodeLight } from '@uiw/codemirror-theme-vscode'
 import { EditorView } from '@codemirror/view'
 import { useAppStore } from '../store'
 import { jsonToTs } from '../utils/jsonToTs'
 import { jsonToSchema } from '../utils/jsonSchema'
 import { jsonToYaml, yamlToJson } from '../utils/jsonYaml'
+import { jsonToXml, xmlToJson, jsonToToml, tomlToJson, jsonToCsv, csvToJson } from '../utils/jsonFormats'
+import { validateJsonSchema } from '../utils/schemaValidator'
 import { computeDiff } from '../utils/jsonDiffer'
 import DiffCodeMirror from './DiffCodeMirror'
 import { BackIcon, CopyIcon, SchemaIcon, ChevronDown, WandIcon, ShieldCheckIcon, ArrowRight, ArrowsLeftRight } from './Icons'
@@ -19,11 +21,12 @@ interface PaneProps {
   readOnly?: boolean
 }
 function PlainPane({ value, onChange, readOnly }: PaneProps) {
+  const theme = useAppStore(s => s.theme)
   return (
     <CodeMirror
       value={value}
       extensions={[EditorView.lineWrapping, json()]}
-      theme={vscodeDark}
+      theme={theme === 'dark' ? vscodeDark : vscodeLight}
       onChange={onChange}
       editable={!readOnly}
       style={{ height: '100%' }}
@@ -47,6 +50,20 @@ function EditorSide({ topbar, children, empty }: EditorSideProps) {
   )
 }
 
+const convertToFormat = (format: ConvertFormat, input: string) => {
+  if (format === 'yaml') return jsonToYaml(input)
+  if (format === 'xml') return jsonToXml(input)
+  if (format === 'toml') return jsonToToml(input)
+  return jsonToCsv(input)
+}
+
+const convertFromFormat = (format: ConvertFormat, input: string) => {
+  if (format === 'yaml') return yamlToJson(input)
+  if (format === 'xml') return xmlToJson(input)
+  if (format === 'toml') return tomlToJson(input)
+  return csvToJson(input)
+}
+
 function EditorArea() {
   const {
     content, setContent,
@@ -58,21 +75,23 @@ function EditorArea() {
 
   const diff = useMemo(() => mode === 'diff' ? computeDiff(content, rightContent) : null, [mode, content, rightContent])
 
-  const firstRun = useRef(true)
   useEffect(() => {
-    if (firstRun.current) { firstRun.current = false; return }
+    if (mode === 'edit' || mode === 'diff') return
     const t = setTimeout(() => {
-      if (mode === 'ts') setRightContent(jsonToTs(content, { rootName: tsInterfaceName }).result)
-      else if (mode === 'schema') setRightContent(jsonToSchema(content).result)
-      else if (mode === 'convert' && convertFormat === 'yaml') setRightContent(jsonToYaml(content).result)
+      let r: { result: string; error: string | null }
+      if (mode === 'ts') r = jsonToTs(content, { rootName: tsInterfaceName })
+      else if (mode === 'schema') r = jsonToSchema(content)
+      else r = convertToFormat(convertFormat, content)
+      if (r.error && content.trim()) useAppStore.getState().showToast(r.error)
+      else setRightContent(r.result)
     }, 300)
     return () => clearTimeout(t)
-  }, [content, mode, tsInterfaceName, convertFormat])
+  }, [content, mode, tsInterfaceName, convertFormat, setRightContent])
 
   if (mode === 'edit') {
     return (
       <div className="editor-shell single">
-        <div className="pane-full">
+        <div className="pane-full" id="editor-export-target">
           <PlainPane value={content} onChange={setContent} />
         </div>
       </div>
@@ -142,8 +161,7 @@ function EditorArea() {
                     <button key={f} className={`pill ${convertFormat === f ? 'active blue' : ''}`}
                       onClick={() => {
                         setConvertFormat(f)
-                        if (f === 'yaml') setRightContent(jsonToYaml(content).result)
-                        else setRightContent(`// ${f.toUpperCase()} 转换暂未实现`)
+                        setRightContent(convertToFormat(f, content).result)
                       }}>{f.toUpperCase()}</button>
                   ))}
                 </div>
@@ -156,10 +174,9 @@ function EditorArea() {
             <PlainPane value={rightContent} readOnly />
           </EditorSide>
           <button className="tool-fab blue circle" onClick={() => {
-            if (convertFormat === 'yaml') {
-              const r = yamlToJson(rightContent)
-              if (r.result) setContent(r.result)
-            }
+            const r = convertFromFormat(convertFormat, rightContent)
+            if (r.error) useAppStore.getState().showToast(r.error)
+            else setContent(r.result)
           }} title="反向转换">
             <ArrowsLeftRight size={16} strokeWidth={2.4} />
           </button>
@@ -229,7 +246,14 @@ function EditorArea() {
                 <button className="action-btn gen" onClick={() => setRightContent(jsonToSchema(content).result)}>
                   <WandIcon size={12} /> 生成
                 </button>
-                <button className="action-btn chk">
+                <button className="action-btn chk" onClick={() => {
+                  if (!rightContent.trim()) {
+                    useAppStore.getState().showToast('请先生成 Schema')
+                    return
+                  }
+                  const validation = validateJsonSchema(content, rightContent)
+                  useAppStore.getState().showToast(validation.valid ? 'JSON 符合当前 Schema' : validation.errors.join('；'))
+                }}>
                   <ShieldCheckIcon size={12} /> 校验
                 </button>
                 <button className="tool-copy-flat" onClick={() => copyToClipboard(rightContent)} title="复制">

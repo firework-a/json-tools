@@ -1,7 +1,8 @@
 import { useRef, useEffect } from 'react'
 import CodeMirror, { ReactCodeMirrorProps } from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
-import { vscodeDark } from '@uiw/codemirror-theme-vscode'
+import { vscodeDark, vscodeLight } from '@uiw/codemirror-theme-vscode'
+import { useAppStore } from '../store'
 import { EditorView, Decoration } from '@codemirror/view'
 import { StateField, StateEffect, RangeSetBuilder } from '@codemirror/state'
 
@@ -48,6 +49,7 @@ export default function DiffCodeMirror({
   value,
   ...rest
 }: DiffCodeMirrorProps) {
+  const theme = useAppStore(s => s.theme)
   const viewRef = useRef<EditorView | null>(null)
   const extensions = [EditorView.lineWrapping, hlField, hlDecor]
   if (lang === 'json') extensions.unshift(json())
@@ -64,7 +66,7 @@ export default function DiffCodeMirror({
     <CodeMirror
       value={value}
       extensions={extensions}
-      theme={vscodeDark}
+      theme={theme === 'dark' ? vscodeDark : vscodeLight}
       style={{ height: '100%' }}
       basicSetup={{ lineNumbers: true, foldGutter: true, highlightActiveLine: false }}
       onCreateEditor={(view) => { viewRef.current = view }}

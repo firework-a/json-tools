@@ -28,11 +28,62 @@ export const escapeJson = (input: string): { result: string; error: string | nul
   }
 }
 
+const wrapAsJsonString = (input: string): string => {
+  let out = '"'
+  for (let i = 0; i < input.length; i++) {
+    const ch = input[i]
+    if (ch === '\\' && i + 1 < input.length) {
+      // 已有转义序列，原样保留（escapeJson 输出已经是合法的 JSON 字符串内容）
+      out += ch + input[i + 1]
+      i++
+    } else if (ch === '"') {
+      out += '\\"'
+    } else if (ch === '\n') {
+      out += '\\n'
+    } else if (ch === '\r') {
+      out += '\\r'
+    } else if (ch === '\t') {
+      out += '\\t'
+    } else {
+      out += ch
+    }
+  }
+  out += '"'
+  return out
+}
+
 export const unescapeJson = (input: string): { result: string; error: string | null } => {
   try {
-    const unescaped = JSON.parse('"' + input.replace(/"/g, '\\"').replace(/\n/g, '\\n') + '"')
-    const parsed = JSON.parse(unescaped)
-    return { result: JSON.stringify(parsed, null, 2), error: null }
+    const trimmed = input.trim()
+    if (!trimmed) return { result: '', error: null }
+
+    let escapedText: string | null = null
+
+    // 尝试1: 完整的 JSON 字符串，如 "{\"name\":\"张三\"}"
+    try {
+      const parsed = JSON.parse(trimmed)
+      if (typeof parsed === 'string') escapedText = parsed
+    } catch { /* continue */ }
+
+    // 尝试2: 缺少外层引号的转义内容，如 {\"name\":\"张三\"}（escapeJson 的输出）
+    if (escapedText == null) {
+      try {
+        escapedText = JSON.parse(wrapAsJsonString(trimmed)) as string
+      } catch { /* continue */ }
+    }
+
+    if (escapedText == null) {
+      throw new Error('请输入转义后的 JSON 字符串')
+    }
+
+    // 尝试把解码后的文本解析为 JSON
+    try {
+      const innerJson = JSON.parse(escapedText)
+      return { result: JSON.stringify(innerJson, null, 2), error: null }
+    } catch {
+      // 解码成功但不是合法 JSON，直接返回解码文本
+      return { result: escapedText, error: null }
+    }
   } catch (err) {
     return { result: '', error: err instanceof Error ? err.message : '处理错误' }
   }

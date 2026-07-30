@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import Toolbar from './components/Toolbar'
 import EditorArea from './components/EditorArea'
 import TreeView from './components/TreeView'
@@ -5,20 +6,26 @@ import StatusBar from './components/StatusBar'
 import { useAppStore } from './store'
 
 function App() {
-  const mode = useAppStore((s) => s.mode)
-  // edit 模式显示完整工具栏 + 树形视图；工具模式进入独立双栏界面
+  const mode = useAppStore(s => s.mode)
+  const toast = useAppStore(s => s.toast)
+  const showToast = useAppStore(s => s.showToast)
   const isEditMode = mode === 'edit'
+
+  useEffect(() => {
+    if (!toast) return
+    const timer = window.setTimeout(() => showToast(null), 2000)
+    return () => window.clearTimeout(timer)
+  }, [toast, showToast])
 
   return (
     <div className="app">
       {isEditMode && <Toolbar />}
       <div className="app-body">
-        <div className="app-main">
-          <EditorArea />
-        </div>
+        <div className="app-main"><EditorArea /></div>
         {isEditMode && <TreeView />}
       </div>
       <StatusBar />
+      {toast && <div className="app-toast">{toast}</div>}
     </div>
   )
 }

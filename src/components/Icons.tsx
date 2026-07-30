@@ -64,13 +64,13 @@ export const SettingsIcon = ({ size = 16, color = '#8b92a1' }: P) => (
 export const PinIcon = ({ size = 15, color = '#f48771' }: P) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke="none"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
 )
-export const TreeIcon = ({ size = 16, color = '#5fd478' }: P) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke="none">
-    <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-    <rect x="14" y="3" width="7" height="7" rx="1.5"/>
-    <rect x="3" y="14" width="7" height="7" rx="1.5"/>
-    <rect x="14" y="14" width="7" height="7" rx="1.5"/>
-  </svg>
+export const TreeIcon = ({ size = 16, color = '#5fd478', strokeWidth = 1.8 }: P) => (
+  <I size={size} color={color} strokeWidth={strokeWidth}>
+    <circle cx="6" cy="5" r="2" fill={color} stroke="none" />
+    <circle cx="18" cy="5" r="2" fill={color} stroke="none" />
+    <circle cx="18" cy="19" r="2" fill={color} stroke="none" />
+    <path d="M6 7v5a3 3 0 0 0 3 3h4M13 15h4a1 1 0 0 1 1 1v1M13 15l3 2-3 2" />
+  </I>
 )
 export const SearchIcon = ({ size = 14, color = '#5a6170' }: P) => (
   <I size={size} color={color} strokeWidth={2}><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></I>
@@ -104,4 +104,12 @@ export const WandIcon = ({ size = 13, color = 'currentColor' }: P) => (
 // 盾牌校验
 export const ShieldCheckIcon = ({ size = 13, color = 'currentColor' }: P) => (
   <I size={size} color={color} strokeWidth={2}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></I>
+)
+// 全部展开/收起（树形视图）
+export const ChevronsUpDown = ({ size = 14, color = '#5a6170', strokeWidth = 2 }: P) => (
+  <I size={size} color={color} strokeWidth={strokeWidth}><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></I>
+)
+// 外部链接
+export const ExternalLinkIcon = ({ size = 13, color = '#5fd478' }: P) => (
+  <I size={size} color={color} strokeWidth={2}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></I>
 )

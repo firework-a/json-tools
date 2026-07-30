@@ -4,10 +4,38 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html, body, #root { width: 100%; height: 100%; overflow: hidden; background: $bg-app; color: $text-primary; }
 body { font-family: $font-ui; font-size: 13px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+.app { width: 100%; height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
 button { font-family: inherit; color: inherit; background: none; border: none; cursor: pointer; }
 input, select { font-family: inherit; color: inherit; }
 
-.app { display: flex; flex-direction: column; width: 100%; height: 100%; }
+[data-theme='light'] {
+  --app-bg: #f3f5f8;
+}
+[data-theme='light'] body,
+[data-theme='light'] #root {
+  background: #f3f5f8;
+  color: #1f2937;
+}
+[data-theme='light'] .app,
+[data-theme='light'] .app-body,
+[data-theme='light'] .app-main,
+[data-theme='light'] .editor-shell.single,
+[data-theme='light'] .pane-full {
+  background: #f3f5f8;
+}
+[data-theme='light'] .toolbar,
+[data-theme='light'] .status-bar,
+[data-theme='light'] .pane-topbar {
+  background: #ffffff;
+  border-color: #d9dee7;
+}
+[data-theme='light'] .tb,
+[data-theme='light'] .tb-icon-btn { color: #5b6472; }
+[data-theme='light'] .tree-panel { background: #ffffff; border-color: #d9dee7; }
+[data-theme='light'] .tree-search-box,
+[data-theme='light'] .tree-lang { background: #f5f7fa; border-color: #d9dee7; color: #1f2937; }
+[data-theme='light'] .settings-popover { background: #ffffff; border-color: #d9dee7; }
+
 .app-body { flex: 1; min-height: 0; display: flex; background: $bg-app; }
 .app-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; }
 
@@ -64,12 +92,58 @@ input, select { font-family: inherit; color: inherit; }
 }
 .tb-icon-btn {
   @include flex-center;
+  position: relative;
   width: 30px;
   height: 30px;
   border-radius: 6px;
   color: $text-secondary;
   transition: background 0.1s;
   &:hover { background: rgba(255,255,255,0.06); color: $text-primary; }
+  &.selected { background: rgba($blue, 0.12); color: $blue; }
+  &.pinned { color: $pink; background: rgba($pink, 0.12); }
+}
+.settings-popover {
+  position: absolute;
+  top: 38px;
+  right: 8px;
+  z-index: 100;
+  width: 190px;
+  padding: 10px;
+  border: 1px solid $border-strong;
+  border-radius: 7px;
+  background: #1c2029;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+}
+.settings-title {
+  padding: 2px 4px 8px;
+  border-bottom: 1px solid $border;
+  color: $text-primary;
+  font-size: 12px;
+  font-weight: 600;
+}
+.settings-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  padding: 0 4px;
+  color: $text-secondary;
+  font-size: 12px;
+  input { accent-color: $blue; }
+}
+.app-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 38px;
+  z-index: 200;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border: 1px solid $border-strong;
+  border-radius: 6px;
+  background: rgba(13,15,20,0.94);
+  color: $text-primary;
+  font-size: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
 }
 
 /* =================== Edit 单栏（编辑器铺满，无 padding，无 border） =================== */
@@ -477,6 +551,74 @@ input, select { font-family: inherit; color: inherit; }
 .tree-key { color: $blue; }
 .tree-sep { color: $text-muted; }
 .tree-prev { margin-left: 2px; }
+
+/* =================== JMESPath 速查浮层 =================== */
+.jmespath-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.55);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.jmespath-panel {
+  width: min(620px, 90vw);
+  max-height: 80vh;
+  background: #1e1f24;
+  border: 1px solid $border;
+  border-radius: 10px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.jmespath-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid $border;
+  .jmespath-title { font-weight: 600; font-size: 14px; color: #fff; }
+  .jmespath-docs {
+    display: inline-flex; align-items: center; gap: 4px;
+    color: $green; font-size: 12px; text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+}
+.jmespath-body {
+  padding: 14px 18px 18px; overflow: auto;
+}
+.jmespath-section-title {
+  font-size: 12px; color: $text-muted; font-weight: 600;
+  margin-bottom: 8px; margin-top: 14px;
+  &:first-child { margin-top: 0; }
+}
+.jmespath-code-block {
+  position: relative;
+  background: #16171b;
+  border: 1px solid $border;
+  border-radius: 6px;
+  padding: 12px 14px;
+  pre {
+    font-family: $font-mono; font-size: 12px; color: #d4d4d4;
+    line-height: 1.6; white-space: pre; margin: 0;
+  }
+  .jmespath-copy {
+    position: absolute; top: 8px; right: 8px;
+    @include flex-center; width: 24px; height: 24px; border-radius: 4px;
+    color: $text-muted;
+    &:hover { background: rgba(255,255,255,0.06); color: $text-primary; }
+  }
+}
+.jmespath-examples { border: 1px solid $border; border-radius: 6px; overflow: hidden; }
+.jmespath-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; font-family: $font-mono; font-size: 12px;
+  border-bottom: 1px solid $border;
+  &:last-child { border-bottom: none; }
+  &:nth-child(odd) { background: rgba(255,255,255,0.02); }
+  .jmespath-expr { color: $green; }
+  .jmespath-result { color: #d4d4d4; }
+}
+[data-theme='light'] .jmespath-panel { background: #fff; }
+[data-theme='light'] .jmespath-header { border-color: #d9dee7; .jmespath-title { color: #1f2937; } }
+[data-theme='light'] .jmespath-code-block { background: #f5f7fa; pre { color: #1f2937; } }
+[data-theme='light'] .jmespath-row { border-color: #d9dee7; &:nth-child(odd) { background: #f8fafc; } .jmespath-result { color: #1f2937; } }
 
 /* =================== 状态栏 =================== */
 .status-bar {
