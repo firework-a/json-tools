@@ -23,17 +23,21 @@ function preview(v: any): { text: string; color: string } {
 }
 
 function TreeNode({ keyName, value, depth, expandSignal, collapseSignal }: TNProps) {
-  const [expanded, setExpanded] = useState(depth < 2)
   const isContainer = value !== null && typeof value === 'object'
   const { text, color } = preview(value)
+  // 用 key 重置: 每次父级重新挂载时, 节点是新实例, useState 重新初始化为 true
+  const [expanded, setExpanded] = useState(true)
 
   useEffect(() => {
-    if (isContainer) setExpanded(true)
-  }, [expandSignal, isContainer])
+    if (!isContainer) return
+    // expandSignal 从 0 变正才触发 (首次挂载不触发)
+    if (expandSignal > 0) setExpanded(true)
+  }, [expandSignal]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (isContainer) setExpanded(false)
-  }, [collapseSignal, isContainer])
+    if (!isContainer) return
+    if (collapseSignal > 0) setExpanded(false)
+  }, [collapseSignal]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>
@@ -165,14 +169,16 @@ function TreeView() {
         {parsed === null ? (
           <div className="tree-empty">
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.6">
-              <circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/>
-              <path d="M12 18V12M6 6v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6M12 12v-2"/>
+              <line x1="6" x2="6" y1="3" y2="15"/>
+              <circle cx="18" cy="6" r="3"/>
+              <circle cx="6" cy="18" r="3"/>
+              <path d="M18 9a9 9 0 0 1-9 9"/>
             </svg>
             <div className="tree-empty-title">暂无 JSON 数据</div>
             <div className="tree-empty-tip">输入有效的 JSON 查看结构</div>
           </div>
         ) : (
-          <TreeNode keyName="$" value={parsed} depth={0} expandSignal={expandSignal} collapseSignal={collapseSignal} />
+          <TreeNode key={content.length + '-' + content.slice(0, 50)} keyName="$" value={parsed} depth={0} expandSignal={expandSignal} collapseSignal={collapseSignal} />
         )}
       </div>
       {showHelp && <JmesPathCheatSheet onClose={() => setShowHelp(false)} />}

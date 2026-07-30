@@ -1,6 +1,10 @@
+import { useEffect, useRef, useState } from 'react'
 import { useAppStore, ViewMode } from '../store'
 import { formatJson, compressJson, escapeJson, unescapeJson } from '../utils/json'
 import { toPng } from 'html-to-image'
+import { isTauri } from '@tauri-apps/api/core'
+import { save } from '@tauri-apps/plugin-dialog'
+import { writeFile } from '@tauri-apps/plugin-fs'
 import {
   NewFileIcon, OpenIcon, ExportIcon,
   BeautifyIcon, CompressIcon, EscapeIcon, UnescapeIcon, FoldIcon, UnfoldIcon,
@@ -30,7 +34,39 @@ function Toolbar() {
     treeOpen, setTreeOpen,
     setFileName,
     toggleTheme, pinned, togglePinned, settingsOpen, setSettingsOpen,
+    autoFormat, setAutoFormat, showLineNumbers, setShowLineNumbers,
   } = useAppStore()
+
+  const settingsRef = useRef<HTMLDivElement>(null)
+  const [popPos, setPopPos] = useState<{ top: number; right: number } | null>(null)
+
+  const openSettings = () => {
+    if (settingsOpen) {
+      setSettingsOpen(false)
+      return
+    }
+    if (settingsRef.current) {
+      const r = settingsRef.current.getBoundingClientRect()
+      setPopPos({ top: r.bottom + 6, right: window.innerWidth - r.right })
+    }
+    setSettingsOpen(true)
+  }
+
+  useEffect(() => {
+    if (!settingsOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setSettingsOpen(false)
+      }
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSettingsOpen(false) }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [settingsOpen, setSettingsOpen])
 
   const newFile = () => {
     setContent('')
@@ -53,19 +89,47 @@ function Toolbar() {
 
   const exportImage = async () => {
     const target = document.getElementById('editor-export-target')
-    if (!target) return
+    if (!target) {
+      useAppStore.getState().showToast('找不到导出目标')
+      return
+    }
     try {
+      const theme = useAppStore.getState().theme
+      const fileName = useAppStore.getState().fileName || 'json'
       const dataUrl = await toPng(target, {
-        backgroundColor: undefined,
+        backgroundColor: theme === 'light' ? '#ffffff' : '#1e2128',
         pixelRatio: 2,
-        style: { borderRadius: '0' },
+        style: { borderRadius: '0', border: 'none' },
+        cacheBust: true,
       })
-      const a = document.createElement('a')
-      a.href = dataUrl
-      a.download = `${useAppStore.getState().fileName || 'json'}.png`
-      a.click()
+      // dataURL -> Uint8Array
+      const base64 = dataUrl.split(',')[1]
+      const binary = atob(base64)
+      const bytes = new Uint8Array(binary.length)
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+
+      // Tauri 环境: 弹系统保存对话框
+      if (isTauri()) {
+        const path = await save({
+          defaultPath: `${fileName}.png`,
+          filters: [{ name: 'PNG 图片', extensions: ['png'] }],
+        })
+        if (!path) return // 用户取消
+        await writeFile(path, bytes)
+        useAppStore.getState().showToast('图片已保存')
+      } else {
+        // 浏览器回退
+        const a = document.createElement('a')
+        a.href = dataUrl
+        a.download = `${fileName}.png`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        useAppStore.getState().showToast('图片已导出')
+      }
     } catch (e) {
-      useAppStore.getState().showToast('导出图片失败')
+      console.error('export image error:', e)
+      useAppStore.getState().showToast('导出图片失败: ' + (e instanceof Error ? e.message : String(e)))
     }
   }
 
@@ -140,23 +204,27 @@ function Toolbar() {
         <button className="tb-icon-btn" onClick={toggleTheme} title="切换主题">
           <ThemeIcon size={16} />
         </button>
-        <button className={`tb-icon-btn ${settingsOpen ? 'selected' : ''}`} onClick={() => setSettingsOpen(!settingsOpen)} title="设置">
-          <SettingsIcon size={16} />
-        </button>
+        <div className="tb-icon-wrap" ref={settingsRef}>
+          <button className={`tb-icon-btn ${settingsOpen ? 'selected' : ''}`} onClick={openSettings} title="设置">
+            <SettingsIcon size={16} />
+          </button>
+          {settingsOpen && popPos && (
+            <div className="settings-popover" style={{ position: 'fixed', top: popPos.top, right: popPos.right }}>
+              <div className="settings-title">设置</div>
+              <label className="settings-option">
+                <span>自动格式化</span>
+                <input type="checkbox" checked={autoFormat} onChange={e => setAutoFormat(e.target.checked)} />
+              </label>
+              <label className="settings-option">
+                <span>显示行号</span>
+                <input type="checkbox" checked={showLineNumbers} onChange={e => setShowLineNumbers(e.target.checked)} />
+              </label>
+            </div>
+          )}
+        </div>
         <button className={`tb-icon-btn ${pinned ? 'selected pinned' : ''}`} onClick={togglePinned} title={pinned ? '取消置顶' : '窗口置顶'}>
           <PinIcon size={15} />
         </button>
-        {settingsOpen && (
-          <div className="settings-popover">
-            <div className="settings-title">设置</div>
-            <label className="settings-option">
-              <span>自动格式化</span><input type="checkbox" defaultChecked />
-            </label>
-            <label className="settings-option">
-              <span>显示行号</span><input type="checkbox" defaultChecked />
-            </label>
-          </div>
-        )}
       </div>
     </header>
   )

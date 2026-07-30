@@ -1,39 +1,9 @@
 // 基础 JSON 工具
-export const formatJson = (input: string, indent = 2): { result: string; error: string | null } => {
-  try {
-    if (!input.trim()) return { result: '', error: null }
-    const parsed = JSON.parse(input)
-    return { result: JSON.stringify(parsed, null, indent), error: null }
-  } catch (err) {
-    return { result: '', error: err instanceof Error ? err.message : 'JSON 解析错误' }
-  }
-}
-
-export const compressJson = (input: string): { result: string; error: string | null } => {
-  try {
-    if (!input.trim()) return { result: '', error: null }
-    const parsed = JSON.parse(input)
-    return { result: JSON.stringify(parsed), error: null }
-  } catch (err) {
-    return { result: '', error: err instanceof Error ? err.message : 'JSON 解析错误' }
-  }
-}
-
-export const escapeJson = (input: string): { result: string; error: string | null } => {
-  try {
-    const parsed = JSON.parse(input)
-    return { result: JSON.stringify(JSON.stringify(parsed)).slice(1, -1), error: null }
-  } catch (err) {
-    return { result: '', error: err instanceof Error ? err.message : '处理错误' }
-  }
-}
-
 const wrapAsJsonString = (input: string): string => {
   let out = '"'
   for (let i = 0; i < input.length; i++) {
     const ch = input[i]
     if (ch === '\\' && i + 1 < input.length) {
-      // 已有转义序列，原样保留（escapeJson 输出已经是合法的 JSON 字符串内容）
       out += ch + input[i + 1]
       i++
     } else if (ch === '"') {
@@ -50,6 +20,48 @@ const wrapAsJsonString = (input: string): string => {
   }
   out += '"'
   return out
+}
+
+/**
+ * 宽松 JSON 解析，自动兼容三种输入：
+ * 1. 普通 JSON：{"a":1}
+ * 2. 完整 JSON 字符串："{\"a\":1}" 或 "{\"a\":1}"
+ * 3. 转义后无外层引号：{\"a\":1} 或 {\"a\":\"b\\nc\"}
+ */
+const tryParseJson = (input: string): { parsed: unknown; error: string | null } => {
+  const trimmed = input.trim()
+  if (!trimmed) return { parsed: '', error: null }
+
+  const decodeRecursive = (val: unknown): unknown => {
+    if (typeof val !== 'string' || !val.trim()) return val
+    try { return decodeRecursive(JSON.parse(val)) } catch { return val }
+  }
+
+  try {
+    return { parsed: decodeRecursive(JSON.parse(trimmed)), error: null }
+  } catch {}
+  try {
+    return { parsed: decodeRecursive(JSON.parse(wrapAsJsonString(trimmed))), error: null }
+  } catch {}
+  return { parsed: null, error: 'JSON 解析错误' }
+}
+
+export const formatJson = (input: string, indent = 2): { result: string; error: string | null } => {
+  const { parsed, error } = tryParseJson(input)
+  if (error) return { result: '', error }
+  return { result: JSON.stringify(parsed, null, indent), error: null }
+}
+
+export const compressJson = (input: string): { result: string; error: string | null } => {
+  const { parsed, error } = tryParseJson(input)
+  if (error) return { result: '', error }
+  return { result: JSON.stringify(parsed), error: null }
+}
+
+export const escapeJson = (input: string): { result: string; error: string | null } => {
+  const { parsed, error } = tryParseJson(input)
+  if (error) return { result: '', error }
+  return { result: JSON.stringify(JSON.stringify(parsed)).slice(1, -1), error: null }
 }
 
 export const unescapeJson = (input: string): { result: string; error: string | null } => {

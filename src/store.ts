@@ -38,6 +38,13 @@ interface AppState {
   togglePinned: () => void
   settingsOpen: boolean
   setSettingsOpen: (v: boolean) => void
+
+  // 设置项
+  autoFormat: boolean
+  setAutoFormat: (v: boolean) => void
+  showLineNumbers: boolean
+  setShowLineNumbers: (v: boolean) => void
+
   toast: string | null
   showToast: (msg: string | null) => void
 }
@@ -83,6 +90,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   settingsOpen: false,
   setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
+  autoFormat: true,
+  setAutoFormat: (autoFormat) => set({ autoFormat }),
+  showLineNumbers: true,
+  setShowLineNumbers: (showLineNumbers) => set({ showLineNumbers }),
   toast: null,
   showToast: (toast) => set({ toast }),
 }))

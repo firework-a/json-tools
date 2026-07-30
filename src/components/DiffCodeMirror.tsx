@@ -51,6 +51,7 @@ export default function DiffCodeMirror({
   ...rest
 }: DiffCodeMirrorProps) {
   const theme = useAppStore(s => s.theme)
+  const showLineNumbers = useAppStore(s => s.showLineNumbers)
   const viewRef = useRef<EditorView | null>(null)
   const extensions = [
     EditorView.lineWrapping,
@@ -81,7 +82,7 @@ export default function DiffCodeMirror({
       extensions={extensions}
       theme={theme === 'dark' ? vscodeDark : vscodeLight}
       style={{ height: '100%' }}
-      basicSetup={{ lineNumbers: true, foldGutter: false, highlightActiveLine: false }}
+      basicSetup={{ lineNumbers: showLineNumbers, foldGutter: false, highlightActiveLine: false }}
       onCreateEditor={(view) => { viewRef.current = view }}
       {...rest}
     />

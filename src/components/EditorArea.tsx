@@ -5,6 +5,7 @@ import { vscodeDark, vscodeLight } from '@uiw/codemirror-theme-vscode'
 import { EditorView } from '@codemirror/view'
 import { foldGutter } from '@codemirror/language'
 import { useAppStore } from '../store'
+import { formatJson } from '../utils/json'
 import { jsonToTs } from '../utils/jsonToTs'
 import { jsonToSchema } from '../utils/jsonSchema'
 import { jsonToYaml, yamlToJson } from '../utils/jsonYaml'
@@ -24,6 +25,28 @@ const foldMarker = (open: boolean) => {
   return el
 }
 
+// Paste handler: auto-format minified JSON on paste by dispatching to view
+const pasteFormatExt = EditorView.domEventHandlers({
+  paste(event, view) {
+    if (!useAppStore.getState().autoFormat) return false
+    const text = event.clipboardData?.getData('text/plain')
+    if (!text) return false
+    const trimmed = text.trim()
+    const looksLikeJson = /^[[{]/.test(trimmed) && /[}\]]$/.test(trimmed)
+    if (!looksLikeJson || trimmed.includes('\n')) return false
+    const { result } = formatJson(text)
+    if (!result) return false
+    event.preventDefault()
+    const { from, to } = view.state.selection.main
+    view.dispatch({
+      changes: { from, to, insert: result },
+      selection: { anchor: from + result.length },
+      scrollIntoView: true,
+    })
+    return true
+  },
+})
+
 interface PaneProps {
   value: string
   onChange?: (v: string) => void
@@ -31,6 +54,7 @@ interface PaneProps {
 }
 function PlainPane({ value, onChange, readOnly }: PaneProps) {
   const theme = useAppStore(s => s.theme)
+  const showLineNumbers = useAppStore(s => s.showLineNumbers)
   return (
     <CodeMirror
       value={value}
@@ -38,12 +62,12 @@ function PlainPane({ value, onChange, readOnly }: PaneProps) {
         markerDOM: (open: boolean) => foldMarker(open),
         openText: '点击收起',
         closedText: '点击展开',
-      })]}
+      }), pasteFormatExt]}
       theme={theme === 'dark' ? vscodeDark : vscodeLight}
       onChange={onChange}
       editable={!readOnly}
       style={{ height: '100%' }}
-      basicSetup={{ lineNumbers: true, foldGutter: false, highlightActiveLine: false }}
+      basicSetup={{ lineNumbers: showLineNumbers, foldGutter: false, highlightActiveLine: false }}
     />
   )
 }
