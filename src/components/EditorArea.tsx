@@ -3,6 +3,7 @@ import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
 import { vscodeDark, vscodeLight } from '@uiw/codemirror-theme-vscode'
 import { EditorView } from '@codemirror/view'
+import { foldGutter } from '@codemirror/language'
 import { useAppStore } from '../store'
 import { jsonToTs } from '../utils/jsonToTs'
 import { jsonToSchema } from '../utils/jsonSchema'
@@ -15,6 +16,14 @@ import { BackIcon, CopyIcon, SchemaIcon, ChevronDown, WandIcon, ShieldCheckIcon,
 import { copyToClipboard } from '../utils/json'
 import type { ConvertFormat } from '../store'
 
+// Lucide chevron-right SVG marker for CodeMirror fold gutter
+const foldMarker = (open: boolean) => {
+  const el = document.createElement('span')
+  el.className = 'cm-fold-marker'
+  el.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(${open ? 90 : 0}deg); transition: transform .12s; color: var(--fold-arrow, #5a6170);"><path d="m9 18 6-6-6-6"/></svg>`
+  return el
+}
+
 interface PaneProps {
   value: string
   onChange?: (v: string) => void
@@ -25,12 +34,16 @@ function PlainPane({ value, onChange, readOnly }: PaneProps) {
   return (
     <CodeMirror
       value={value}
-      extensions={[EditorView.lineWrapping, json()]}
+      extensions={[EditorView.lineWrapping, json(), foldGutter({
+        markerDOM: (open: boolean) => foldMarker(open),
+        openText: '点击收起',
+        closedText: '点击展开',
+      })]}
       theme={theme === 'dark' ? vscodeDark : vscodeLight}
       onChange={onChange}
       editable={!readOnly}
       style={{ height: '100%' }}
-      basicSetup={{ lineNumbers: true, foldGutter: true, highlightActiveLine: false }}
+      basicSetup={{ lineNumbers: true, foldGutter: false, highlightActiveLine: false }}
     />
   )
 }

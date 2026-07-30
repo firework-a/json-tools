@@ -5,6 +5,7 @@ import { vscodeDark, vscodeLight } from '@uiw/codemirror-theme-vscode'
 import { useAppStore } from '../store'
 import { EditorView, Decoration } from '@codemirror/view'
 import { StateField, StateEffect, RangeSetBuilder } from '@codemirror/state'
+import { foldGutter } from '@codemirror/language'
 
 export interface DiffCodeMirrorProps extends Omit<ReactCodeMirrorProps, 'extensions'> {
   addedLines?: Set<number>
@@ -51,7 +52,19 @@ export default function DiffCodeMirror({
 }: DiffCodeMirrorProps) {
   const theme = useAppStore(s => s.theme)
   const viewRef = useRef<EditorView | null>(null)
-  const extensions = [EditorView.lineWrapping, hlField, hlDecor]
+  const extensions = [
+    EditorView.lineWrapping,
+    foldGutter({
+      markerDOM: (open: boolean) => {
+        const el = document.createElement('span')
+        el.className = 'cm-fold-marker'
+        el.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(${open ? 90 : 0}deg); transition: transform .12s; color: var(--fold-arrow, #5a6170);"><path d="m9 18 6-6-6-6"/></svg>`
+        return el
+      },
+    }),
+    hlField,
+    hlDecor,
+  ]
   if (lang === 'json') extensions.unshift(json())
 
   useEffect(() => {
@@ -68,7 +81,7 @@ export default function DiffCodeMirror({
       extensions={extensions}
       theme={theme === 'dark' ? vscodeDark : vscodeLight}
       style={{ height: '100%' }}
-      basicSetup={{ lineNumbers: true, foldGutter: true, highlightActiveLine: false }}
+      basicSetup={{ lineNumbers: true, foldGutter: false, highlightActiveLine: false }}
       onCreateEditor={(view) => { viewRef.current = view }}
       {...rest}
     />

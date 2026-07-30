@@ -17,6 +17,11 @@ function App() {
     return () => window.clearTimeout(timer)
   }, [toast, showToast])
 
+  // 初始化主题标记
+  useEffect(() => {
+    document.documentElement.dataset.theme = useAppStore.getState().theme
+  }, [])
+
   return (
     <div className="app">
       {isEditMode && <Toolbar />}

@@ -30,10 +30,10 @@ export const UnescapeIcon = ({ size, color }: P) => (
   <I size={size} color={color || '#5a9cf0'}><path d="M16 5h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-3"/><path d="m9 10-5 5 5 5"/><path d="M4 15h11"/></I>
 )
 export const FoldIcon = ({ size, color }: P) => (
-  <I size={size} color={color || '#e86868'}><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></I>
+  <I size={size} color={color || '#e86868'} strokeWidth={2.2}><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></I>
 )
 export const UnfoldIcon = ({ size, color }: P) => (
-  <I size={size} color={color || '#5fd478'}><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></I>
+  <I size={size} color={color || '#5fd478'} strokeWidth={2.2}><path d="m7 6 5 5 5-5"/><path d="m7 13 5 5 5-5"/></I>
 )
 export const DiffIcon = ({ size, color }: P) => (
   <I size={size} color={color || '#5fd478'}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/></I>
@@ -64,12 +64,12 @@ export const SettingsIcon = ({ size = 16, color = '#8b92a1' }: P) => (
 export const PinIcon = ({ size = 15, color = '#f48771' }: P) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke="none"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
 )
-export const TreeIcon = ({ size = 16, color = '#5fd478', strokeWidth = 1.8 }: P) => (
+export const TreeIcon = ({ size = 16, color = '#5fd478', strokeWidth = 2 }: P) => (
   <I size={size} color={color} strokeWidth={strokeWidth}>
-    <circle cx="6" cy="5" r="2" fill={color} stroke="none" />
-    <circle cx="18" cy="5" r="2" fill={color} stroke="none" />
-    <circle cx="18" cy="19" r="2" fill={color} stroke="none" />
-    <path d="M6 7v5a3 3 0 0 0 3 3h4M13 15h4a1 1 0 0 1 1 1v1M13 15l3 2-3 2" />
+    <circle cx="6" cy="6" r="1.8" fill={color} stroke="none" />
+    <circle cx="18" cy="6" r="1.8" fill={color} stroke="none" />
+    <circle cx="12" cy="18" r="1.8" fill={color} stroke="none" />
+    <path d="M12 18V12M6 6v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6M12 12v-2" />
   </I>
 )
 export const SearchIcon = ({ size = 14, color = '#5a6170' }: P) => (

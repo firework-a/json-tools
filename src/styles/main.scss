@@ -4,7 +4,10 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html, body, #root { width: 100%; height: 100%; overflow: hidden; background: $bg-app; color: $text-primary; }
 body { font-family: $font-ui; font-size: 13px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-.app { width: 100%; height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.app {
+  width: 100%; height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden;
+  --fold-arrow: #5a6170;
+}
 button { font-family: inherit; color: inherit; background: none; border: none; cursor: pointer; }
 input, select { font-family: inherit; color: inherit; }
 
@@ -16,6 +19,7 @@ input, select { font-family: inherit; color: inherit; }
   background: #f3f5f8;
   color: #1f2937;
 }
+[data-theme='light'] .app { --fold-arrow: #94a3b8; }
 [data-theme='light'] .app,
 [data-theme='light'] .app-body,
 [data-theme='light'] .app-main,
@@ -31,10 +35,41 @@ input, select { font-family: inherit; color: inherit; }
 }
 [data-theme='light'] .tb,
 [data-theme='light'] .tb-icon-btn { color: #5b6472; }
-[data-theme='light'] .tree-panel { background: #ffffff; border-color: #d9dee7; }
-[data-theme='light'] .tree-search-box,
-[data-theme='light'] .tree-lang { background: #f5f7fa; border-color: #d9dee7; color: #1f2937; }
-[data-theme='light'] .settings-popover { background: #ffffff; border-color: #d9dee7; }
+[data-theme='light'] .tree-panel { background: #ffffff !important; border-color: #d9dee7 !important; color: #1f2937; }
+[data-theme='light'] .tree-header { border-color: #d9dee7 !important; .tree-title { color: #1f2937; } }
+[data-theme='light'] .tree-search { border-color: #d9dee7 !important; }
+[data-theme='light'] .tree-search-box {
+  background: #f5f7fa !important; border-color: #d9dee7 !important;
+  input { color: #1f2937 !important; &::placeholder { color: #94a3b8 !important; } }
+  svg { color: #94a3b8 !important; }
+}
+[data-theme='light'] .tree-lang {
+  background: #f5f7fa !important;
+  background-image: none !important;
+  border-color: #d9dee7 !important;
+  color: #1f2937 !important;
+}
+[data-theme='light'] .tree-icon-btn { color: #64748b !important; &:hover { background: rgba(0,0,0,0.05) !important; color: #1f2937 !important; } }
+[data-theme='light'] .tree-content { color: #1f2937; }
+[data-theme='light'] .tree-row:hover { background: rgba(0,0,0,0.04); }
+[data-theme='light'] .settings-popover { background: #ffffff !important; border-color: #d9dee7 !important; color: #1f2937; }
+[data-theme='light'] .tree-key { color: #2563eb !important; }
+[data-theme='light'] .tree-sep { color: #64748b !important; }
+[data-theme='light'] .tree-arrow { color: #94a3b8 !important; }
+
+/* 亮色主题：CodeMirror 内部背景覆盖（vscodeLight 主题有 !important，需要同级覆盖） */
+[data-theme='light'] .pane-full,
+[data-theme='light'] .tool-pane-body {
+  background: #ffffff;
+  .cm-editor, .cm-scroller { background: #ffffff !important; }
+  .cm-gutters { background: #f8fafc !important; border-color: #e2e8f0 !important; }
+  .cm-activeLine { background: rgba(0,0,0,0.03) !important; }
+  .cm-activeLineGutter { background: rgba(90, 156, 240, 0.08) !important; }
+  .cm-fold-marker { color: #94a3b8; }
+  .cm-foldPlaceholder { color: #94a3b8 !important; background: rgba(0,0,0,0.04); border-color: #d9dee7; }
+  .cm-content { caret-color: #1f2937; }
+  .cm-cursor { border-left-color: #1f2937 !important; }
+}
 
 .app-body { flex: 1; min-height: 0; display: flex; background: $bg-app; }
 .app-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; }
@@ -161,6 +196,10 @@ input, select { font-family: inherit; color: inherit; }
   .cm-scroller { overflow: auto !important; @include scroll; font-family: $font-mono; }
   .cm-content { padding: 8px 0 12px 0; }
   .cm-gutters { background: $bg-editor !important; border-right: 1px solid $border !important; color: #5a6170; }
+  .cm-foldGutter .cm-gutterElement { padding: 0 2px; }
+  .cm-fold-marker { @include flex-center; width: 16px; height: 100%; color: #5a6170; }
+  .cm-fold-marker:hover { color: #8b92a1; }
+  .cm-foldPlaceholder { color: #5a6170 !important; background: rgba(255,255,255,0.04); border: 1px solid #2a2f3d; border-radius: 3px; padding: 0 4px; }
   .cm-lineNumbers .cm-gutterElement { padding-left: 12px; min-width: 40px; }
   .cm-activeLine { background: rgba(255,255,255,0.025); }
   .cm-focused { outline: none !important; }
@@ -230,6 +269,10 @@ input, select { font-family: inherit; color: inherit; }
   .cm-scroller { overflow: auto !important; @include scroll; }
   .cm-content { padding: 8px 0 12px 0; }
   .cm-gutters { background: transparent !important; border-right: 1px solid $border !important; color: #5a6170; }
+  .cm-foldGutter .cm-gutterElement { padding: 0 2px; }
+  .cm-fold-marker { @include flex-center; width: 16px; height: 100%; color: #5a6170; }
+  .cm-fold-marker:hover { color: #8b92a1; }
+  .cm-foldPlaceholder { color: #5a6170 !important; background: rgba(255,255,255,0.04); border: 1px solid #2a2f3d; border-radius: 3px; padding: 0 4px; }
   .cm-lineNumbers .cm-gutterElement { padding-left: 12px; min-width: 40px; }
   .cm-activeLine { background: rgba(255,255,255,0.025); }
   .cm-activeLineGutter {
@@ -541,12 +584,12 @@ input, select { font-family: inherit; color: inherit; }
 }
 .tree-arrow {
   @include flex-center;
-  width: 12px;
-  font-size: 8px;
+  width: 16px;
   color: $text-muted;
   flex-shrink: 0;
   &.open, &.closed { cursor: pointer; color: $text-secondary; }
-  &.leaf { color: transparent; }
+  .tree-leaf-dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.4; }
+  &.leaf { color: $text-muted; }
 }
 .tree-key { color: $blue; }
 .tree-sep { color: $text-muted; }

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useAppStore } from '../store'
 import { TreeIcon, SearchIcon, CloseIcon, InfoIcon, CopyIcon, ChevronsUpDown, ExternalLinkIcon } from './Icons'
@@ -24,28 +24,29 @@ function preview(v: any): { text: string; color: string } {
 
 function TreeNode({ keyName, value, depth, expandSignal, collapseSignal }: TNProps) {
   const [expanded, setExpanded] = useState(depth < 2)
-  const lastExpand = useRef(0)
-  const lastCollapse = useRef(0)
   const isContainer = value !== null && typeof value === 'object'
   const { text, color } = preview(value)
 
-  // Respond to global expand signal
-  if (expandSignal !== lastExpand.current) {
-    lastExpand.current = expandSignal
+  useEffect(() => {
     if (isContainer) setExpanded(true)
-  }
-  // Respond to global collapse signal
-  if (collapseSignal !== lastCollapse.current) {
-    lastCollapse.current = collapseSignal
+  }, [expandSignal, isContainer])
+
+  useEffect(() => {
     if (isContainer) setExpanded(false)
-  }
+  }, [collapseSignal, isContainer])
 
   return (
     <div>
       <div className="tree-row" style={{ paddingLeft: depth * 14 + 6 }}
         onClick={isContainer ? () => setExpanded(v => !v) : undefined}>
         <span className={`tree-arrow ${isContainer ? expanded ? 'open' : 'closed' : 'leaf'}`}>
-          {isContainer ? (expanded ? '▾' : '▸') : '·'}
+          {isContainer ? (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform .15s', transform: expanded ? 'rotate(90deg)' : 'none' }}>
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+          ) : (
+            <span className="tree-leaf-dot" />
+          )}
         </span>
         <span className="tree-key">{String(keyName)}</span>
         {isContainer && <span className="tree-sep">:</span>}
@@ -116,10 +117,18 @@ function JmesPathCheatSheet({ onClose }: { onClose: () => void }) {
 function TreeView() {
   const content = useAppStore(s => s.content)
   const treeOpen = useAppStore(s => s.treeOpen)
+  const theme = useAppStore(s => s.theme)
   const setTreeOpen = useAppStore(s => s.setTreeOpen)
   const [showHelp, setShowHelp] = useState(false)
   const [expandSignal, setExpandSignal] = useState(0)
   const [collapseSignal, setCollapseSignal] = useState(0)
+
+  const isLight = theme === 'light'
+  const searchStyle: React.CSSProperties = isLight ? { background: '#f5f7fa', borderColor: '#d9dee7' } : {}
+  const inputStyle: React.CSSProperties = isLight ? { color: '#1f2937' } : {}
+  const langStyle: React.CSSProperties = isLight ? { background: '#f5f7fa', borderColor: '#d9dee7', color: '#1f2937' } : {}
+  const btnStyle: React.CSSProperties = isLight ? { color: '#64748b' } : {}
+  const titleStyle: React.CSSProperties = isLight ? { color: '#1f2937' } : {}
 
   const parsed = useMemo(() => {
     const t = content.trim()
@@ -134,31 +143,30 @@ function TreeView() {
       <div className="tree-header">
         <div className="tree-title-wrap">
           <span className="tree-icon"><TreeIcon /></span>
-          <span className="tree-title">树形视图</span>
+          <span className="tree-title" style={titleStyle}>树形视图</span>
         </div>
-        <button className="tree-icon-btn" onClick={() => setTreeOpen(false)}><CloseIcon size={13} /></button>
+        <button className="tree-icon-btn" style={btnStyle} onClick={() => setTreeOpen(false)}><CloseIcon size={13} color={isLight ? '#64748b' : undefined} /></button>
       </div>
       <div className="tree-search">
-        <div className="tree-search-box">
-          <SearchIcon size={13} />
-          <input placeholder="JMESPath 查询…" />
+        <div className="tree-search-box" style={searchStyle}>
+          <SearchIcon size={13} color={isLight ? '#94a3b8' : undefined} />
+          <input placeholder="JMESPath 查询…" style={inputStyle} />
         </div>
-        <select className="tree-lang" defaultValue="jmespath">
+        <select className="tree-lang" defaultValue="jmespath" style={langStyle}>
           <option value="jmespath">JMESPath</option>
         </select>
-        <button className="tree-icon-btn" title="JMESPath 速查表" onClick={() => setShowHelp(true)}><InfoIcon size={13} /></button>
-        <button className="tree-icon-btn" title="全部展开 / 全部收起" onClick={() => {
-          // alternate: expand on first/odd clicks, collapse on even
+        <button className="tree-icon-btn" style={btnStyle} title="JMESPath 速查表" onClick={() => setShowHelp(true)}><InfoIcon size={13} color={isLight ? '#64748b' : undefined} /></button>
+        <button className="tree-icon-btn" style={btnStyle} title="全部展开 / 全部收起" onClick={() => {
           if (collapseSignal >= expandSignal) setExpandSignal(v => v + 1)
           else setCollapseSignal(v => v + 1)
-        }}><ChevronsUpDown size={13} /></button>
+        }}><ChevronsUpDown size={13} color={isLight ? '#64748b' : undefined} /></button>
       </div>
       <div className="tree-content">
         {parsed === null ? (
           <div className="tree-empty">
-            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.6">
-              <circle cx="6" cy="5" r="2"/><circle cx="18" cy="5" r="2"/><circle cx="18" cy="19" r="2"/>
-              <path d="M6 7v5a3 3 0 0 0 3 3h4M13 15h4a1 1 0 0 1 1 1v1"/>
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.6">
+              <circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/>
+              <path d="M12 18V12M6 6v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6M12 12v-2"/>
             </svg>
             <div className="tree-empty-title">暂无 JSON 数据</div>
             <div className="tree-empty-tip">输入有效的 JSON 查看结构</div>
