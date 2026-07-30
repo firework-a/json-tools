@@ -5,8 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "tauri:dev": "tauri dev",
     "build": "tsc && vite build",
+    "build:app": "node scripts/pack.mjs",
     "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "clean": "node scripts/clean.mjs",
+    "icon": "node scripts/icon.mjs",
+    "scripts:info": "node scripts/info.mjs",
     "tauri": "tauri"
   },
   "dependencies": {
