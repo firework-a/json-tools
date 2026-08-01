@@ -9,8 +9,9 @@ import {
   NewFileIcon, OpenIcon, ExportIcon,
   BeautifyIcon, CompressIcon, EscapeIcon, UnescapeIcon, FoldIcon, UnfoldIcon,
   DiffIcon, ConvertIcon, CodeIcon, SchemaIcon,
-  TreeIcon, ThemeIcon, SettingsIcon, PinIcon,
+  TreeIcon, ThemeIcon, SettingsIcon, PinIcon, PinOffIcon,
 } from './Icons'
+import { foldAllEditors, unfoldAllEditors } from '../editorRegistry'
 
 interface TBProps {
   icon: React.ReactNode
@@ -184,8 +185,8 @@ function Toolbar() {
       </div>
 
       <div className="tb-group">
-        <TB icon={<FoldIcon size={14} color="#e86868" />} label="折叠" />
-        <TB icon={<UnfoldIcon size={14} color="#5fd478" />} label="展开" />
+        <TB icon={<FoldIcon size={14} color="#e86868" />} label="折叠" onClick={foldAllEditors} />
+        <TB icon={<UnfoldIcon size={14} color="#5fd478" />} label="展开" onClick={unfoldAllEditors} />
       </div>
 
       <div className="tb-group">
@@ -223,7 +224,7 @@ function Toolbar() {
           )}
         </div>
         <button className={`tb-icon-btn ${pinned ? 'selected pinned' : ''}`} onClick={togglePinned} title={pinned ? '取消置顶' : '窗口置顶'}>
-          <PinIcon size={15} />
+          {pinned ? <PinOffIcon size={15} /> : <PinIcon size={15} />}
         </button>
       </div>
     </header>

@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useAppStore } from '../store'
-import { TreeIcon, SearchIcon, CloseIcon, InfoIcon, CopyIcon, ChevronsUpDown, ExternalLinkIcon } from './Icons'
+import { TreeIcon, SearchIcon, CloseIcon, InfoIcon, CopyIcon, ChevronsUpDown, ChevronsDownUp, ExternalLinkIcon } from './Icons'
 
 interface TNProps {
   keyName: string | number
@@ -160,10 +160,13 @@ function TreeView() {
           <option value="jmespath">JMESPath</option>
         </select>
         <button className="tree-icon-btn" style={btnStyle} title="JMESPath 速查表" onClick={() => setShowHelp(true)}><InfoIcon size={13} color={isLight ? '#64748b' : undefined} /></button>
-        <button className="tree-icon-btn" style={btnStyle} title="全部展开 / 全部收起" onClick={() => {
+        <button className="tree-icon-btn" style={btnStyle} title={collapseSignal >= expandSignal ? '全部展开' : '全部收起'} onClick={() => {
           if (collapseSignal >= expandSignal) setExpandSignal(v => v + 1)
           else setCollapseSignal(v => v + 1)
-        }}><ChevronsUpDown size={13} color={isLight ? '#64748b' : undefined} /></button>
+        }}>{collapseSignal >= expandSignal
+          ? <ChevronsUpDown size={13} color={isLight ? '#64748b' : undefined} />
+          : <ChevronsDownUp size={13} color={isLight ? '#64748b' : undefined} />
+        }</button>
       </div>
       <div className="tree-content">
         {parsed === null ? (

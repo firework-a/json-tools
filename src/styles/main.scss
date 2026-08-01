@@ -158,7 +158,16 @@ input, select { font-family: inherit; color: inherit; }
   .cm-editor, .cm-scroller { background: #ffffff !important; }
   .cm-gutters { background: #f8fafc !important; border-color: #e2e8f0 !important; }
   .cm-activeLine { background: rgba(0,0,0,0.03) !important; }
-  .cm-activeLineGutter { background: rgba(90, 156, 240, 0.08) !important; }
+  // 激活行高亮仅作用于行号槽, 折叠槽不显示左侧蓝条, 避免出现两条竖线
+  .cm-activeLineGutter { background: transparent !important; }
+  .cm-lineNumbers .cm-activeLineGutter {
+    background: rgba(90, 156, 240, 0.08) !important;
+    position: relative;
+    &::before {
+      content: ''; position: absolute;
+      left: 0; top: 0; bottom: 0; width: 2px; background: $blue;
+    }
+  }
   .cm-fold-marker { color: #94a3b8; }
   .cm-foldPlaceholder { color: #94a3b8 !important; background: rgba(0,0,0,0.04); border-color: #d9dee7; }
   .cm-content { caret-color: #1f2937; }
@@ -297,8 +306,9 @@ input, select { font-family: inherit; color: inherit; }
   .cm-lineNumbers .cm-gutterElement { padding-left: 12px; min-width: 40px; }
   .cm-activeLine { background: rgba(255,255,255,0.025); }
   .cm-focused { outline: none !important; }
-  // 活动行左侧蓝色细条（仅 gutter）
-  .cm-activeLineGutter {
+  // 活动行高亮仅作用于行号槽, 折叠槽不显示左侧蓝条, 避免两条竖线
+  .cm-activeLineGutter { background: transparent; }
+  .cm-lineNumbers .cm-activeLineGutter {
     background: rgba(90, 156, 240, 0.08);
     position: relative;
     &::before {
@@ -369,7 +379,8 @@ input, select { font-family: inherit; color: inherit; }
   .cm-foldPlaceholder { color: #5a6170 !important; background: rgba(255,255,255,0.04); border: 1px solid #2a2f3d; border-radius: 3px; padding: 0 4px; }
   .cm-lineNumbers .cm-gutterElement { padding-left: 12px; min-width: 40px; }
   .cm-activeLine { background: rgba(255,255,255,0.025); }
-  .cm-activeLineGutter {
+  .cm-activeLineGutter { background: transparent; }
+  .cm-lineNumbers .cm-activeLineGutter {
     background: rgba(90, 156, 240, 0.08);
     position: relative;
     &::before {

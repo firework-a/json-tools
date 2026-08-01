@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useAppStore } from '../store'
 import { getJsonStats } from '../utils/json'
+import { computeDiff } from '../utils/jsonDiffer'
 
 const formatSize = (bytes: number) => {
   if (bytes < 1024) return `${bytes} B`
@@ -14,12 +15,14 @@ function StatusBar() {
   const leftStats = useMemo(() => getJsonStats(content), [content])
   const rightStats = useMemo(() => getJsonStats(rightContent), [rightContent])
 
-  // 对比模式：统计左右差异行数（按 formatted 行数差的绝对值）
+  // 对比模式：用行级 diff 统计真实变更行数（增+删）
   const diffCount = useMemo(() => {
     if (mode !== 'diff') return null
-    if (!content.trim() || !rightContent.trim()) return null
-    return Math.abs(leftStats.lineCount - rightStats.lineCount) || null
-  }, [mode, content, rightContent, leftStats.lineCount, rightStats.lineCount])
+    if (!content.trim() && !rightContent.trim()) return null
+    const d = computeDiff(content, rightContent)
+    const total = d.leftRemoved.size + d.rightAdded.size
+    return total > 0 ? total : null
+  }, [mode, content, rightContent])
 
   return (
     <footer className="status-bar">

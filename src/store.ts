@@ -1,4 +1,6 @@
 import { create } from 'zustand'
+import { getCurrentWindow } from '@tauri-apps/api/window'
+import { isTauri } from '@tauri-apps/api/core'
 
 export type ViewMode = 'edit' | 'diff' | 'convert' | 'ts' | 'schema'
 export type ConvertFormat = 'yaml' | 'xml' | 'toml' | 'csv'
@@ -81,11 +83,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   togglePinned: async () => {
     const pinned = !get().pinned
     set({ pinned, toast: pinned ? '窗口已置顶' : '已取消置顶' })
+    if (!isTauri()) return
     try {
-      const tauriWindow = (window as Window & { __TAURI__?: { window?: { getCurrent?: () => { setAlwaysOnTop: (v: boolean) => Promise<void> } } } }).__TAURI__?.window
-      await tauriWindow?.getCurrent?.().setAlwaysOnTop(pinned)
+      await getCurrentWindow().setAlwaysOnTop(pinned)
     } catch {
-      // 浏览器预览环境不支持窗口置顶
+      // 置顶失败时回滚状态
+      set({ pinned: !pinned })
+      get().showToast('置顶失败')
     }
   },
   settingsOpen: false,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
 import { vscodeDark, vscodeLight } from '@uiw/codemirror-theme-vscode'
@@ -15,6 +15,7 @@ import { computeDiff } from '../utils/jsonDiffer'
 import DiffCodeMirror from './DiffCodeMirror'
 import { BackIcon, CopyIcon, SchemaIcon, ChevronDown, WandIcon, ShieldCheckIcon, ArrowRight, ArrowsLeftRight } from './Icons'
 import { copyToClipboard } from '../utils/json'
+import { editorRegistration } from '../editorRegistry'
 import type { ConvertFormat } from '../store'
 
 // Lucide chevron-right SVG marker for CodeMirror fold gutter
@@ -58,7 +59,7 @@ function PlainPane({ value, onChange, readOnly }: PaneProps) {
   return (
     <CodeMirror
       value={value}
-      extensions={[EditorView.lineWrapping, json(), foldGutter({
+      extensions={[EditorView.lineWrapping, json(), editorRegistration, foldGutter({
         markerDOM: (open: boolean) => foldMarker(open),
         openText: '点击收起',
         closedText: '点击展开',
@@ -67,7 +68,7 @@ function PlainPane({ value, onChange, readOnly }: PaneProps) {
       onChange={onChange}
       editable={!readOnly}
       style={{ height: '100%' }}
-      basicSetup={{ lineNumbers: showLineNumbers, foldGutter: false, highlightActiveLine: false }}
+      basicSetup={{ lineNumbers: showLineNumbers, foldGutter: false, highlightActiveLine: false, highlightActiveLineGutter: true }}
     />
   )
 }
@@ -112,6 +113,10 @@ function EditorArea() {
 
   const diff = useMemo(() => mode === 'diff' ? computeDiff(content, rightContent) : null, [mode, content, rightContent])
 
+  // 对比模式两侧编辑器 ref, 用于同步滚动
+  const leftViewRef = useRef<EditorView | null>(null)
+  const rightViewRef = useRef<EditorView | null>(null)
+
   useEffect(() => {
     if (mode === 'edit' || mode === 'diff') return
     const t = setTimeout(() => {
@@ -137,7 +142,6 @@ function EditorArea() {
 
   // diff
   if (mode === 'diff' && diff) {
-    const count = diff.left.size + diff.right.size
     return (
       <div className="tool-shell">
         <div className="tool-pane-wrap">
@@ -148,7 +152,13 @@ function EditorArea() {
               </button>
             }
           >
-            <DiffCodeMirror value={content} onChange={setContent} removedLines={diff.leftRemoved} />
+            <DiffCodeMirror
+              value={content}
+              onChange={setContent}
+              removedLines={diff.leftRemoved}
+              viewRef={leftViewRef}
+              peerRef={rightViewRef}
+            />
           </EditorSide>
           <EditorSide
             empty={!rightContent.trim()}
@@ -158,10 +168,15 @@ function EditorArea() {
               </button>
             }
           >
-            <DiffCodeMirror value={rightContent} onChange={setRightContent} addedLines={diff.rightAdded} />
+            <DiffCodeMirror
+              value={rightContent}
+              onChange={setRightContent}
+              addedLines={diff.rightAdded}
+              viewRef={rightViewRef}
+              peerRef={leftViewRef}
+            />
             {!rightContent.trim() && <div className="tool-pane-stripes" />}
           </EditorSide>
-          {count > 0 && <div className="diff-stat">差异 <strong>{count}</strong> 行</div>}
           <button className="tool-fab blue circle" onClick={() => {
             const t = content; setContent(rightContent); setRightContent(t)
           }} title="交换">

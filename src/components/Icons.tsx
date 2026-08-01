@@ -88,15 +88,17 @@ export const UnescapeIcon = ({ size, color }: P) => (
   </I>
 )
 export const FoldIcon = ({ size, color }: P) => (
+  // chevrons-down-up (收起)
   <I size={size} color={color || '#e86868'}>
-    <path d="m17 11-5-5-5 5" />
-    <path d="m17 18-5-5-5 5" />
+    <path d="m7 20 5-5 5 5" />
+    <path d="m7 4 5 5 5-5" />
   </I>
 )
 export const UnfoldIcon = ({ size, color }: P) => (
+  // chevrons-up-down (展开)
   <I size={size} color={color || '#5fd478'}>
-    <path d="m7 6 5 5 5-5" />
-    <path d="m7 13 5 5 5-5" />
+    <path d="m7 15 5 5 5-5" />
+    <path d="m7 9 5-5 5 5" />
   </I>
 )
 export const DiffIcon = ({ size, color }: P) => (
@@ -156,9 +158,17 @@ export const SettingsIcon = ({ size = 16, color = '#8b92a1' }: P) => (
   </I>
 )
 export const PinIcon = ({ size = 15, color = '#f48771' }: P) => (
-  <I size={size} color={color} fill={color} stroke="none">
+  <I size={size} color={color}>
     <path d="M12 17v5" />
-    <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 14 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
+    <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
+  </I>
+)
+export const PinOffIcon = ({ size = 15, color = '#f48771' }: P) => (
+  <I size={size} color={color}>
+    <path d="M12 17v5" />
+    <path d="M15 9.34V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H7.89" />
+    <path d="m2 2 20 20" />
+    <path d="M9 9v1.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h11" />
   </I>
 )
 export const TreeIcon = ({ size = 16, color = '#5fd478', strokeWidth = 2 }: P) => (
@@ -229,9 +239,17 @@ export const ShieldCheckIcon = ({ size = 13, color = 'currentColor' }: P) => (
   </I>
 )
 export const ChevronsUpDown = ({ size = 14, color = '#5a6170', strokeWidth = 2 }: P) => (
+  // chevrons-up-down (展开)
   <I size={size} color={color} strokeWidth={strokeWidth}>
     <path d="m7 15 5 5 5-5" />
     <path d="m7 9 5-5 5 5" />
+  </I>
+)
+export const ChevronsDownUp = ({ size = 14, color = '#5a6170', strokeWidth = 2 }: P) => (
+  // chevrons-down-up (收起)
+  <I size={size} color={color} strokeWidth={strokeWidth}>
+    <path d="m7 20 5-5 5 5" />
+    <path d="m7 4 5 5 5-5" />
   </I>
 )
 export const ExternalLinkIcon = ({ size = 13, color = '#5fd478' }: P) => (
