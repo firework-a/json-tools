@@ -1,69 +1,10 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
+import JsonView from '@uiw/react-json-view'
+import { lightTheme } from '@uiw/react-json-view/light'
+import { darkTheme } from '@uiw/react-json-view/dark'
 import { useAppStore } from '../store'
 import { TreeIcon, SearchIcon, CloseIcon, InfoIcon, CopyIcon, ChevronsUpDown, ChevronsDownUp, ExternalLinkIcon } from './Icons'
-
-interface TNProps {
-  keyName: string | number
-  value: any
-  depth: number
-  expandSignal: number   // increment to force expand
-  collapseSignal: number // increment to force collapse
-}
-
-function preview(v: any): { text: string; color: string } {
-  if (v === null) return { text: 'null', color: '#c586c0' }
-  if (Array.isArray(v)) return { text: `Array(${v.length})`, color: '#4ec9b0' }
-  const t = typeof v
-  if (t === 'object') return { text: `{${Object.keys(v).length}}`, color: '#9cdcfe' }
-  if (t === 'string') return { text: `"${v.length > 24 ? v.slice(0, 24) + '…' : v}"`, color: '#ce9178' }
-  if (t === 'number') return { text: String(v), color: '#b5cea8' }
-  if (t === 'boolean') return { text: String(v), color: '#569cd6' }
-  return { text: t, color: '#d4d4d4' }
-}
-
-function TreeNode({ keyName, value, depth, expandSignal, collapseSignal }: TNProps) {
-  const isContainer = value !== null && typeof value === 'object'
-  const { text, color } = preview(value)
-  // 用 key 重置: 每次父级重新挂载时, 节点是新实例, useState 重新初始化为 true
-  const [expanded, setExpanded] = useState(true)
-
-  useEffect(() => {
-    if (!isContainer) return
-    // expandSignal 从 0 变正才触发 (首次挂载不触发)
-    if (expandSignal > 0) setExpanded(true)
-  }, [expandSignal]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (!isContainer) return
-    if (collapseSignal > 0) setExpanded(false)
-  }, [collapseSignal]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  return (
-    <div>
-      <div className="tree-row" style={{ paddingLeft: depth * 14 + 6 }}
-        onClick={isContainer ? () => setExpanded(v => !v) : undefined}>
-        <span className={`tree-arrow ${isContainer ? expanded ? 'open' : 'closed' : 'leaf'}`}>
-          {isContainer ? (
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform .15s', transform: expanded ? 'rotate(90deg)' : 'none' }}>
-              <path d="m9 18 6-6-6-6"/>
-            </svg>
-          ) : (
-            <span className="tree-leaf-dot" />
-          )}
-        </span>
-        <span className="tree-key">{String(keyName)}</span>
-        {isContainer && <span className="tree-sep">:</span>}
-        {(!isContainer || !expanded) && <span className="tree-prev" style={{ color }}>{text}</span>}
-      </div>
-      {isContainer && expanded && (
-        Array.isArray(value)
-          ? value.map((it, i) => <TreeNode key={i} keyName={i} value={it} depth={depth + 1} expandSignal={expandSignal} collapseSignal={collapseSignal} />)
-          : Object.entries(value).map(([k, v]) => <TreeNode key={k} keyName={k} value={v} depth={depth + 1} expandSignal={expandSignal} collapseSignal={collapseSignal} />)
-      )}
-    </div>
-  )
-}
 
 function JmesPathCheatSheet({ onClose }: { onClose: () => void }) {
   const exampleJson = `{
@@ -80,12 +21,6 @@ function JmesPathCheatSheet({ onClose }: { onClose: () => void }) {
     { expr: 'meta.count', result: '2' },
     { expr: 'length(people)', result: '2' },
   ]
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
 
   return createPortal(
     <div className="jmespath-overlay" onClick={onClose}>
@@ -124,8 +59,7 @@ function TreeView() {
   const theme = useAppStore(s => s.theme)
   const setTreeOpen = useAppStore(s => s.setTreeOpen)
   const [showHelp, setShowHelp] = useState(false)
-  const [expandSignal, setExpandSignal] = useState(0)
-  const [collapseSignal, setCollapseSignal] = useState(0)
+  const [collapsed, setCollapsed] = useState(false)
 
   const isLight = theme === 'light'
   const searchStyle: React.CSSProperties = isLight ? { background: '#f5f7fa', borderColor: '#d9dee7' } : {}
@@ -136,8 +70,8 @@ function TreeView() {
 
   const parsed = useMemo(() => {
     const t = content.trim()
-    if (!t) return null
-    try { return JSON.parse(t) } catch { return null }
+    if (!t) return undefined
+    try { return JSON.parse(t) } catch { return undefined }
   }, [content])
 
   if (!treeOpen) return null
@@ -160,18 +94,16 @@ function TreeView() {
           <option value="jmespath">JMESPath</option>
         </select>
         <button className="tree-icon-btn" style={btnStyle} title="JMESPath 速查表" onClick={() => setShowHelp(true)}><InfoIcon size={13} color={isLight ? '#64748b' : undefined} /></button>
-        <button className="tree-icon-btn" style={btnStyle} title={collapseSignal >= expandSignal ? '全部展开' : '全部收起'} onClick={() => {
-          if (collapseSignal >= expandSignal) setExpandSignal(v => v + 1)
-          else setCollapseSignal(v => v + 1)
-        }}>{collapseSignal >= expandSignal
-          ? <ChevronsUpDown size={13} color={isLight ? '#64748b' : undefined} />
-          : <ChevronsDownUp size={13} color={isLight ? '#64748b' : undefined} />
-        }</button>
+        <button className="tree-icon-btn" style={btnStyle} title={collapsed ? '全部展开' : '全部收起'} onClick={() => setCollapsed(v => !v)}>
+          {collapsed
+            ? <ChevronsUpDown size={13} color={isLight ? '#64748b' : undefined} />
+            : <ChevronsDownUp size={13} color={isLight ? '#64748b' : undefined} />}
+        </button>
       </div>
       <div className="tree-content">
-        {parsed === null ? (
+        {parsed === undefined ? (
           <div className="tree-empty">
-            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.6">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" opacity="0.6">
               <line x1="6" x2="6" y1="3" y2="15"/>
               <circle cx="18" cy="6" r="3"/>
               <circle cx="6" cy="18" r="3"/>
@@ -181,7 +113,18 @@ function TreeView() {
             <div className="tree-empty-tip">输入有效的 JSON 查看结构</div>
           </div>
         ) : (
-          <TreeNode key={content.length + '-' + content.slice(0, 50)} keyName="$" value={parsed} depth={0} expandSignal={expandSignal} collapseSignal={collapseSignal} />
+          <div className="rjv-host">
+            <JsonView
+              key={collapsed ? 'collapsed' : 'expanded'}
+              value={parsed}
+              displayDataTypes={false}
+              displayObjectSize={true}
+              enableClipboard={true}
+              collapsed={collapsed ? 1 : false}
+              style={isLight ? lightTheme : darkTheme}
+              shortenTextAfterLength={120}
+            />
+          </div>
         )}
       </div>
       {showHelp && <JmesPathCheatSheet onClose={() => setShowHelp(false)} />}

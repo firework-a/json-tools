@@ -5,6 +5,8 @@ import EditorArea from './components/EditorArea'
 import TreeView from './components/TreeView'
 import StatusBar from './components/StatusBar'
 import { useAppStore } from './store'
+import { getCurrentWindow } from '@tauri-apps/api/window'
+import { isTauri } from '@tauri-apps/api/core'
 
 function App() {
   const mode = useAppStore(s => s.mode)
@@ -21,6 +23,19 @@ function App() {
   // 初始化主题标记
   useEffect(() => {
     document.documentElement.dataset.theme = useAppStore.getState().theme
+  }, [])
+
+  // 窗口初始 visible:false, 等 React 挂载完再显示, 避免出现透明空窗
+  useEffect(() => {
+    if (!isTauri()) return
+    // 双 requestAnimationFrame 保证首帧已绘制
+    let raf1 = 0, raf2 = 0
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        getCurrentWindow().show().catch(() => { /* ignore */ })
+      })
+    })
+    return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2) }
   }, [])
 
   return (

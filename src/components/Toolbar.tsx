@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useAppStore, ViewMode } from '../store'
 import { formatJson, compressJson, escapeJson, unescapeJson } from '../utils/json'
-import { toPng } from 'html-to-image'
 import { isTauri } from '@tauri-apps/api/core'
 import { save } from '@tauri-apps/plugin-dialog'
 import { writeFile } from '@tauri-apps/plugin-fs'
@@ -12,6 +12,7 @@ import {
   TreeIcon, ThemeIcon, SettingsIcon, PinIcon, PinOffIcon,
 } from './Icons'
 import { foldAllEditors, unfoldAllEditors } from '../editorRegistry'
+import ExportCanvas from './ExportCanvas'
 
 interface TBProps {
   icon: React.ReactNode
@@ -28,6 +29,10 @@ function TB({ icon, label, onClick, active }: TBProps) {
   )
 }
 
+interface ExportState {
+  content: string
+}
+
 function Toolbar() {
   const {
     content, setContent, setRightContent,
@@ -40,6 +45,7 @@ function Toolbar() {
 
   const settingsRef = useRef<HTMLDivElement>(null)
   const [popPos, setPopPos] = useState<{ top: number; right: number } | null>(null)
+  const [exportState, setExportState] = useState<ExportState | null>(null)
 
   const openSettings = () => {
     if (settingsOpen) {
@@ -88,50 +94,54 @@ function Toolbar() {
     input.click()
   }
 
-  const exportImage = async () => {
-    const target = document.getElementById('editor-export-target')
-    if (!target) {
-      useAppStore.getState().showToast('找不到导出目标')
+  const exportImage = () => {
+    if (!content.trim()) {
+      useAppStore.getState().showToast('没有可导出的内容')
       return
     }
-    try {
-      const theme = useAppStore.getState().theme
-      const fileName = useAppStore.getState().fileName || 'json'
-      const dataUrl = await toPng(target, {
-        backgroundColor: theme === 'light' ? '#ffffff' : '#1e2128',
-        pixelRatio: 2,
-        style: { borderRadius: '0', border: 'none' },
-        cacheBust: true,
-      })
-      // dataURL -> Uint8Array
-      const base64 = dataUrl.split(',')[1]
-      const binary = atob(base64)
-      const bytes = new Uint8Array(binary.length)
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+    setExportState({ content })
+  }
 
-      // Tauri 环境: 弹系统保存对话框
-      if (isTauri()) {
-        const path = await save({
-          defaultPath: `${fileName}.png`,
-          filters: [{ name: 'PNG 图片', extensions: ['png'] }],
-        })
-        if (!path) return // 用户取消
-        await writeFile(path, bytes)
-        useAppStore.getState().showToast('图片已保存')
-      } else {
-        // 浏览器回退
-        const a = document.createElement('a')
-        a.href = dataUrl
-        a.download = `${fileName}.png`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        useAppStore.getState().showToast('图片已导出')
-      }
-    } catch (e) {
-      console.error('export image error:', e)
-      useAppStore.getState().showToast('导出图片失败: ' + (e instanceof Error ? e.message : String(e)))
+  const saveDataUrl = async (dataUrl: string) => {
+    const fileName = useAppStore.getState().fileName || 'json'
+    const base64 = dataUrl.split(',')[1]
+    const binary = atob(base64)
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+
+    if (isTauri()) {
+      const path = await save({
+        defaultPath: `${fileName}.png`,
+        filters: [{ name: 'PNG 图片', extensions: ['png'] }],
+      })
+      if (!path) return
+      await writeFile(path, bytes)
+      useAppStore.getState().showToast('图片已保存')
+    } else {
+      const a = document.createElement('a')
+      a.href = dataUrl
+      a.download = `${fileName}.png`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      useAppStore.getState().showToast('图片已导出')
     }
+  }
+
+  const handleExportDone = async (dataUrl: string) => {
+    setExportState(null)
+    try {
+      await saveDataUrl(dataUrl)
+    } catch (e) {
+      console.error('save image error:', e)
+      useAppStore.getState().showToast('保存图片失败: ' + (e instanceof Error ? e.message : String(e)))
+    }
+  }
+
+  const handleExportError = (err: unknown) => {
+    setExportState(null)
+    console.error('export image error:', err)
+    useAppStore.getState().showToast('导出图片失败: ' + (err instanceof Error ? err.message : String(err)))
   }
 
   const report = (result: string, error: string | null) => {
@@ -158,6 +168,19 @@ function Toolbar() {
 
   return (
     <header className="toolbar">
+      {exportState && createPortal(
+        <>
+          <div className="export-mask">正在生成图片…</div>
+          <ExportCanvas
+            content={exportState.content}
+            theme={useAppStore.getState().theme}
+            showLineNumbers={useAppStore.getState().showLineNumbers}
+            onDone={handleExportDone}
+            onError={handleExportError}
+          />
+        </>,
+        document.body,
+      )}
       <div className="tb-group">
         <TB icon={<NewFileIcon size={14} color="#5a9cf0" />} label="新建" onClick={newFile} />
         <TB icon={<OpenIcon size={14} color="#f0b840" />} label="打开" onClick={loadFile} />

@@ -21,7 +21,9 @@
         "fullscreen": false,
         "decorations": false,
         "transparent": true,
-        "shadow": true
+        "shadow": true,
+        "visible": false,
+        "center": true
       }
     ],
     "security": {
