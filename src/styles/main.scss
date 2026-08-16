@@ -118,17 +118,92 @@ input, select { font-family: inherit; color: inherit; }
 [data-theme='light'] .app-body,
 [data-theme='light'] .app-main,
 [data-theme='light'] .editor-shell.single,
-[data-theme='light'] .pane-full {
+[data-theme='light'] .pane-full,
+[data-theme='light'] .tool-shell {
   background: #f3f5f8;
 }
+
+/* 顶部 / 状态栏 / 顶栏：白底浅分隔线 */
 [data-theme='light'] .toolbar,
 [data-theme='light'] .status-bar,
-[data-theme='light'] .pane-topbar {
+[data-theme='light'] .pane-topbar,
+[data-theme='light'] .diff-topbar {
   background: #ffffff;
   border-color: #d9dee7;
 }
+
+/* 工具栏分组（segmented 风格）：浅灰底 + 浅边框 */
+[data-theme='light'] .tb-group {
+  background: #f1f5f9;
+  border-color: #d9dee7;
+}
 [data-theme='light'] .tb,
-[data-theme='light'] .tb-icon-btn { color: #5b6472; }
+[data-theme='light'] .tb-icon-btn { color: #475569; }
+[data-theme='light'] .tb:hover { background: rgba(15,23,42,0.06); color: #0f172a; }
+[data-theme='light'] .tb-icon-btn:hover { background: rgba(15,23,42,0.06); color: #0f172a; }
+[data-theme='light'] .tb-icon-btn.selected { background: rgba(37,99,235,0.12); color: #2563eb; }
+[data-theme='light'] .tb-icon-btn.pinned { background: rgba(225,80,130,0.12); color: #db2777; }
+
+/* 双栏面板：白底，浅分隔线 */
+[data-theme='light'] .tool-pane {
+  background: #ffffff;
+  border-right-color: #d9dee7;
+}
+[data-theme='light'] .tool-pane.is-empty { background: #f3f5f8; }
+[data-theme='light'] .pane-full,
+[data-theme='light'] .tool-pane-body,
+[data-theme='light'] .shiki-wrap {
+  background: #ffffff;
+}
+[data-theme='light'] .pane-full .monaco-editor,
+[data-theme='light'] .pane-full .monaco-editor-background,
+[data-theme='light'] .pane-full .monaco-editor .margin,
+[data-theme='light'] .tool-pane-body .monaco-editor,
+[data-theme='light'] .tool-pane-body .monaco-editor-background,
+[data-theme='light'] .tool-pane-body .monaco-editor .margin {
+  background: #ffffff !important;
+}
+[data-theme='light'] .tool-pane-stripes {
+  background: repeating-linear-gradient(-45deg, transparent, transparent 5px, rgba(15,23,42,0.03) 5px, rgba(15,23,42,0.03) 7px);
+}
+
+/* 返回 / 复制 等扁平按钮 */
+[data-theme='light'] .tool-back-flat,
+[data-theme='light'] .tool-copy-flat {
+  color: #475569;
+  &:hover { background: rgba(15,23,42,0.06); color: #0f172a; }
+}
+[data-theme='light'] .tool-copy-flat { color: #64748b; }
+
+/* pill：默认状态浅灰底 */
+[data-theme='light'] .pill {
+  background: #f1f5f9;
+  border-color: #d9dee7;
+  color: #475569;
+  &:hover { color: #0f172a; border-color: #cbd5e1; }
+}
+[data-theme='light'] .pill-group {
+  background: #f1f5f9;
+  border-color: #d9dee7;
+}
+
+/* Schema 校验按钮：暗色玻璃态 → 浅灰 */
+[data-theme='light'] .action-btn.chk {
+  background: #f1f5f9;
+  border-color: #d9dee7;
+  color: #475569;
+  &:hover { color: #0f172a; border-color: #cbd5e1; background: #e2e8f0; }
+}
+
+/* 生成代码语言下拉 */
+[data-theme='light'] .name-input {
+  background: rgba(220,38,38,0.08);
+  border-color: rgba(220,38,38,0.35);
+  color: #b91c1c;
+  &:focus { background: rgba(220,38,38,0.14); border-color: #dc2626; }
+}
+
+/* 树形面板 */
 [data-theme='light'] .tree-panel { background: #ffffff !important; border-color: #d9dee7 !important; color: #1f2937; }
 [data-theme='light'] .tree-header { border-color: #d9dee7 !important; .tree-title { color: #1f2937; } }
 [data-theme='light'] .tree-search { border-color: #d9dee7 !important; }
@@ -146,22 +221,43 @@ input, select { font-family: inherit; color: inherit; }
 [data-theme='light'] .tree-icon-btn { color: #64748b !important; &:hover { background: rgba(0,0,0,0.05) !important; color: #1f2937 !important; } }
 [data-theme='light'] .tree-content { color: #1f2937; }
 [data-theme='light'] .settings-popover { background: #ffffff !important; border-color: #d9dee7 !important; color: #1f2937; }
+[data-theme='light'] .settings-title { color: #0f172a; border-color: #d9dee7; }
+[data-theme='light'] .settings-option { color: #475569; }
 
-/* 亮色主题：Monaco / Shiki 背景 */
-[data-theme='light'] .pane-full,
-[data-theme='light'] .tool-pane-body,
-[data-theme='light'] .shiki-wrap {
-  background: #ffffff;
+/* 标签栏 */
+[data-theme='light'] .tab-bar { background: #f8fafc; border-bottom-color: #d9dee7; }
+[data-theme='light'] .tab {
+  color: #64748b;
+  border-right-color: #d9dee7;
+  &:hover { background: rgba(15,23,42,0.04); color: #0f172a; }
+  &.active { background: #ffffff; color: #0f172a; }
 }
-[data-theme='light'] .pane-full .monaco-editor,
-[data-theme='light'] .pane-full .monaco-editor-background,
-[data-theme='light'] .pane-full .monaco-editor .margin,
-[data-theme='light'] .tool-pane-body .monaco-editor,
-[data-theme='light'] .tool-pane-body .monaco-editor-background,
-[data-theme='light'] .tool-pane-body .monaco-editor .margin {
-  background: #ffffff !important;
+[data-theme='light'] .tab-close {
+  color: #94a3b8;
+  &:hover { background: rgba(15,23,42,0.08); color: #0f172a; }
 }
-[data-theme='light'] .tool-pane.is-empty { background: #f3f5f8; }
+[data-theme='light'] .tab-new {
+  color: #64748b;
+  border-left-color: #d9dee7;
+  &:hover { background: rgba(15,23,42,0.04); color: #0f172a; }
+}
+
+/* toast */
+[data-theme='light'] .app-toast {
+  background: rgba(255,255,255,0.96);
+  color: #0f172a;
+  border-color: #d9dee7;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.12);
+}
+
+/* diff 统计条 */
+[data-theme='light'] .diff-stat {
+  background: rgba(255,255,255,0.96);
+  border-color: #d9dee7;
+  box-shadow: 0 4px 14px rgba(15,23,42,0.1);
+  color: #16a34a;
+  strong { color: #d97706; }
+}
 
 .app-body { flex: 1; min-height: 0; display: flex; background: $bg-app; }
 .app-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; }

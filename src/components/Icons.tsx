@@ -129,7 +129,7 @@ export const SchemaIcon = ({ size, color }: P) => (
 )
 
 // 工具模式顶栏图标
-export const BackIcon = ({ size = 24, color = '#fff' }: P) => (
+export const BackIcon = ({ size = 24, color = 'currentColor' }: P) => (
   <I size={size} color={color} strokeWidth={2.5}><path d="m15 18-6-6 6-6" /></I>
 )
 export const CopyIcon = ({ size = 16, color = '#8b92a1' }: P) => (
