@@ -32,7 +32,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "TAURI_UPDATER_PUBLIC_KEY_PLACEHOLDER",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDk1MUVENzc1RjE4RjhCQzAKUldUQWk0L3hkZGNlbFNGS2E2SE9DZ2VPSmhiRnIzR0ppOGxiOG9vL3Q5UzJoajBqNitmOVcrcnkK",
       "endpoints": [
         "https://github.com/firework-a/json-tools/releases/latest/download/latest.json"
       ]
@@ -40,7 +40,10 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["msi", "nsis"],
+    "targets": [
+      "msi",
+      "nsis"
+    ],
     "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
