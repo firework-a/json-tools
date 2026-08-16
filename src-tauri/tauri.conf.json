@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "JSON 工具箱",
   "version": "0.1.0",
-  "identifier": "com.devtools.app",
+  "identifier": "com.fireworka.jsontools",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -30,9 +30,18 @@
       "csp": null
     }
   },
+  "plugins": {
+    "updater": {
+      "pubkey": "TAURI_UPDATER_PUBLIC_KEY_PLACEHOLDER",
+      "endpoints": [
+        "https://github.com/firework-a/json-tools/releases/latest/download/latest.json"
+      ]
+    }
+  },
   "bundle": {
     "active": true,
     "targets": ["msi", "nsis"],
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

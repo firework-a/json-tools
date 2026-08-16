@@ -8,6 +8,11 @@ export default function TabBar() {
   const closeTab = useAppStore(s => s.closeTab)
   const newTab = useAppStore(s => s.newTab)
 
+  const requestClose = (id: string, name: string, dirty?: boolean) => {
+    if (dirty && !window.confirm(`「${name}」有未保存的修改，确定关闭吗？`)) return
+    closeTab(id)
+  }
+
   return (
     <div className="tab-bar">
       <div className="tab-bar-scroll">
@@ -19,10 +24,11 @@ export default function TabBar() {
             title={t.name}
           >
             <span className="tab-name">{t.name}</span>
+            {t.dirty && <span className="tab-dot" title="未保存" />}
             <button
               className="tab-close"
               title="关闭"
-              onClick={(e) => { e.stopPropagation(); closeTab(t.id) }}
+              onClick={(e) => { e.stopPropagation(); requestClose(t.id, t.name, t.dirty) }}
             >
               <CloseIcon size={12} />
             </button>

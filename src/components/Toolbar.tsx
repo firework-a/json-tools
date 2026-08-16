@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAppStore, ViewMode } from '../store'
 import { formatJson, compressJson, escapeJson, unescapeJson } from '../utils/json'
@@ -6,13 +6,14 @@ import { isTauri } from '@tauri-apps/api/core'
 import { save } from '@tauri-apps/plugin-dialog'
 import { writeFile } from '@tauri-apps/plugin-fs'
 import {
-  NewFileIcon, OpenIcon, ExportIcon,
+  NewFileIcon, OpenIcon, SaveIcon, ExportIcon,
   BeautifyIcon, CompressIcon, EscapeIcon, UnescapeIcon, FoldIcon, UnfoldIcon,
   DiffIcon, ConvertIcon, CodeIcon, SchemaIcon,
   TreeIcon, ThemeIcon, SettingsIcon, PinIcon, PinOffIcon,
 } from './Icons'
 import { foldAllEditors, unfoldAllEditors } from '../editorRegistry'
 import ExportCanvas from './ExportCanvas'
+import { openTextFile, saveTextFileAs, writeTextFile, basename } from '../utils/files'
 
 interface TBProps {
   icon: React.ReactNode
@@ -38,7 +39,7 @@ function Toolbar() {
     content, setContent, setRightContent,
     mode, setMode,
     treeOpen, setTreeOpen,
-    newTab, setFileName, setEditorLanguage,
+    newTab, openLoadedFile, markSaved, setEditorLanguage,
     toggleTheme, pinned, togglePinned, settingsOpen, setSettingsOpen,
   } = useAppStore()
 
@@ -47,21 +48,66 @@ function Toolbar() {
   const newFile = () => {
     newTab()
   }
+
   const loadFile = async () => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = '.json,.txt,.yaml,.yml'
-    input.onchange = async () => {
-      const f = input.files?.[0]
-      if (!f) return
-      const text = await f.text()
-      // 打开文件是新标签页：先建空 tab，再把内容/文件名写进去
-      newTab()
-      setContent(text)
-      setFileName(f.name)
-    }
-    input.click()
+    const file = await openTextFile()
+    if (file) openLoadedFile(file)
   }
+
+  const saveFile = async (asNew = false) => {
+    if (!content.trim()) {
+      useAppStore.getState().showToast('没有可保存的内容')
+      return
+    }
+    const activeTab = useAppStore.getState().tabs.find(t => t.id === useAppStore.getState().activeTabId)
+    if (!asNew && activeTab?.filePath) {
+      try {
+        await writeTextFile(activeTab.filePath, content)
+        markSaved(activeTab.filePath, activeTab.name)
+        useAppStore.getState().showToast('已保存')
+      } catch (e) {
+        useAppStore.getState().showToast('保存失败: ' + (e instanceof Error ? e.message : String(e)))
+      }
+      return
+    }
+    // 另存为：用当前文件名做默认值
+    const defaultName = activeTab?.filePath ? basename(activeTab.filePath) : (activeTab?.name?.endsWith('.json') ? activeTab.name : `${activeTab?.name ?? 'Untitled'}.json`)
+    try {
+      const path = await saveTextFileAs(content, defaultName)
+      if (path) {
+        markSaved(path, basename(path))
+        useAppStore.getState().showToast('已保存')
+      }
+    } catch (e) {
+      useAppStore.getState().showToast('保存失败: ' + (e instanceof Error ? e.message : String(e)))
+    }
+  }
+
+  // 全局快捷键
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const mod = e.ctrlKey || e.metaKey
+      if (!mod) return
+      const key = e.key.toLowerCase()
+      if (key === 's') {
+        e.preventDefault()
+        saveFile(e.shiftKey)
+      } else if (key === 'o') {
+        e.preventDefault()
+        loadFile()
+      } else if (key === 'n') {
+        e.preventDefault()
+        newFile()
+      } else if (key === 'b' && !e.shiftKey) {
+        e.preventDefault()
+        const { result, error } = formatJson(content)
+        if (error) useAppStore.getState().showToast(error)
+        else setContent(result)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
 
   const exportImage = () => {
     if (!content.trim()) {
@@ -162,6 +208,7 @@ function Toolbar() {
       <div className="tb-group">
         <TB icon={<NewFileIcon size={14} color="#5a9cf0" />} label="新建" onClick={newFile} />
         <TB icon={<OpenIcon size={14} color="#f0b840" />} label="打开" onClick={loadFile} />
+        <TB icon={<SaveIcon size={14} color="#5fd478" />} label="保存" onClick={() => saveFile(false)} />
         <TB icon={<ExportIcon size={14} color="#e86868" />} label="导出图片" onClick={exportImage} />
       </div>
 

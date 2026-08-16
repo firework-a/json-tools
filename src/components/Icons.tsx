@@ -53,6 +53,13 @@ export const OpenIcon = ({ size, color }: P) => (
     <path d="m6 14 1.5-2.9A2 2 0 0 1 9.2 10H20a2 2 0 0 1 1.9 2.6l-1.5 5a2 2 0 0 1-1.9 1.4H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.7.9L12 6h6a2 2 0 0 1 2 2v2" />
   </I>
 )
+export const SaveIcon = ({ size, color }: P) => (
+  <I size={size} color={color || '#5fd478'}>
+    <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+    <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
+    <path d="M7 3v4a1 1 0 0 0 1 1h7" />
+  </I>
+)
 export const ExportIcon = ({ size, color }: P) => (
   <I size={size} color={color || '#e86868'}>
     <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAppStore, type ThemeMode } from '../store'
 import appLogo from '../../src-tauri/icons/icon.png'
+import { checkAppUpdate, getAppVersion, type UpdateStatus } from '../utils/updater'
 import { CloseIcon } from './Icons'
 
 type SectionId = 'appearance' | 'editor' | 'export' | 'about'
@@ -151,6 +152,48 @@ function ExportSection() {
 }
 
 function AboutSection() {
+  const showToast = useAppStore(s => s.showToast)
+  const [version, setVersion] = useState('0.1.0')
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({ state: 'idle' })
+
+  useEffect(() => {
+    getAppVersion().then(setVersion).catch(() => setVersion('0.1.0'))
+  }, [])
+
+  const onCheckUpdate = async () => {
+    setUpdateStatus({ state: 'checking' })
+    try {
+      const status = await checkAppUpdate()
+      setUpdateStatus(status)
+      if (status.state === 'current' || status.state === 'unavailable') showToast(status.message)
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e)
+      setUpdateStatus({ state: 'error', message })
+      showToast(`检查更新失败: ${message}`)
+    }
+  }
+
+  const onInstallUpdate = async () => {
+    if (updateStatus.state !== 'available') return
+    const version = updateStatus.version
+    setUpdateStatus({ state: 'installing', version })
+    try {
+      await updateStatus.install()
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e)
+      setUpdateStatus({ state: 'error', message })
+      showToast(`安装更新失败: ${message}`)
+    }
+  }
+
+  const updateMessage = (() => {
+    if (updateStatus.state === 'checking') return '正在检查 GitHub Releases 更新...'
+    if (updateStatus.state === 'current' || updateStatus.state === 'unavailable' || updateStatus.state === 'error') return updateStatus.message
+    if (updateStatus.state === 'available') return `发现新版本 ${updateStatus.version}`
+    if (updateStatus.state === 'installing') return `正在安装 ${updateStatus.version}，完成后会自动重启`
+    return '更新通过 GitHub Releases 分发'
+  })()
+
   return (
     <div className="set-section">
       <div className="set-section-title">关于</div>
@@ -160,13 +203,29 @@ function AboutSection() {
         </div>
         <div className="about-info">
           <div className="about-name">JSON 工具箱</div>
-          <div className="about-version">jsontools · 版本 0.1.0</div>
+          <div className="about-version">jsontools · 版本 {version}</div>
         </div>
       </div>
       <p className="about-desc">
         面向开发者的 JSON 桌面工具：格式化、压缩/转义、格式转换（YAML / XML / TOML / CSV）、
         TypeScript 等多语言类型生成、JSON Schema、代码对比与图片导出。
       </p>
+      <div className="about-update">
+        <div className="about-update-text">
+          <div className="about-tech-title">应用更新</div>
+          <div className="about-update-status">{updateMessage}</div>
+          {updateStatus.state === 'available' && updateStatus.notes && (
+            <div className="about-update-notes">{updateStatus.notes}</div>
+          )}
+        </div>
+        {updateStatus.state === 'available' ? (
+          <button className="about-action" onClick={onInstallUpdate}>安装并重启</button>
+        ) : (
+          <button className="about-action" onClick={onCheckUpdate} disabled={updateStatus.state === 'checking' || updateStatus.state === 'installing'}>
+            {updateStatus.state === 'checking' ? '检查中...' : '检查更新'}
+          </button>
+        )}
+      </div>
       <div className="about-tech">
         <div className="about-tech-title">技术栈</div>
         <div className="about-tech-tags">

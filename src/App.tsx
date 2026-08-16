@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import TitleBar from './components/TitleBar'
 import Toolbar from './components/Toolbar'
 import TabBar from './components/TabBar'
@@ -9,12 +9,15 @@ import SettingsPanel from './components/SettingsPanel'
 import { useAppStore } from './store'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { isTauri } from '@tauri-apps/api/core'
+import { readTextFileAt } from './utils/files'
 
 function App() {
   const mode = useAppStore(s => s.mode)
   const toast = useAppStore(s => s.toast)
   const showToast = useAppStore(s => s.showToast)
+  const openLoadedFile = useAppStore(s => s.openLoadedFile)
   const isEditMode = mode === 'edit'
+  const [dragOver, setDragOver] = useState(false)
 
   useEffect(() => {
     if (!toast) return
@@ -40,6 +43,57 @@ function App() {
     return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2) }
   }, [])
 
+  // Tauri 原生文件拖拽
+  useEffect(() => {
+    if (!isTauri()) return
+    let unlisten: (() => void) | null = null
+    getCurrentWindow().onDragDropEvent((event) => {
+      if (event.payload.type === 'over') {
+        setDragOver(true)
+      } else if (event.payload.type === 'drop') {
+        setDragOver(false)
+        const paths = event.payload.paths
+        if (paths?.length) {
+          readTextFileAt(paths[0])
+            .then(openLoadedFile)
+            .catch((e) => showToast('打开文件失败: ' + (e instanceof Error ? e.message : String(e))))
+        }
+      } else {
+        setDragOver(false)
+      }
+    }).then(u => { unlisten = u })
+    return () => { unlisten?.() }
+  }, [openLoadedFile, showToast])
+
+  // 浏览器预览环境的 HTML5 拖拽（同时阻止浏览器直接打开文件）
+  useEffect(() => {
+    if (isTauri()) return
+    const onDragOver = (e: DragEvent) => { e.preventDefault(); setDragOver(true) }
+    const onDragLeave = (e: DragEvent) => {
+      if (e.relatedTarget === null) setDragOver(false)
+    }
+    const onDrop = async (e: DragEvent) => {
+      e.preventDefault()
+      setDragOver(false)
+      const f = e.dataTransfer?.files?.[0]
+      if (!f) return
+      const text = await f.text()
+      openLoadedFile({
+        name: f.name,
+        content: text,
+        language: /\.json$/i.test(f.name) ? 'json' : 'plaintext',
+      })
+    }
+    window.addEventListener('dragover', onDragOver)
+    window.addEventListener('dragleave', onDragLeave)
+    window.addEventListener('drop', onDrop)
+    return () => {
+      window.removeEventListener('dragover', onDragOver)
+      window.removeEventListener('dragleave', onDragLeave)
+      window.removeEventListener('drop', onDrop)
+    }
+  }, [openLoadedFile])
+
   return (
     <div className="app">
       <TitleBar />
@@ -52,6 +106,11 @@ function App() {
       <StatusBar />
       <SettingsPanel />
       {toast && <div className="app-toast">{toast}</div>}
+      {dragOver && (
+        <div className="drop-overlay">
+          <div className="drop-card">松开以打开文件</div>
+        </div>
+      )}
     </div>
   )
 }
