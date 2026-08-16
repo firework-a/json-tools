@@ -17,8 +17,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -32,7 +30,10 @@ jobs:
           targets: x86_64-pc-windows-msvc
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --config.onlyBuiltDependencies=@parcel/watcher,esbuild
+
+      - name: Build frontend
+        run: pnpm build
 
       - name: Build and publish Tauri app
         uses: tauri-apps/tauri-action@v0
