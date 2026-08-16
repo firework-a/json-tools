@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import JsonView from '@uiw/react-json-view'
 import { lightTheme } from '@uiw/react-json-view/light'
 import { darkTheme } from '@uiw/react-json-view/dark'
 import { useAppStore } from '../store'
+import { onEditorScroll } from '../editorRegistry'
 import { TreeIcon, SearchIcon, CloseIcon, InfoIcon, CopyIcon, ChevronsUpDown, ChevronsDownUp, ExternalLinkIcon } from './Icons'
 
 function JmesPathCheatSheet({ onClose }: { onClose: () => void }) {
@@ -60,8 +61,23 @@ function TreeView() {
   const setTreeOpen = useAppStore(s => s.setTreeOpen)
   const [showHelp, setShowHelp] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const syncingRef = useRef(false)
 
   const isLight = theme === 'light'
+
+  // 跟随编辑器按比例滚动
+  useEffect(() => {
+    const off = onEditorScroll((ratio) => {
+      const el = scrollRef.current
+      if (!el || syncingRef.current) return
+      syncingRef.current = true
+      const max = el.scrollHeight - el.clientHeight
+      el.scrollTop = ratio * max
+      requestAnimationFrame(() => { syncingRef.current = false })
+    })
+    return off
+  }, [])
   const searchStyle: React.CSSProperties = isLight ? { background: '#f5f7fa', borderColor: '#d9dee7' } : {}
   const inputStyle: React.CSSProperties = isLight ? { color: '#1f2937' } : {}
   const langStyle: React.CSSProperties = isLight ? { background: '#f5f7fa', borderColor: '#d9dee7', color: '#1f2937' } : {}
@@ -100,7 +116,7 @@ function TreeView() {
             : <ChevronsDownUp size={13} color={isLight ? '#64748b' : undefined} />}
         </button>
       </div>
-      <div className="tree-content">
+      <div className="tree-content" ref={scrollRef}>
         {parsed === undefined ? (
           <div className="tree-empty">
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" opacity="0.6">

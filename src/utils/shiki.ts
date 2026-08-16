@@ -8,6 +8,11 @@ import ts from 'shiki/langs/typescript.mjs'
 import xml from 'shiki/langs/xml.mjs'
 import toml from 'shiki/langs/toml.mjs'
 import ini from 'shiki/langs/ini.mjs'
+import python from 'shiki/langs/python.mjs'
+import go from 'shiki/langs/go.mjs'
+import java from 'shiki/langs/java.mjs'
+import csharp from 'shiki/langs/csharp.mjs'
+import rust from 'shiki/langs/rust.mjs'
 import darkPlus from 'shiki/themes/dark-plus.mjs'
 import lightPlus from 'shiki/themes/light-plus.mjs'
 
@@ -25,6 +30,15 @@ export function toShikiLang(lang: string): string {
     toml: 'toml',
     csv: 'text',
     text: 'text',
+    python: 'python',
+    py: 'python',
+    go: 'go',
+    golang: 'go',
+    java: 'java',
+    csharp: 'csharp',
+    'c#': 'csharp',
+    rust: 'rust',
+    rs: 'rust',
   }
   return map[lang] || 'text'
 }
@@ -33,7 +47,8 @@ export function getHighlighter(): Promise<HighlighterCore> {
   if (!highlighterPromise) {
     highlighterPromise = createHighlighterCore({
       themes: [darkPlus, lightPlus],
-      langs: [json as any, yaml as any, ts as any, xml as any, toml as any, ini as any],
+      langs: [json as any, yaml as any, ts as any, xml as any, toml as any, ini as any,
+        python as any, go as any, java as any, csharp as any, rust as any],
       engine: createJavaScriptRegexEngine({ forgiving: true }),
     })
   }

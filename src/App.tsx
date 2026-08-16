@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import TitleBar from './components/TitleBar'
 import Toolbar from './components/Toolbar'
+import TabBar from './components/TabBar'
 import EditorArea from './components/EditorArea'
 import TreeView from './components/TreeView'
 import StatusBar from './components/StatusBar'
@@ -42,6 +43,7 @@ function App() {
     <div className="app">
       <TitleBar />
       {isEditMode && <Toolbar />}
+      {isEditMode && <TabBar />}
       <div className="app-body">
         <div className="app-main"><EditorArea /></div>
         {isEditMode && <TreeView />}

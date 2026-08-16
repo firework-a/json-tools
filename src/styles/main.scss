@@ -166,6 +166,78 @@ input, select { font-family: inherit; color: inherit; }
 .app-body { flex: 1; min-height: 0; display: flex; background: $bg-app; }
 .app-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; }
 
+/* =================== 标签栏 =================== */
+.tab-bar {
+  display: flex;
+  align-items: stretch;
+  height: 34px;
+  background: $bg-toolbar;
+  border-bottom: 1px solid $border;
+  flex-shrink: 0;
+  user-select: none;
+}
+.tab-bar-scroll {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  overflow-y: hidden;
+  &::-webkit-scrollbar { height: 0; display: none; }
+}
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  min-width: 100px;
+  max-width: 200px;
+  font-size: 12px;
+  color: $text-secondary;
+  border-right: 1px solid $border;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.12s;
+  &:hover { background: rgba(255,255,255,0.03); color: $text-primary; }
+  &.active {
+    background: $bg-app;
+    color: $text-primary;
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: -1px;
+      height: 2px;
+      background: $blue;
+    }
+  }
+}
+.tab-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tab-close {
+  @include flex-center;
+  width: 16px; height: 16px;
+  border-radius: 3px;
+  color: $text-muted;
+  flex-shrink: 0;
+  opacity: 0.6;
+  &:hover { background: rgba(255,255,255,0.08); color: $text-primary; opacity: 1; }
+}
+.tab-new {
+  @include flex-center;
+  width: 34px;
+  font-size: 18px;
+  color: $text-secondary;
+  flex-shrink: 0;
+  border-left: 1px solid $border;
+  transition: background 0.12s;
+  &:hover { background: rgba(255,255,255,0.04); color: $text-primary; }
+}
+[data-theme='light'] .tab-bar { background: #f8fafc; }
+[data-theme='light'] .tab.active { background: #ffffff; }
+
 /* =================== 工具栏 =================== */
 .toolbar {
   display: flex;
@@ -377,13 +449,17 @@ input, select { font-family: inherit; color: inherit; }
     font-size: 13px;
     line-height: 20px;
     background: transparent !important;
+    // Shiki 在 .line 之间输出了字面换行；pre 默认 pre 会把它再渲成一行，
+    // 叠加 .line 的 block 换行就会出现双倍行距。这里让行间换行折叠，
+    // 行内空白交给 .line 自己保留。
+    white-space: normal;
   }
   code {
     font-family: $font-mono;
     // Shiki 内联背景透明化，交给容器
     background: transparent !important;
   }
-  .line { display: block; }
+  .line { display: block; white-space: pre; }
 }
 
 /* diff 模式：Monaco DiffEditor 铺满 */
@@ -458,9 +534,24 @@ input, select { font-family: inherit; color: inherit; }
   margin-left: auto;
   border-radius: 5px;
   color: $text-muted;
-  transition: all 0.1s;
+  transition: color 0.12s, background 0.12s, transform 0.1s;
   flex-shrink: 0;
   &:hover { color: $text-primary; background: rgba(255,255,255,0.06); }
+  &:active { transform: scale(0.82); }
+  &.is-copied {
+    color: $green;
+    background: rgba($green, 0.12);
+    animation: copy-pop 0.35s ease;
+  }
+}
+@keyframes copy-pop {
+  0%   { transform: scale(0.82); }
+  50%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+[data-theme='light'] .tool-copy-flat.is-copied {
+  color: #16a34a;
+  background: rgba(34,197,94,0.14);
 }
 
 /* 通用 pill 样式 */
@@ -515,10 +606,49 @@ input, select { font-family: inherit; color: inherit; }
   font-size: 12px;
   font-family: $font-mono;
   font-weight: 600;
-  width: 110px;
+  width: 130px;
   outline: none;
   backdrop-filter: blur(4px);
   &:focus { border-color: $red; background: rgba($red, 0.18); }
+}
+
+/* 代码生成语言下拉 */
+.lang-dropdown { position: relative; }
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 140px;
+  background: #23252b;
+  border: 1px solid $border;
+  border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+  padding: 4px;
+  z-index: 50;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.lang-menu-item {
+  text-align: left;
+  padding: 7px 10px;
+  font-size: 12px;
+  color: $text-secondary;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: $font-ui;
+  &:hover { background: rgba(255,255,255,0.06); color: $text-primary; }
+  &.active { background: rgba($purple, 0.18); color: $purple; }
+}
+[data-theme='light'] .lang-menu {
+  background: #fff;
+  border-color: #d9dee7;
+  box-shadow: 0 12px 28px rgba(15,23,42,0.12);
+}
+[data-theme='light'] .lang-menu-item {
+  color: #475569;
+  &:hover { background: #f1f5f9; color: #1f2937; }
+  &.active { background: rgba(181,120,240,0.14); color: #8b3de0; }
 }
 
 /* Schema 按钮 */
@@ -592,6 +722,8 @@ input, select { font-family: inherit; color: inherit; }
 
 /* =================== 树形视图 =================== */
 .tree-panel {
+  position: relative;
+  z-index: 5;
   width: 340px;
   flex-shrink: 0;
   background: $bg-panel;

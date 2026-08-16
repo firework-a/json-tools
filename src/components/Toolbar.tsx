@@ -38,7 +38,7 @@ function Toolbar() {
     content, setContent, setRightContent,
     mode, setMode,
     treeOpen, setTreeOpen,
-    setFileName,
+    newTab, setFileName, setEditorLanguage,
     toggleTheme, pinned, togglePinned, settingsOpen, setSettingsOpen,
     autoFormat, setAutoFormat, showLineNumbers, setShowLineNumbers,
   } = useAppStore()
@@ -76,10 +76,7 @@ function Toolbar() {
   }, [settingsOpen, setSettingsOpen])
 
   const newFile = () => {
-    setContent('')
-    setRightContent('')
-    setFileName('Untitled-1')
-    setMode('edit')
+    newTab()
   }
   const loadFile = async () => {
     const input = document.createElement('input')
@@ -88,7 +85,10 @@ function Toolbar() {
     input.onchange = async () => {
       const f = input.files?.[0]
       if (!f) return
-      setContent(await f.text())
+      const text = await f.text()
+      // 打开文件是新标签页：先建空 tab，再把内容/文件名写进去
+      newTab()
+      setContent(text)
       setFileName(f.name)
     }
     input.click()
@@ -144,9 +144,13 @@ function Toolbar() {
     useAppStore.getState().showToast('导出图片失败: ' + (err instanceof Error ? err.message : String(err)))
   }
 
-  const report = (result: string, error: string | null) => {
-    if (error) useAppStore.getState().showToast(error)
-    else setContent(result)
+  const report = (result: string, error: string | null, language?: 'json' | 'plaintext') => {
+    if (error) {
+      useAppStore.getState().showToast(error)
+      return
+    }
+    setContent(result)
+    if (language) setEditorLanguage(language)
   }
 
   // 压缩转义 = 先压缩再转义
@@ -157,8 +161,12 @@ function Toolbar() {
       return
     }
     const { result, error } = escapeJson(c)
-    if (error) useAppStore.getState().showToast(error)
-    else setContent(result)
+    if (error) {
+      useAppStore.getState().showToast(error)
+    } else {
+      setContent(result)
+      setEditorLanguage('plaintext')
+    }
   }
 
   const switchMode = (m: ViewMode) => {
@@ -190,19 +198,19 @@ function Toolbar() {
       <div className="tb-group">
         <TB icon={<BeautifyIcon size={14} color="#5fd478" />} label="美化" onClick={() => {
           const { result, error } = formatJson(content)
-          report(result, error)
+          report(result, error, 'json')
         }} />
         <TB icon={<CompressIcon size={14} color="#f0b840" />} label="压缩" onClick={() => {
           const { result, error } = compressJson(content)
-          report(result, error)
+          report(result, error, 'plaintext')
         }} />
         <TB icon={<EscapeIcon size={14} color="#b578f0" />} label="转义" onClick={() => {
           const { result, error } = escapeJson(content)
-          report(result, error)
+          report(result, error, 'plaintext')
         }} />
         <TB icon={<UnescapeIcon size={14} color="#5a9cf0" />} label="反转义" onClick={() => {
           const { result, error } = unescapeJson(content)
-          report(result, error)
+          report(result, error, 'json')
         }} />
         <TB icon={<CompressIcon size={14} color="#e86868" />} label="压缩转义" onClick={compressEscape} />
       </div>

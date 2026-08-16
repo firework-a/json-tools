@@ -102,14 +102,37 @@ export const unescapeJson = (input: string): { result: string; error: string | n
 }
 
 export const copyToClipboard = async (text: string): Promise<boolean> => {
+  if (!text) return false
+  // Tauri 环境优先走原生剪贴板插件：WebView2 里 navigator.clipboard
+  // 在窗口无焦点/权限受限场景会假成功（resolve 但没真正写入）。
   try {
-    if (text) {
-      await navigator.clipboard.writeText(text)
+    const { isTauri } = await import('@tauri-apps/api/core')
+    if (isTauri()) {
+      const { writeText } = await import('@tauri-apps/plugin-clipboard-manager')
+      await writeText(text)
       return true
     }
-    return false
   } catch {
-    return false
+    // 落到浏览器 API
+  }
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    // 兜底：老 API + 临时 textarea
+    try {
+      const ta = document.createElement('textarea')
+      ta.value = text
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.select()
+      const ok = document.execCommand('copy')
+      document.body.removeChild(ta)
+      return ok
+    } catch {
+      return false
+    }
   }
 }
 
