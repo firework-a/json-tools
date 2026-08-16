@@ -15,7 +15,8 @@
 - 新增原生文件打开/保存/另存为：Tauri 走原生对话框和文件系统，记住文件路径并支持保存回原文件；浏览器预览降级为上传/下载。
 - 新增文件拖拽打开，支持 Tauri 原生拖拽和浏览器 HTML5 拖拽。
 - 标签页新增未保存标记（橙点），关闭未保存标签时弹出确认，避免误丢数据。
-- 更新 README：移除 updater 公钥占位符说明，嵌入 `docs/page1.png` 应用截图并添加版本/平台/构建/技术栈徽章。
+- 更新 README：移除 updater 公钥占位符说明，嵌入 `docs/page1.png` 应用截图并添加版本/平台/构建/许可证/技术栈徽章。
+- 新增 MIT 许可证文件（LICENSE）。
 - 新增常用快捷键：`Ctrl/Cmd+N` 新建、`Ctrl/Cmd+O` 打开、`Ctrl/Cmd+S` 保存、`Ctrl/Cmd+Shift+S` 另存为、`Ctrl/Cmd+B` 美化。
 
 ### Changed

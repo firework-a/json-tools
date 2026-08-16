@@ -1,4 +1,4 @@
-# JSON 工具箱
+# JSON TOOLS
 
 <p align="center">
   <img src="docs/page1.png" alt="JSON 工具箱 主界面" width="100%" />
@@ -8,6 +8,7 @@
   <a href="https://github.com/firework-a/json-tools/releases"><img alt="Version" src="https://img.shields.io/github/v/release/firework-a/json-tools?color=5a9cf0&label=version&logo=github" /></a>
   <a href="https://github.com/firework-a/json-tools/releases"><img alt="Platform" src="https://img.shields.io/badge/platform-Windows-0078d4?logo=windows" /></a>
   <a href="https://github.com/firework-a/json-tools/actions"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/firework-a/json-tools/ci.yml?branch=main&color=5fd478&label=build" /></a>
+  <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-f0b840" /></a>
   <a href="https://tauri.app/"><img alt="Tauri 2" src="https://img.shields.io/badge/built%20with-Tauri%202-24c8db?logo=tauri" /></a>
   <a href="https://react.dev/"><img alt="React 18" src="https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=white" /></a>
   <a href="https://www.typescriptlang.org/"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white" /></a>
