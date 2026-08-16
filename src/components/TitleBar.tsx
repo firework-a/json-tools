@@ -79,7 +79,7 @@ export default function TitleBar() {
         <TrafficLight kind="minimize" showIcon={hover} onClick={onMinimize} />
         <TrafficLight kind="maximize" showIcon={hover} maximized={maximized} onClick={onMaximize} />
       </div>
-      <div className="tl-title" data-tauri-drag-region>开发者工具箱</div>
+      <div className="tl-title" data-tauri-drag-region>JSON 工具箱</div>
     </div>
   )
 }

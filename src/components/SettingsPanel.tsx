@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAppStore, type ThemeMode } from '../store'
+import appLogo from '../../src-tauri/icons/icon.png'
 import { CloseIcon } from './Icons'
 
-type SectionId = 'appearance' | 'editor' | 'export'
+type SectionId = 'appearance' | 'editor' | 'export' | 'about'
 
 const SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'appearance', label: '外观' },
   { id: 'editor', label: '编辑器' },
   { id: 'export', label: '导出图片' },
+  { id: 'about', label: '关于' },
 ]
 
 /** 单个开关项 */
@@ -148,6 +150,38 @@ function ExportSection() {
   )
 }
 
+function AboutSection() {
+  return (
+    <div className="set-section">
+      <div className="set-section-title">关于</div>
+      <div className="about-app">
+        <div className="about-logo">
+          <img src={appLogo} alt="JSON 工具箱" />
+        </div>
+        <div className="about-info">
+          <div className="about-name">JSON 工具箱</div>
+          <div className="about-version">jsontools · 版本 0.1.0</div>
+        </div>
+      </div>
+      <p className="about-desc">
+        面向开发者的 JSON 桌面工具：格式化、压缩/转义、格式转换（YAML / XML / TOML / CSV）、
+        TypeScript 等多语言类型生成、JSON Schema、代码对比与图片导出。
+      </p>
+      <div className="about-tech">
+        <div className="about-tech-title">技术栈</div>
+        <div className="about-tech-tags">
+          <span className="about-tag">Tauri 2</span>
+          <span className="about-tag">React 18</span>
+          <span className="about-tag">TypeScript</span>
+          <span className="about-tag">Monaco Editor</span>
+          <span className="about-tag">Shiki</span>
+          <span className="about-tag">QuickType</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function SettingsPanel() {
   const open = useAppStore(s => s.settingsOpen)
   const setOpen = useAppStore(s => s.setSettingsOpen)
@@ -190,6 +224,7 @@ export default function SettingsPanel() {
             {active === 'appearance' && <AppearanceSection />}
             {active === 'editor' && <EditorSection />}
             {active === 'export' && <ExportSection />}
+            {active === 'about' && <AboutSection />}
           </div>
         </div>
       </div>

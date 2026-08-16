@@ -1,4 +1,4 @@
-# 开发者工具箱
+# JSON 工具箱 (jsontools)
 
 一个使用 Rust + Tauri + React 构建的跨平台开发者工具桌面应用。
 

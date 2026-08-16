@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "开发者工具箱",
+  "productName": "JSON 工具箱",
   "version": "0.1.0",
   "identifier": "com.devtools.app",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "开发者工具箱",
+        "title": "JSON 工具箱",
         "width": 1360,
         "height": 800,
         "minWidth": 1000,

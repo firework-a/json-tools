@@ -1,7 +1,7 @@
 [package]
 name = "dev-tools"
 version = "0.1.0"
-description = "开发者工具箱 - JSON 格式化工具"
+description = "JSON 工具箱 (jsontools) - JSON 开发工具集"
 authors = ["you"]
 edition = "2021"
 
