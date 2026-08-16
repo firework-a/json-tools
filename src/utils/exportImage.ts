@@ -5,6 +5,7 @@ export interface RenderOptions {
   lang?: string
   theme: 'dark' | 'light'
   showLineNumbers: boolean
+  scale?: number // 输出清晰度倍率（默认 2）
   maxWidth?: number // 画布最大 CSS 宽度（长行不折行，可能更宽）
   fontSize?: number
   lineHeight?: number
@@ -55,7 +56,7 @@ function detectMaxDim(): number {
 export async function renderCodeToPng(opts: RenderOptions): Promise<string> {
   const {
     code, lang = 'json', theme, showLineNumbers,
-    maxWidth = 2400, fontSize = 13, lineHeight = 20,
+    scale: scaleOverride, maxWidth = 2400, fontSize = 13, lineHeight = 20,
   } = opts
 
   const style = THEMES[theme]
@@ -86,9 +87,9 @@ export async function renderCodeToPng(opts: RenderOptions): Promise<string> {
   const width = padX * 2 + gutterW + contentW
   const height = padTop + padBottom + lines.length * lineHeight
 
-  // 等比缩放：让最终位图尺寸不超过 canvas 最大边长，且尽量用 2x 提升清晰度
+  // 等比缩放：让最终位图尺寸不超过 canvas 最大边长，且尽量用指定倍率提升清晰度
   const MAX_DIM = detectMaxDim()
-  let scale = 2
+  let scale = scaleOverride ?? 2
   if (width * scale > MAX_DIM) scale = Math.floor((MAX_DIM / width) * 10) / 10
   if (height * scale > MAX_DIM) scale = Math.min(scale, Math.floor((MAX_DIM / height) * 10) / 10)
   scale = Math.max(0.2, scale)

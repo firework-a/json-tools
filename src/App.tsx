@@ -5,6 +5,7 @@ import TabBar from './components/TabBar'
 import EditorArea from './components/EditorArea'
 import TreeView from './components/TreeView'
 import StatusBar from './components/StatusBar'
+import SettingsPanel from './components/SettingsPanel'
 import { useAppStore } from './store'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { isTauri } from '@tauri-apps/api/core'
@@ -49,6 +50,7 @@ function App() {
         {isEditMode && <TreeView />}
       </div>
       <StatusBar />
+      <SettingsPanel />
       {toast && <div className="app-toast">{toast}</div>}
     </div>
   )

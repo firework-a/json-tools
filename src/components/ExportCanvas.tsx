@@ -6,6 +6,7 @@ interface Props {
   content: string
   theme: ThemeMode
   showLineNumbers: boolean
+  scale: number
   onDone: (dataUrl: string) => void
   onError: (err: unknown) => void
 }
@@ -15,7 +16,7 @@ interface Props {
  * 不经过 DOM / html-to-image，长行不折行，内容超高时整体等比缩放，
  * 始终输出一张完整 PNG。组件本身不渲染可见 DOM，挂载时触发一次绘制。
  */
-export default function ExportCanvas({ content, theme, showLineNumbers, onDone, onError }: Props) {
+export default function ExportCanvas({ content, theme, showLineNumbers, scale, onDone, onError }: Props) {
   const firedRef = useRef(false)
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function ExportCanvas({ content, theme, showLineNumbers, onDone, 
 
     ;(async () => {
       try {
-        const dataUrl = await renderCodeToPng({ code: content, lang: 'json', theme, showLineNumbers })
+        const dataUrl = await renderCodeToPng({ code: content, lang: 'json', theme, showLineNumbers, scale })
         if (!cancelled) finish(() => onDone(dataUrl))
       } catch (e) {
         console.error('[export] canvas render failed', e)
@@ -42,7 +43,7 @@ export default function ExportCanvas({ content, theme, showLineNumbers, onDone, 
       finish(() => onError(new Error('导出超时')))
     }, 30000)
     return () => { cancelled = true; window.clearTimeout(timer) }
-  }, [content, theme, showLineNumbers, onDone, onError])
+  }, [content, theme, showLineNumbers, scale, onDone, onError])
 
   return null
 }

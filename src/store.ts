@@ -58,16 +58,33 @@ interface AppState {
 
   theme: ThemeMode
   toggleTheme: () => void
+  setTheme: (t: ThemeMode) => void
   pinned: boolean
   togglePinned: () => void
   settingsOpen: boolean
   setSettingsOpen: (v: boolean) => void
 
-  // 设置项
+  // ===== 设置项 =====
+  // 编辑器
   autoFormat: boolean
   setAutoFormat: (v: boolean) => void
   showLineNumbers: boolean
   setShowLineNumbers: (v: boolean) => void
+  fontSize: number
+  setFontSize: (v: number) => void
+  tabSize: number
+  setTabSize: (v: number) => void
+  wordWrap: boolean
+  setWordWrap: (v: boolean) => void
+  renderIndentGuides: boolean
+  setRenderIndentGuides: (v: boolean) => void
+  minimap: boolean
+  setMinimap: (v: boolean) => void
+  // 导出图片
+  exportScale: number
+  setExportScale: (v: number) => void
+  exportLineNumbers: boolean
+  setExportLineNumbers: (v: boolean) => void
 
   toast: string | null
   showToast: (msg: string | null) => void
@@ -193,6 +210,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     document.documentElement.dataset.theme = theme
     return { theme, toast: theme === 'dark' ? '已切换到深色主题' : '已切换到浅色主题' }
   }),
+  setTheme: (theme) => set(() => {
+    document.documentElement.dataset.theme = theme
+    return { theme }
+  }),
   pinned: false,
   togglePinned: async () => {
     const pinned = !get().pinned
@@ -212,6 +233,20 @@ export const useAppStore = create<AppState>((set, get) => ({
   setAutoFormat: (autoFormat) => set({ autoFormat }),
   showLineNumbers: true,
   setShowLineNumbers: (showLineNumbers) => set({ showLineNumbers }),
+  fontSize: 13,
+  setFontSize: (fontSize) => set({ fontSize }),
+  tabSize: 2,
+  setTabSize: (tabSize) => set({ tabSize }),
+  wordWrap: true,
+  setWordWrap: (wordWrap) => set({ wordWrap }),
+  renderIndentGuides: true,
+  setRenderIndentGuides: (renderIndentGuides) => set({ renderIndentGuides }),
+  minimap: false,
+  setMinimap: (minimap) => set({ minimap }),
+  exportScale: 2,
+  setExportScale: (exportScale) => set({ exportScale }),
+  exportLineNumbers: true,
+  setExportLineNumbers: (exportLineNumbers) => set({ exportLineNumbers }),
   toast: null,
   showToast: (toast) => set({ toast }),
 }))

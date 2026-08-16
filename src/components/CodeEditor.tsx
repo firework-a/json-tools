@@ -18,6 +18,11 @@ export default function CodeEditor({ value, onChange, readOnly, language }: Prop
   const showLineNumbers = useAppStore(s => s.showLineNumbers)
   const autoFormat = useAppStore(s => s.autoFormat)
   const storeLanguage = useAppStore(s => s.editorLanguage)
+  const fontSize = useAppStore(s => s.fontSize)
+  const tabSize = useAppStore(s => s.tabSize)
+  const wordWrap = useAppStore(s => s.wordWrap)
+  const renderIndentGuides = useAppStore(s => s.renderIndentGuides)
+  const minimap = useAppStore(s => s.minimap)
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const unregisterRef = useRef<(() => void) | null>(null)
 
@@ -77,8 +82,8 @@ export default function CodeEditor({ value, onChange, readOnly, language }: Prop
       options={{
         readOnly,
         automaticLayout: true,
-        minimap: { enabled: false },
-        fontSize: 13,
+        minimap: { enabled: minimap },
+        fontSize,
         fontFamily: "'JetBrains Mono', 'Cascadia Code', 'Fira Code', Consolas, Menlo, monospace",
         fontLigatures: true,
         lineNumbers: showLineNumbers ? 'on' : 'off',
@@ -88,12 +93,12 @@ export default function CodeEditor({ value, onChange, readOnly, language }: Prop
         renderLineHighlight: 'line',
         renderWhitespace: 'none',
         bracketPairColorization: { enabled: true },
-        guides: { indentation: true, bracketPairs: false },
+        guides: { indentation: renderIndentGuides, bracketPairs: false },
         folding: true,
         foldingStrategy: 'indentation',
         foldingHighlight: false,
-        wordWrap: 'on',
-        tabSize: 2,
+        wordWrap: wordWrap ? 'on' : 'off',
+        tabSize,
         padding: { top: 8, bottom: 12 },
         scrollbar: {
           verticalScrollbarSize: 10,

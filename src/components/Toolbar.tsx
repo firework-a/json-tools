@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAppStore, ViewMode } from '../store'
 import { formatJson, compressJson, escapeJson, unescapeJson } from '../utils/json'
@@ -40,40 +40,9 @@ function Toolbar() {
     treeOpen, setTreeOpen,
     newTab, setFileName, setEditorLanguage,
     toggleTheme, pinned, togglePinned, settingsOpen, setSettingsOpen,
-    autoFormat, setAutoFormat, showLineNumbers, setShowLineNumbers,
   } = useAppStore()
 
-  const settingsRef = useRef<HTMLDivElement>(null)
-  const [popPos, setPopPos] = useState<{ top: number; right: number } | null>(null)
   const [exportState, setExportState] = useState<ExportState | null>(null)
-
-  const openSettings = () => {
-    if (settingsOpen) {
-      setSettingsOpen(false)
-      return
-    }
-    if (settingsRef.current) {
-      const r = settingsRef.current.getBoundingClientRect()
-      setPopPos({ top: r.bottom + 6, right: window.innerWidth - r.right })
-    }
-    setSettingsOpen(true)
-  }
-
-  useEffect(() => {
-    if (!settingsOpen) return
-    const onDown = (e: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
-        setSettingsOpen(false)
-      }
-    }
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSettingsOpen(false) }
-    document.addEventListener('mousedown', onDown)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onDown)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [settingsOpen, setSettingsOpen])
 
   const newFile = () => {
     newTab()
@@ -182,7 +151,8 @@ function Toolbar() {
           <ExportCanvas
             content={exportState.content}
             theme={useAppStore.getState().theme}
-            showLineNumbers={useAppStore.getState().showLineNumbers}
+            showLineNumbers={useAppStore.getState().exportLineNumbers}
+            scale={useAppStore.getState().exportScale}
             onDone={handleExportDone}
             onError={handleExportError}
           />
@@ -236,24 +206,9 @@ function Toolbar() {
         <button className="tb-icon-btn" onClick={toggleTheme} title="切换主题">
           <ThemeIcon size={16} />
         </button>
-        <div className="tb-icon-wrap" ref={settingsRef}>
-          <button className={`tb-icon-btn ${settingsOpen ? 'selected' : ''}`} onClick={openSettings} title="设置">
-            <SettingsIcon size={16} />
-          </button>
-          {settingsOpen && popPos && (
-            <div className="settings-popover" style={{ position: 'fixed', top: popPos.top, right: popPos.right }}>
-              <div className="settings-title">设置</div>
-              <label className="settings-option">
-                <span>自动格式化</span>
-                <input type="checkbox" checked={autoFormat} onChange={e => setAutoFormat(e.target.checked)} />
-              </label>
-              <label className="settings-option">
-                <span>显示行号</span>
-                <input type="checkbox" checked={showLineNumbers} onChange={e => setShowLineNumbers(e.target.checked)} />
-              </label>
-            </div>
-          )}
-        </div>
+        <button className={`tb-icon-btn ${settingsOpen ? 'selected' : ''}`} onClick={() => setSettingsOpen(!settingsOpen)} title="设置">
+          <SettingsIcon size={16} />
+        </button>
         <button className={`tb-icon-btn ${pinned ? 'selected pinned' : ''}`} onClick={togglePinned} title={pinned ? '取消置顶' : '窗口置顶'}>
           {pinned ? <PinOffIcon size={15} /> : <PinIcon size={15} />}
         </button>
