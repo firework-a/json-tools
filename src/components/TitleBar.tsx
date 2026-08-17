@@ -14,7 +14,7 @@ interface LightProps {
 function TrafficLight({ kind, showIcon, maximized, onClick }: LightProps) {
   const icon = (() => {
     if (!showIcon) return null
-    if (kind === 'close')    return <TLCloseIcon size={11} />
+    if (kind === 'close') return <TLCloseIcon size={11} />
     if (kind === 'minimize') return <TLMinimizeIcon size={11} />
     if (kind === 'maximize') return maximized ? <TLRestoreIcon size={11} /> : <TLMaximizeIcon size={11} />
     return null
@@ -44,7 +44,7 @@ export default function TitleBar() {
     const sync = () => {
       appWindow.isMaximized()
         .then(m => { if (mounted) setMaximized(m) })
-        .catch(() => {})
+        .catch(() => { })
     }
     sync()
     let unsub: (() => void) | null = null
@@ -55,7 +55,7 @@ export default function TitleBar() {
     }
   }, [appWindow])
 
-  const onClose    = () => appWindow.close()
+  const onClose = () => appWindow.close()
   const onMinimize = () => appWindow.minimize()
   const onMaximize = () => {
     if (maximized) {
@@ -75,11 +75,11 @@ export default function TitleBar() {
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
       >
-        <TrafficLight kind="close"    showIcon={hover} onClick={onClose} />
+        <TrafficLight kind="close" showIcon={hover} onClick={onClose} />
         <TrafficLight kind="minimize" showIcon={hover} onClick={onMinimize} />
         <TrafficLight kind="maximize" showIcon={hover} maximized={maximized} onClick={onMaximize} />
       </div>
-      <div className="tl-title" data-tauri-drag-region>JSON 工具箱</div>
+      <div className="tl-title" data-tauri-drag-region>JSON TOOLS</div>
     </div>
   )
 }

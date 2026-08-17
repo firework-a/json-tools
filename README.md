@@ -1,7 +1,7 @@
 # JSON TOOLS
 
 <p align="center">
-  <img src="docs/page1.png" alt="JSON 工具箱 主界面" width="100%" />
+  <img src="docs/page1.png" alt="JSON TOOLS 主界面" width="100%" />
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
 
 ---
 
-JSON 工具箱是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、React 18 与 Monaco Editor 构建。它把常见的 JSON 处理流程整合在一个离线本地应用里，适合日常格式化、压缩、转义、格式转换、Schema 校验、多语言类型生成、对比与代码图片导出。
+JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、React 18 与 Monaco Editor 构建。它把常见的 JSON 处理流程整合在一个离线本地应用里，适合日常格式化、压缩、转义、格式转换、Schema 校验、多语言类型生成、对比与代码图片导出。
 
 ## 核心能力
 

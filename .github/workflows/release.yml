@@ -3,20 +3,20 @@ name: release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch:
     inputs:
       tag:
-        description: '要发布的版本号（如 0.1.0，不需要加 v 前缀）'
+        description: "要发布的版本号（如 0.1.0，不需要加 v 前缀）"
         required: true
         type: string
       prerelease:
-        description: '标记为预发布版本'
+        description: "标记为预发布版本"
         required: false
         type: boolean
         default: false
       draft:
-        description: '创建为草稿（不立即发布）'
+        description: "创建为草稿（不立即发布）"
         required: false
         type: boolean
         default: false
@@ -60,11 +60,13 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ inputs.tag && format('v{0}', inputs.tag) || github.ref_name }}
-          releaseName: JSON 工具箱 ${{ inputs.tag && format('v{0}', inputs.tag) || github.ref_name }}
+          releaseName: JSON TOOLS ${{ inputs.tag && format('v{0}', inputs.tag) || github.ref_name }}
           releaseBody: |
             GitHub Actions 自动构建 Windows 安装包和 Tauri 更新元数据。
 
             更新方式：安装旧版本后，在「设置 → 关于 → 检查更新」中检查 GitHub Releases 更新。
           releaseDraft: ${{ inputs.draft || false }}
           prerelease: ${{ inputs.prerelease || false }}
+          includeUpdaterJson: true
+          updaterJsonKeepUniversal: false
           args: --target x86_64-pc-windows-msvc

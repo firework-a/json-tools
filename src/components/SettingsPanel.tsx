@@ -199,10 +199,10 @@ function AboutSection() {
       <div className="set-section-title">关于</div>
       <div className="about-app">
         <div className="about-logo">
-          <img src={appLogo} alt="JSON 工具箱" />
+          <img src={appLogo} alt="JSON TOOLS" />
         </div>
         <div className="about-info">
-          <div className="about-name">JSON 工具箱</div>
+          <div className="about-name">JSON TOOLS</div>
           <div className="about-version">jsontools · 版本 {version}</div>
         </div>
       </div>

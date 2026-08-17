@@ -1,6 +1,6 @@
 [package]
 name = "json-tools"
-version = "0.1.0"
+version = "0.1.2"
 description = "JSON 工具箱 (jsontools) - JSON 开发工具集"
 authors = ["you"]
 edition = "2021"
