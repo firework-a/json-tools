@@ -94,6 +94,11 @@ interface AppState {
   setExportScale: (v: number) => void
   exportLineNumbers: boolean
   setExportLineNumbers: (v: boolean) => void
+  // 更新设置
+  autoCheckUpdates: boolean
+  setAutoCheckUpdates: (v: boolean) => void
+  autoDownloadUpdates: boolean
+  setAutoDownloadUpdates: (v: boolean) => void
 
   toast: string | null
   showToast: (msg: string | null) => void
@@ -299,6 +304,11 @@ export const useAppStore = create<AppState>()(
       setExportScale: (exportScale) => set({ exportScale }),
       exportLineNumbers: true,
       setExportLineNumbers: (exportLineNumbers) => set({ exportLineNumbers }),
+      // 更新设置
+      autoCheckUpdates: true,
+      setAutoCheckUpdates: (autoCheckUpdates) => set({ autoCheckUpdates }),
+      autoDownloadUpdates: false,
+      setAutoDownloadUpdates: (autoDownloadUpdates) => set({ autoDownloadUpdates }),
       toast: null,
       showToast: (toast) => set({ toast }),
     }),
@@ -323,6 +333,8 @@ export const useAppStore = create<AppState>()(
         minimap: s.minimap,
         exportScale: s.exportScale,
         exportLineNumbers: s.exportLineNumbers,
+        autoCheckUpdates: s.autoCheckUpdates,
+        autoDownloadUpdates: s.autoDownloadUpdates,
       }),
       onRehydrateStorage: () => (state) => {
         if (!state) return

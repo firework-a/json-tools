@@ -6,10 +6,12 @@ import EditorArea from './components/EditorArea'
 import TreeView from './components/TreeView'
 import StatusBar from './components/StatusBar'
 import SettingsPanel from './components/SettingsPanel'
+import UpdateButton from './components/UpdateButton'
 import { useAppStore } from './store'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { isTauri } from '@tauri-apps/api/core'
 import { readTextFileAt } from './utils/files'
+import { useAutoUpdate } from './hooks/useAutoUpdate'
 
 function App() {
   const mode = useAppStore(s => s.mode)
@@ -18,6 +20,8 @@ function App() {
   const openLoadedFile = useAppStore(s => s.openLoadedFile)
   const isEditMode = mode === 'edit'
   const [dragOver, setDragOver] = useState(false)
+
+  useAutoUpdate({ immediate: true })
 
   useEffect(() => {
     if (!toast) return
@@ -105,6 +109,7 @@ function App() {
       </div>
       <StatusBar />
       <SettingsPanel />
+      <UpdateButton />
       {toast && <div className="app-toast">{toast}</div>}
       {dragOver && (
         <div className="drop-overlay">

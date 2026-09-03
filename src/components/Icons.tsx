@@ -266,3 +266,33 @@ export const ExternalLinkIcon = ({ size = 13, color = '#5fd478' }: P) => (
     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
   </I>
 )
+
+export const DownloadIcon = ({ size = 16, color = 'currentColor' }: P) => (
+  <I size={size} color={color} strokeWidth={2}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </I>
+)
+
+export const XIcon = ({ size = 14, color = 'currentColor' }: P) => (
+  <I size={size} color={color} strokeWidth={2.5}>
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </I>
+)
+
+export const AlertCircleIcon = ({ size = 14, color = 'currentColor' }: P) => (
+  <I size={size} color={color}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 8v4" />
+    <path d="M12 16h.01" />
+  </I>
+)
+
+export const ArrowDownIcon = ({ size = 16, color = 'currentColor' }: P) => (
+  <I size={size} color={color} strokeWidth={2}>
+    <path d="M12 5v14" />
+    <path d="m19 12-7 7-7-7" />
+  </I>
+)

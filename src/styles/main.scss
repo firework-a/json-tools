@@ -1,5 +1,6 @@
 @use './variables' as *;
 @use './mixins' as *;
+@use 'sass:color';
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html, body, #root { width: 100%; height: 100%; overflow: hidden; background: $bg-app; color: $text-primary; }
@@ -744,6 +745,246 @@ input, select { font-family: inherit; color: inherit; }
   color: $text-primary;
   font-size: 12px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+
+.update-notification {
+  position: fixed;
+  left: 50%;
+  bottom: 78px;
+  z-index: 199;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba($blue, 0.4);
+  border-radius: 8px;
+  background: rgba($blue, 0.1);
+  color: $text-primary;
+  font-size: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  animation: slide-up 0.25s ease-out;
+  .update-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .update-btn {
+    height: 24px;
+    padding: 0 12px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.12s;
+    &.primary {
+      background: $blue;
+      color: #fff;
+      border: none;
+      &:hover { background: color.adjust($blue, $lightness: 10%); }
+    }
+    &:not(.primary) {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid $border;
+      color: $text-secondary;
+      &:hover { background: rgba(255,255,255,0.14); color: $text-primary; }
+    }
+  }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+[data-theme='light'] .update-notification {
+  background: rgba(37,99,235,0.1);
+  border-color: rgba(37,99,235,0.4);
+  box-shadow: 0 6px 20px rgba(15,23,42,0.15);
+  color: #0f172a;
+}
+[data-theme='light'] .update-notification .update-btn:not(.primary) {
+  background: #f1f5f9;
+  border-color: #d9dee7;
+  color: #475569;
+  &:hover { background: #e2e8f0; color: #0f172a; }
+}
+
+/* =================== 更新按钮 (右下角，类似 Codex) =================== */
+.update-button-wrapper {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 198;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.update-button {
+  @include flex-center;
+  gap: 8px;
+  min-width: 40px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: $blue;
+  border: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05);
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
+  white-space: nowrap;
+  overflow: hidden;
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.08);
+  }
+  &:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &.downloading { background: $yellow; color: #1a1a1a; }
+  &.ready { background: $green; }
+  &.error { background: $red; }
+}
+.update-btn-icon {
+  flex-shrink: 0;
+  transition: transform 0.2s;
+  &.spinning { animation: spin 1s linear infinite; }
+  &.ready-pulse { animation: pulse 1.5s ease-in-out infinite; }
+}
+.update-btn-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 80px;
+}
+.update-btn-percent {
+  font-size: 11px;
+  font-weight: 700;
+}
+.update-btn-speed {
+  font-size: 10px;
+  opacity: 0.8;
+  font-family: $font-mono;
+}
+.update-btn-text {
+  font-size: 12px;
+}
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+
+.update-progress-bar {
+  width: 100%;
+  min-width: 120px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.15);
+  overflow: hidden;
+  .update-progress-fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 2px;
+    transition: width 0.15s linear;
+    box-shadow: 0 0 8px rgba(255,255,255,0.5);
+  }
+}
+
+/* 安装确认弹窗 */
+.update-install-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+  animation: fade-in 0.15s ease-out;
+}
+.update-install-dialog {
+  width: min(380px, 90vw);
+  background: #1c2029;
+  border: 1px solid $border-strong;
+  border-radius: 14px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+  padding: 20px 24px 24px;
+  animation: slide-up 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+.update-install-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 12px;
+}
+.update-install-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba($green, 0.15);
+  color: $green;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.update-install-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: $text-primary;
+}
+.update-install-version {
+  font-size: 12px;
+  color: $text-muted;
+  margin-top: 2px;
+}
+.update-install-message {
+  font-size: 13px;
+  color: $text-secondary;
+  line-height: 1.6;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.update-install-actions {
+  display: flex;
+  gap: 10px;
+}
+.update-install-btn {
+  flex: 1;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.12s;
+  &.cancel {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid $border;
+    color: $text-secondary;
+    &:hover { background: rgba(255,255,255,0.12); color: $text-primary; }
+  }
+  &.confirm {
+    background: $green;
+    border: none;
+    color: #fff;
+    &:hover { background: color.adjust($green, $lightness: 10%); }
+  }
+}
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+[data-theme='light'] .update-button { box-shadow: 0 4px 16px rgba(15,23,42,0.2), 0 0 0 1px rgba(15,23,42,0.08); }
+[data-theme='light'] .update-install-dialog {
+  background: #fff;
+  border-color: #d9dee7;
+  box-shadow: 0 24px 64px rgba(15,23,42,0.18);
+}
+[data-theme='light'] .update-install-title { color: #0f172a; }
+[data-theme='light'] .update-install-message { color: #475569; }
+[data-theme='light'] .update-install-btn.cancel {
+  background: #f1f5f9;
+  border-color: #d9dee7;
+  color: #64748b;
+  &:hover { background: #e2e8f0; color: #0f172a; }
 }
 
 .export-mask {

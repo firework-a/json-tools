@@ -6,7 +6,8 @@ export type UpdateStatus =
   | { state: 'checking' }
   | { state: 'unavailable'; message: string }
   | { state: 'current'; message: string }
-  | { state: 'available'; version: string; notes?: string; install: () => Promise<void> }
+  | { state: 'available'; version: string; notes?: string; install: () => Promise<void>; downloadAndInstall: (onProgress?: (event: { downloaded?: number; total?: number }) => void) => Promise<void> }
+  | { state: 'downloaded'; version: string; install: () => Promise<void> }
   | { state: 'installing'; version: string }
   | { state: 'error'; message: string }
 
@@ -35,6 +36,9 @@ export async function checkAppUpdate(): Promise<UpdateStatus> {
       await update.downloadAndInstall()
       const { relaunch } = await import('@tauri-apps/plugin-process')
       await relaunch()
+    },
+    downloadAndInstall: async (onProgress?: (event: { downloaded?: number; total?: number }) => void) => {
+      await update.downloadAndInstall(onProgress as any)
     },
   }
 }

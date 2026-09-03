@@ -5,12 +5,13 @@ import appLogo from '../../src-tauri/icons/icon.png'
 import { checkAppUpdate, getAppVersion, type UpdateStatus } from '../utils/updater'
 import { CloseIcon } from './Icons'
 
-type SectionId = 'appearance' | 'editor' | 'export' | 'about'
+type SectionId = 'appearance' | 'editor' | 'export' | 'updates' | 'about'
 
 const SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'appearance', label: '外观' },
   { id: 'editor', label: '编辑器' },
   { id: 'export', label: '导出图片' },
+  { id: 'updates', label: '更新' },
   { id: 'about', label: '关于' },
 ]
 
@@ -151,10 +152,11 @@ function ExportSection() {
   )
 }
 
-function AboutSection() {
+function UpdatesSection() {
+  const s = useAppStore()
   const showToast = useAppStore(s => s.showToast)
-  const [version, setVersion] = useState('0.1.0')
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({ state: 'idle' })
+  const [version, setVersion] = useState('0.1.0')
 
   useEffect(() => {
     getAppVersion().then(setVersion).catch(() => setVersion('0.1.0'))
@@ -165,24 +167,15 @@ function AboutSection() {
     try {
       const status = await checkAppUpdate()
       setUpdateStatus(status)
-      if (status.state === 'current' || status.state === 'unavailable') showToast(status.message)
+      if (status.state === 'available') {
+        showToast(`发现新版本 ${status.version}`)
+      } else if (status.state === 'current' || status.state === 'unavailable') {
+        showToast(status.message)
+      }
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e)
       setUpdateStatus({ state: 'error', message })
       showToast(`检查更新失败: ${message}`)
-    }
-  }
-
-  const onInstallUpdate = async () => {
-    if (updateStatus.state !== 'available') return
-    const version = updateStatus.version
-    setUpdateStatus({ state: 'installing', version })
-    try {
-      await updateStatus.install()
-    } catch (e) {
-      const message = e instanceof Error ? e.message : String(e)
-      setUpdateStatus({ state: 'error', message })
-      showToast(`安装更新失败: ${message}`)
     }
   }
 
@@ -193,6 +186,54 @@ function AboutSection() {
     if (updateStatus.state === 'installing') return `正在安装 ${updateStatus.version}，完成后会自动重启`
     return '更新通过 GitHub Releases 分发'
   })()
+
+  return (
+    <div className="set-section">
+      <div className="set-section-title">更新设置</div>
+      <ToggleRow
+        label="自动检查更新"
+        desc="启动时及每 4 小时自动在后台检查新版本"
+        value={s.autoCheckUpdates}
+        onChange={s.setAutoCheckUpdates}
+      />
+      <ToggleRow
+        label="检查到更新后自动下载"
+        desc="自动下载更新包，下载完成后弹窗确认安装（需先开启自动检查更新）"
+        value={s.autoDownloadUpdates}
+        onChange={s.setAutoDownloadUpdates}
+      />
+      <div className="set-row" style={{ marginTop: '8px' }}>
+        <div className="set-row-text">
+          <div className="set-row-label">当前版本</div>
+          <div className="set-row-desc">jsontools · 版本 {version}</div>
+        </div>
+        <button
+          className="about-action"
+          onClick={onCheckUpdate}
+          disabled={updateStatus.state === 'checking' || updateStatus.state === 'installing'}
+          style={{ minWidth: '90px' }}
+        >
+          {updateStatus.state === 'checking' ? '检查中...' : '手动检查更新'}
+        </button>
+      </div>
+      <div className="about-update-status" style={{ marginTop: '12px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px', border: '1px solid', borderColor: '$border' }}>
+        {updateMessage}
+        {updateStatus.state === 'available' && updateStatus.notes && (
+          <div className="about-update-notes" style={{ marginTop: '8px', fontSize: '11px', color: '$text-muted', whiteSpace: 'pre-wrap', maxHeight: '80px', overflow: 'auto' }}>
+            {updateStatus.notes}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function AboutSection() {
+  const [version, setVersion] = useState('0.1.0')
+
+  useEffect(() => {
+    getAppVersion().then(setVersion).catch(() => setVersion('0.1.0'))
+  }, [])
 
   return (
     <div className="set-section">
@@ -210,22 +251,6 @@ function AboutSection() {
         面向开发者的 JSON 桌面工具：格式化、压缩/转义、格式转换（YAML / XML / TOML / CSV）、
         TypeScript 等多语言类型生成、JSON Schema、代码对比与图片导出。
       </p>
-      <div className="about-update">
-        <div className="about-update-text">
-          <div className="about-tech-title">应用更新</div>
-          <div className="about-update-status">{updateMessage}</div>
-          {updateStatus.state === 'available' && updateStatus.notes && (
-            <div className="about-update-notes">{updateStatus.notes}</div>
-          )}
-        </div>
-        {updateStatus.state === 'available' ? (
-          <button className="about-action" onClick={onInstallUpdate}>安装并重启</button>
-        ) : (
-          <button className="about-action" onClick={onCheckUpdate} disabled={updateStatus.state === 'checking' || updateStatus.state === 'installing'}>
-            {updateStatus.state === 'checking' ? '检查中...' : '检查更新'}
-          </button>
-        )}
-      </div>
       <div className="about-tech">
         <div className="about-tech-title">技术栈</div>
         <div className="about-tech-tags">
@@ -283,6 +308,7 @@ export default function SettingsPanel() {
             {active === 'appearance' && <AppearanceSection />}
             {active === 'editor' && <EditorSection />}
             {active === 'export' && <ExportSection />}
+            {active === 'updates' && <UpdatesSection />}
             {active === 'about' && <AboutSection />}
           </div>
         </div>
