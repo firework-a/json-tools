@@ -5,6 +5,75 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html, body, #root { width: 100%; height: 100%; overflow: hidden; background: $bg-app; color: $text-primary; }
 body { font-family: $font-ui; font-size: 13px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* =================== 全局滚动条样式 =================== */
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 3px;
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+  &:hover { background: rgba(255,255,255,0.22); background-clip: padding-box; }
+}
+*::-webkit-scrollbar-corner { background: transparent; }
+
+/* Firefox */
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent; }
+
+/* Monaco Editor 滚动条 - 强制覆盖原生样式 */
+.monaco-editor .scrollbar.vertical .slider,
+.monaco-editor .scrollbar.horizontal .slider {
+  background: rgba(255,255,255,0.18) !important;
+  border-radius: 3px !important;
+  border: 1.5px solid transparent !important;
+  background-clip: padding-box !important;
+  min-height: 20px !important;
+  min-width: 20px !important;
+  opacity: 1 !important;
+}
+.monaco-editor .scrollbar.vertical .slider:hover,
+.monaco-editor .scrollbar.horizontal .slider:hover {
+  background: rgba(255,255,255,0.3) !important;
+}
+.monaco-editor .scrollbar.vertical,
+.monaco-editor .scrollbar.horizontal {
+  background: transparent !important;
+  width: 6px !important;
+  height: 6px !important;
+}
+.monaco-editor .scrollbar.vertical.has-scrollable .slider,
+.monaco-editor .scrollbar.horizontal.has-scrollable .slider {
+  opacity: 1 !important;
+}
+.monaco-editor .scrollbar.vertical:not(.has-scrollable) .slider,
+.monaco-editor .scrollbar.horizontal:not(.has-scrollable) .slider {
+  opacity: 0.3 !important;
+}
+
+/* Monaco 滚动条轨道 */
+.monaco-editor .scrollbar .scrollbar-slider {
+  background: transparent !important;
+}
+
+/* 浅色主题下的 Monaco 滚动条 */
+[data-theme='light'] .monaco-editor .scrollbar.vertical .slider,
+[data-theme='light'] .monaco-editor .scrollbar.horizontal .slider {
+  background: rgba(15,23,42,0.18) !important;
+}
+[data-theme='light'] .monaco-editor .scrollbar.vertical .slider:hover,
+[data-theme='light'] .monaco-editor .scrollbar.horizontal .slider:hover {
+  background: rgba(15,23,42,0.32) !important;
+}
+
+[data-theme='light'] {
+  *::-webkit-scrollbar-thumb {
+    background: rgba(15,23,42,0.18);
+    &:hover { background: rgba(15,23,42,0.32); }
+  }
+  * { scrollbar-color: rgba(15,23,42,0.25) transparent; }
+}
+
 .app {
   width: 100%; height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden;
   --fold-arrow: #5a6170;
@@ -257,8 +326,8 @@ input, select { font-family: inherit; color: inherit; }
   strong { color: #d97706; }
 }
 
-.app-body { flex: 1; min-height: 0; display: flex; background: $bg-app; }
-.app-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; }
+.app-body { flex: 1; min-height: 0; display: flex; background: $bg-app; overflow: hidden; }
+.app-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; overflow: hidden; }
 
 /* =================== 标签栏 =================== */
 .tab-bar {
@@ -1029,11 +1098,14 @@ input, select { font-family: inherit; color: inherit; }
   min-height: 0;
   display: flex;
   background: $bg-editor;
+  overflow: hidden;
 }
 .pane-full {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   background: $bg-editor;
+  overflow: hidden;
   .monaco-editor, .monaco-editor-background, .monaco-editor .margin {
     background: $bg-editor !important;
   }
@@ -1046,13 +1118,16 @@ input, select { font-family: inherit; color: inherit; }
   display: flex;
   flex-direction: column;
   background: $bg-toolbar;
+  overflow: hidden;
 }
 .tool-pane-wrap {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   position: relative;
+  overflow: hidden;
 }
 .tool-pane {
   position: relative;
@@ -1062,6 +1137,7 @@ input, select { font-family: inherit; color: inherit; }
   border-right: 1px solid $border;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   &:last-child { border-right: none; }
   &.is-empty { background: #1f232c; }
 }
@@ -1464,7 +1540,6 @@ input, select { font-family: inherit; color: inherit; }
   padding: 4px 0;
   font-family: $font-mono;
   font-size: 12px;
-  @include scroll;
 }
 .tree-empty {
   @include flex-center;
