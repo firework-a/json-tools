@@ -47,3 +47,5 @@ Cargo.lock
 # Documentation (optional, uncomment if needed)
 # *.md
 # STRUCTURE.md
+
+.playwright-mcp

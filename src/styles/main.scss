@@ -326,8 +326,10 @@ input, select { font-family: inherit; color: inherit; }
   strong { color: #d97706; }
 }
 
-.app-body { flex: 1; min-height: 0; display: flex; background: $bg-app; overflow: hidden; }
-.app-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+/* overflow 必须保持 visible：Monaco 的 tooltip/右键菜单挂在编辑器容器内，
+   祖先链任何一层 hidden 都会把搜索框顶部的提示裁掉（编辑器内容由 overflow-guard 自行裁剪） */
+.app-body { flex: 1; min-height: 0; display: flex; background: $bg-app; overflow: visible; }
+.app-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; overflow: visible; }
 
 /* =================== 标签栏 =================== */
 .tab-bar {
@@ -1098,14 +1100,12 @@ input, select { font-family: inherit; color: inherit; }
   min-height: 0;
   display: flex;
   background: $bg-editor;
-  overflow: hidden;
 }
 .pane-full {
   flex: 1;
   min-height: 0;
   min-width: 0;
   background: $bg-editor;
-  overflow: hidden;
   .monaco-editor, .monaco-editor-background, .monaco-editor .margin {
     background: $bg-editor !important;
   }
@@ -1118,7 +1118,6 @@ input, select { font-family: inherit; color: inherit; }
   display: flex;
   flex-direction: column;
   background: $bg-toolbar;
-  overflow: hidden;
 }
 .tool-pane-wrap {
   flex: 1;
@@ -1127,7 +1126,6 @@ input, select { font-family: inherit; color: inherit; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   position: relative;
-  overflow: hidden;
 }
 .tool-pane {
   position: relative;
@@ -1137,7 +1135,6 @@ input, select { font-family: inherit; color: inherit; }
   border-right: 1px solid $border;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   &:last-child { border-right: none; }
   &.is-empty { background: #1f232c; }
 }
@@ -1163,7 +1160,6 @@ input, select { font-family: inherit; color: inherit; }
   flex: 1;
   min-height: 0;
   position: relative;
-  overflow: hidden;
 }
 
 /* Monaco 编辑器铺满面板 */

@@ -69,6 +69,22 @@ function App() {
     return () => { unlisten?.() }
   }, [openLoadedFile, showToast])
 
+  // 拦截 WebView2 原生页面搜索栏：
+  // 焦点在编辑器外（标题栏/工具栏/树形视图/body）时 Ctrl+F 会弹出 WebView2 自带搜索框，
+  // 与 Monaco 的查找冲突。这里只在目标不在编辑器内时吃掉默认行为；
+  // 编辑器内的 Ctrl+F 由 Monaco 按键绑定自行处理（其原生查找框），不受影响。
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return
+      if (e.key.toLowerCase() !== 'f' && e.code !== 'KeyF') return
+      const target = e.target as HTMLElement | null
+      if (target?.closest?.('.monaco-editor')) return
+      e.preventDefault()
+    }
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [])
+
   // 浏览器预览环境的 HTML5 拖拽（同时阻止浏览器直接打开文件）
   useEffect(() => {
     if (isTauri()) return
