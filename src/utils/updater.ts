@@ -28,17 +28,23 @@ export async function checkAppUpdate(): Promise<UpdateStatus> {
     return { state: 'current', message: '当前已是最新版本' }
   }
 
+  // 记录本更新包是否已完成下载，避免 install 时重复走一遍 downloadAndInstall
+  let downloaded = false
+
   return {
     state: 'available',
     version: update.version,
     notes: update.body,
     install: async () => {
-      await update.downloadAndInstall()
+      // 正常路径下 startDownload 已执行过 downloadAndInstall，这里只需重启生效；
+      // 兜底：若未经过下载（直接安装），先完整下载再重启
+      if (!downloaded) await update.downloadAndInstall()
       const { relaunch } = await import('@tauri-apps/plugin-process')
       await relaunch()
     },
     downloadAndInstall: async (onProgress?: (event: { downloaded?: number; total?: number }) => void) => {
       await update.downloadAndInstall(onProgress as any)
+      downloaded = true
     },
   }
 }

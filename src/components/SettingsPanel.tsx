@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAppStore, type ThemeMode } from '../store'
 import appLogo from '../../src-tauri/icons/icon.png'
-import { checkAppUpdate, getAppVersion, type UpdateStatus } from '../utils/updater'
+import { getAppVersion } from '../utils/updater'
+import { useUpdateStore } from '../updateStore'
 import { CloseIcon } from './Icons'
 
 type SectionId = 'appearance' | 'editor' | 'export' | 'updates' | 'about'
@@ -154,38 +155,27 @@ function ExportSection() {
 
 function UpdatesSection() {
   const s = useAppStore()
-  const showToast = useAppStore(s => s.showToast)
-  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({ state: 'idle' })
+  const status = useUpdateStore(st => st.status)
+  const progress = useUpdateStore(st => st.progress)
+  const check = useUpdateStore(st => st.check)
+  const startDownload = useUpdateStore(st => st.startDownload)
   const [version, setVersion] = useState('0.1.0')
 
   useEffect(() => {
     getAppVersion().then(setVersion).catch(() => setVersion('0.1.0'))
   }, [])
 
-  const onCheckUpdate = async () => {
-    setUpdateStatus({ state: 'checking' })
-    try {
-      const status = await checkAppUpdate()
-      setUpdateStatus(status)
-      if (status.state === 'available') {
-        showToast(`发现新版本 ${status.version}`)
-      } else if (status.state === 'current' || status.state === 'unavailable') {
-        showToast(status.message)
-      }
-    } catch (e) {
-      const message = e instanceof Error ? e.message : String(e)
-      setUpdateStatus({ state: 'error', message })
-      showToast(`检查更新失败: ${message}`)
-    }
-  }
-
+  const isDownloading = progress !== null
   const updateMessage = (() => {
-    if (updateStatus.state === 'checking') return '正在检查 GitHub Releases 更新...'
-    if (updateStatus.state === 'current' || updateStatus.state === 'unavailable' || updateStatus.state === 'error') return updateStatus.message
-    if (updateStatus.state === 'available') return `发现新版本 ${updateStatus.version}`
-    if (updateStatus.state === 'installing') return `正在安装 ${updateStatus.version}，完成后会自动重启`
+    if (status.state === 'checking') return '正在检查 GitHub Releases 更新...'
+    if (status.state === 'current' || status.state === 'unavailable' || status.state === 'error') return status.message
+    if (status.state === 'available') return `发现新版本 ${status.version}，可点击下方“立即下载”或右下角按钮`
+    if (status.state === 'downloaded') return `版本 ${status.version} 已下载完成，请在右下角确认安装`
+    if (status.state === 'installing') return `正在安装 ${status.version}，完成后会自动重启`
     return '更新通过 GitHub Releases 分发'
   })()
+
+  const busy = status.state === 'checking' || status.state === 'installing' || isDownloading
 
   return (
     <div className="set-section">
@@ -209,18 +199,29 @@ function UpdatesSection() {
         </div>
         <button
           className="about-action"
-          onClick={onCheckUpdate}
-          disabled={updateStatus.state === 'checking' || updateStatus.state === 'installing'}
+          onClick={() => void check({ notify: true })}
+          disabled={busy}
           style={{ minWidth: '90px' }}
         >
-          {updateStatus.state === 'checking' ? '检查中...' : '手动检查更新'}
+          {status.state === 'checking' ? '检查中...' : '检查更新'}
         </button>
       </div>
+      {isDownloading && (
+        <div className="update-inline-progress">
+          <div className="update-inline-fill" style={{ width: `${Math.round(progress.percent)}%` }} />
+          <span className="update-inline-label">下载中 {Math.round(progress.percent)}%</span>
+        </div>
+      )}
+      {status.state === 'available' && !isDownloading && (
+        <button className="about-action" style={{ marginTop: '8px', width: '100%' }} onClick={() => void startDownload()}>
+          立即下载
+        </button>
+      )}
       <div className="about-update-status" style={{ marginTop: '12px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px', border: '1px solid', borderColor: '$border' }}>
         {updateMessage}
-        {updateStatus.state === 'available' && updateStatus.notes && (
+        {status.state === 'available' && status.notes && (
           <div className="about-update-notes" style={{ marginTop: '8px', fontSize: '11px', color: '$text-muted', whiteSpace: 'pre-wrap', maxHeight: '80px', overflow: 'auto' }}>
-            {updateStatus.notes}
+            {status.notes}
           </div>
         )}
       </div>
