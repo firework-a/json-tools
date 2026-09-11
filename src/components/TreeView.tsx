@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import JsonView from '@uiw/react-json-view'
 import { lightTheme } from '@uiw/react-json-view/light'
 import { darkTheme } from '@uiw/react-json-view/dark'
+import { search as jmesSearch } from 'jmespath'
 import { useAppStore } from '../store'
 import { onEditorScroll } from '../editorRegistry'
 import { TreeIcon, SearchIcon, CloseIcon, InfoIcon, CopyIcon, ChevronsUpDown, ChevronsDownUp, ExternalLinkIcon } from './Icons'
@@ -90,6 +91,34 @@ function TreeView() {
     try { return JSON.parse(t) } catch { return undefined }
   }, [content])
 
+  const [query, setQuery] = useState('')
+
+  // 对已解析的 JSON 执行 JMESPath 查询。
+  // 返回三态：未触发 / 成功（结果值）/ 失败（错误信息），供界面分别处理。
+  const queryResult = useMemo<{
+    active: boolean
+    value?: unknown
+    error?: string
+  }>(() => {
+    const expr = query.trim()
+    if (!expr || parsed === undefined) return { active: false }
+    try {
+      return { active: true, value: jmesSearch(parsed, expr) }
+    } catch (e) {
+      return { active: true, error: e instanceof Error ? e.message : String(e) }
+    }
+  }, [query, parsed])
+
+  // 查询命中时展示查询结果，否则展示整份 JSON；两者都归一为对象/数组供 JsonView 渲染
+  const viewData = useMemo(() => {
+    if (queryResult.active) {
+      const v = queryResult.value
+      if (v === undefined || v === null) return undefined
+      return typeof v === 'object' ? v : { result: v }
+    }
+    return parsed
+  }, [queryResult, parsed])
+
   if (!treeOpen) return null
 
   return (
@@ -104,7 +133,22 @@ function TreeView() {
       <div className="tree-search">
         <div className="tree-search-box" style={searchStyle}>
           <SearchIcon size={13} color={isLight ? '#94a3b8' : undefined} />
-          <input placeholder="JMESPath 查询…" style={inputStyle} />
+          <input
+            placeholder="JMESPath 查询…"
+            style={inputStyle}
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+          />
+          {query && (
+            <button
+              className="tree-icon-btn"
+              style={btnStyle}
+              title="清空查询"
+              onClick={() => setQuery('')}
+            >
+              <CloseIcon size={13} color={isLight ? '#64748b' : undefined} />
+            </button>
+          )}
         </div>
         <select className="tree-lang" defaultValue="jmespath" style={langStyle}>
           <option value="jmespath">JMESPath</option>
@@ -128,11 +172,21 @@ function TreeView() {
             <div className="tree-empty-title">暂无 JSON 数据</div>
             <div className="tree-empty-tip">输入有效的 JSON 查看结构</div>
           </div>
+        ) : queryResult.active && queryResult.error ? (
+          <div className="tree-empty">
+            <div className="tree-empty-title" style={{ color: '#ef4444' }}>查询语法错误</div>
+            <div className="tree-empty-tip">{queryResult.error}</div>
+          </div>
+        ) : queryResult.active && viewData === undefined ? (
+          <div className="tree-empty">
+            <div className="tree-empty-title">无匹配结果</div>
+            <div className="tree-empty-tip">JMESPath 表达式未命中任何数据</div>
+          </div>
         ) : (
           <div className="rjv-host">
             <JsonView
-              key={collapsed ? 'collapsed' : 'expanded'}
-              value={parsed}
+              key={`${collapsed ? 'collapsed' : 'expanded'}-${queryResult.active ? 'query' : 'all'}`}
+              value={viewData as object}
               displayDataTypes={false}
               displayObjectSize={true}
               enableClipboard={true}

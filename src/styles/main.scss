@@ -1488,6 +1488,7 @@ input, select { font-family: inherit; color: inherit; }
 .tree-icon-btn {
   @include flex-center;
   width: 24px; height: 24px;
+  flex-shrink: 0; /* 固定尺寸图标按钮不参与挤压变形 */
   border-radius: 4px;
   color: $text-muted;
   &:hover { background: rgba(255,255,255,0.05); color: $text-primary; }
@@ -1500,6 +1501,7 @@ input, select { font-family: inherit; color: inherit; }
   flex-shrink: 0;
   .tree-search-box {
     flex: 1;
+    min-width: 0; /* 允许收缩：否则输入长内容会把盒子撑宽、挤出右侧按钮 */
     display: flex; align-items: center;
     height: 26px;
     padding: 0 8px;
@@ -1510,6 +1512,7 @@ input, select { font-family: inherit; color: inherit; }
     &:focus-within { border-color: $blue; }
     input {
       flex: 1;
+      min-width: 0; /* 超宽文本在输入框内部滚动，而不是撑开外框 */
       background: transparent;
       border: none; outline: none;
       font-size: 12px; color: $text-primary;
@@ -1517,6 +1520,7 @@ input, select { font-family: inherit; color: inherit; }
     }
   }
   .tree-lang {
+    flex-shrink: 0;
     height: 26px;
     padding: 0 7px;
     background: $bg-input;

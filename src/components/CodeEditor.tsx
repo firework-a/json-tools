@@ -48,21 +48,33 @@ export default function CodeEditor({ value, onChange, readOnly, language }: Prop
 
     // 粘贴时自动格式化单行压缩 JSON（与旧逻辑一致）
     editor.onDidPaste((e) => {
-      if (!autoFormat || resolvedLanguage !== 'json' || readOnly) return
-      const text = editor.getModel()?.getValueInRange(e.range) ?? ''
-      const trimmed = text.trim()
-      const looksLikeJson = /^[[{]/.test(trimmed) && /[}\]]$/.test(trimmed)
-      if (!looksLikeJson || trimmed.includes('\n')) return
-      try {
-        const formatted = JSON.stringify(JSON.parse(trimmed), null, 2)
-        const op = { range: e.range, text: formatted, forceMoveMarkers: true }
-        editor.executeEdits('paste-format', [op])
-      } catch {
-        /* keep original */
+      const range = e.range
+      if (autoFormat && resolvedLanguage === 'json' && !readOnly) {
+        const text = editor.getModel()?.getValueInRange(range) ?? ''
+        const trimmed = text.trim()
+        const looksLikeJson = /^[[{]/.test(trimmed) && /[}\]]$/.test(trimmed)
+        if (looksLikeJson && !trimmed.includes('\n')) {
+          try {
+            const formatted = JSON.stringify(JSON.parse(trimmed), null, 2)
+            const op = { range, text: formatted, forceMoveMarkers: true }
+            editor.executeEdits('paste-format', [op])
+          } catch {
+            /* keep original */
+          }
+        }
       }
+      // Monaco 默认粘贴后会把光标 reveal 到粘贴文本末尾（大段内容会瞬间滚到最底部）。
+      // 这里把光标放回粘贴内容起始处，并让视图从顶部对齐显示粘贴的内容。
+      const start = { lineNumber: range.startLineNumber, column: range.startColumn }
+      const restoreView = () => {
+        // rAF 兜底时编辑器可能已卸载（切标签/重挂），跳过避免操作已销毁实例
+        if (editorRef.current !== editor) return
+        editor.setPosition(start)
+        editor.revealPositionNearTop(start, monaco.editor.ScrollType.Immediate)
+      }
+      restoreView()
+      requestAnimationFrame(restoreView)
     })
-
-    void monaco
   }
 
   useEffect(() => () => {
