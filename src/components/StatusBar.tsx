@@ -3,6 +3,7 @@ import { useAppStore } from '../store'
 import { getJsonStats } from '../utils/json'
 import { computeDiff } from '../utils/jsonDiffer'
 import UpdateButton from './UpdateButton'
+import { useDebouncedValue } from '../hooks/useDebouncedValue'
 
 const formatSize = (bytes: number) => {
   if (bytes < 1024) return `${bytes} B`
@@ -12,18 +13,21 @@ const formatSize = (bytes: number) => {
 
 function StatusBar() {
   const { content, rightContent, mode, fileName } = useAppStore()
+  // 统计/diff 属重计算，防抖后再算，避免大文件每次按键全量 JSON.parse
+  const debouncedContent = useDebouncedValue(content, 250)
+  const debouncedRight = useDebouncedValue(rightContent, 250)
 
-  const leftStats = useMemo(() => getJsonStats(content), [content])
-  const rightStats = useMemo(() => getJsonStats(rightContent), [rightContent])
+  const leftStats = useMemo(() => getJsonStats(debouncedContent), [debouncedContent])
+  const rightStats = useMemo(() => getJsonStats(debouncedRight), [debouncedRight])
 
   // 对比模式：用行级 diff 统计真实变更行数（增+删）
   const diffCount = useMemo(() => {
     if (mode !== 'diff') return null
-    if (!content.trim() && !rightContent.trim()) return null
-    const d = computeDiff(content, rightContent)
+    if (!debouncedContent.trim() && !debouncedRight.trim()) return null
+    const d = computeDiff(debouncedContent, debouncedRight)
     const total = d.leftRemoved.size + d.rightAdded.size
     return total > 0 ? total : null
-  }, [mode, content, rightContent])
+  }, [mode, debouncedContent, debouncedRight])
 
   return (
     <footer className="status-bar">

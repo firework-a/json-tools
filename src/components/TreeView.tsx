@@ -7,6 +7,7 @@ import { search as jmesSearch } from 'jmespath'
 import { useAppStore } from '../store'
 import { onEditorScroll } from '../editorRegistry'
 import { TreeIcon, SearchIcon, CloseIcon, InfoIcon, CopyIcon, ChevronsUpDown, ChevronsDownUp, ExternalLinkIcon, PathIcon } from './Icons'
+import { useDebouncedValue } from '../hooks/useDebouncedValue'
 
 /** 把 JsonView 的 keys 路径数组转成 JMESPath 风格字符串，如 people[0].name */
 const keysToPath = (keys: (string | number)[]): string =>
@@ -64,6 +65,8 @@ function JmesPathCheatSheet({ onClose }: { onClose: () => void }) {
 
 function TreeView() {
   const content = useAppStore(s => s.content)
+  // 树形解析较重（JSON.parse + 大量 DOM），防抖避免大文件每次按键重解析
+  const debouncedContent = useDebouncedValue(content, 250)
   const treeOpen = useAppStore(s => s.treeOpen)
   const theme = useAppStore(s => s.theme)
   const setTreeOpen = useAppStore(s => s.setTreeOpen)
@@ -97,10 +100,10 @@ function TreeView() {
   const titleStyle: React.CSSProperties = isLight ? { color: '#1f2937' } : {}
 
   const parsed = useMemo(() => {
-    const t = content.trim()
+    const t = debouncedContent.trim()
     if (!t) return undefined
     try { return JSON.parse(t) } catch { return undefined }
-  }, [content])
+  }, [debouncedContent])
 
   const [query, setQuery] = useState('')
 
