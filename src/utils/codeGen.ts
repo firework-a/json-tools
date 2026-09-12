@@ -1,11 +1,8 @@
 // 多语言代码生成：基于 quicktype-core，根据 JSON 样本推断类型并生成
 // TypeScript / Python / Go / Java / C# 等强类型代码。
-import {
-  quicktype,
-  InputData,
-  jsonInputForTargetLanguage,
-  type JSONSchemaTargetLanguage,
-} from 'quicktype-core'
+// quicktype-core 体积很大（数 MB），仅在“生成代码”模式首次使用时动态加载，
+// 类型用 import type 引入（编译期擦除，不产生运行时依赖）。
+import type { JSONSchemaTargetLanguage } from 'quicktype-core'
 
 export type CodeLang = 'typescript' | 'python' | 'go' | 'java' | 'csharp' | 'rust'
 
@@ -63,6 +60,8 @@ export const generateCode = async (
   const trimmed = input.trim()
   if (!trimmed) return { result: '', error: null }
   try {
+    // 动态加载，quicktype 相关 chunk 只在生成代码时按需拉取
+    const { quicktype, InputData, jsonInputForTargetLanguage } = await import('quicktype-core')
     const name = sanitizeName(rootName, 'Root')
     const jsonInput = jsonInputForTargetLanguage(lang as unknown as JSONSchemaTargetLanguage)
     await jsonInput.addSource({ name, samples: [trimmed] })

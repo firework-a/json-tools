@@ -1,6 +1,6 @@
-// 完整 monaco-editor：注册全部编辑器服务（避免 ICodeLensCache / IInlayHintsCache /
-// actionWidgetService 等 UNKNOWN service 报错）和全部内置语言。
-import * as monaco from 'monaco-editor'
+// Monaco 按需打包：src/monaco-entry 复刻完整编辑器功能贡献（避免 UNKNOWN service 报错），
+// 但只注册 JSON 语言，剔除 typescript/css/html 语言服务与 worker（约 8.7MB）。
+import * as monaco from './monaco-entry'
 import editorWorker from 'monaco-editor/editor/editor.worker.js?worker'
 import jsonWorker from 'monaco-editor/language/json/json.worker.js?worker'
 import { loader } from '@monaco-editor/react'
