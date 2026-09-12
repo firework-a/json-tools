@@ -8,6 +8,7 @@ import { generateCode, CODE_LANGS, type CodeLang } from '../utils/codeGen'
 import CodeEditor from './CodeEditor'
 import ShikiPreview from './ShikiPreview'
 import DiffEditor from './DiffEditor'
+import ToolsPanel from './ToolsPanel'
 import { BackIcon, SchemaIcon, ChevronDown, WandIcon, ShieldCheckIcon } from './Icons'
 import CopyButton from './CopyButton'
 import type { ConvertFormat } from '../store'
@@ -65,7 +66,7 @@ function EditorArea() {
   }, [langMenuOpen])
 
   useEffect(() => {
-    if (mode === 'edit' || mode === 'diff') return
+    if (mode === 'edit' || mode === 'diff' || mode === 'tools') return
     let cancelled = false
     const t = setTimeout(async () => {
       let r: { result: string; error: string | null }
@@ -116,6 +117,10 @@ function EditorArea() {
   }
 
   const previewLang = previewLangFor(mode, convertFormat, codeLang)
+
+  if (mode === 'tools') {
+    return <ToolsPanel />
+  }
 
   if (mode === 'convert') {
     const fmts: ConvertFormat[] = ['yaml', 'xml', 'toml', 'csv']

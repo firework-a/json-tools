@@ -6,7 +6,14 @@ import { darkTheme } from '@uiw/react-json-view/dark'
 import { search as jmesSearch } from 'jmespath'
 import { useAppStore } from '../store'
 import { onEditorScroll } from '../editorRegistry'
-import { TreeIcon, SearchIcon, CloseIcon, InfoIcon, CopyIcon, ChevronsUpDown, ChevronsDownUp, ExternalLinkIcon } from './Icons'
+import { TreeIcon, SearchIcon, CloseIcon, InfoIcon, CopyIcon, ChevronsUpDown, ChevronsDownUp, ExternalLinkIcon, PathIcon } from './Icons'
+
+/** 把 JsonView 的 keys 路径数组转成 JMESPath 风格字符串，如 people[0].name */
+const keysToPath = (keys: (string | number)[]): string =>
+  keys.reduce<string>((acc, k) => {
+    if (typeof k === 'number') return `${acc}[${k}]`
+    return acc ? `${acc}.${k}` : String(k)
+  }, '')
 
 function JmesPathCheatSheet({ onClose }: { onClose: () => void }) {
   const exampleJson = `{
@@ -60,8 +67,13 @@ function TreeView() {
   const treeOpen = useAppStore(s => s.treeOpen)
   const theme = useAppStore(s => s.theme)
   const setTreeOpen = useAppStore(s => s.setTreeOpen)
+  const jmesHistory = useAppStore(s => s.jmesHistory)
+  const addJmesHistory = useAppStore(s => s.addJmesHistory)
+  const showToast = useAppStore(s => s.showToast)
   const [showHelp, setShowHelp] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const [pathMode, setPathMode] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const syncingRef = useRef(false)
 
@@ -81,7 +93,6 @@ function TreeView() {
   }, [])
   const searchStyle: React.CSSProperties = isLight ? { background: '#f5f7fa', borderColor: '#d9dee7' } : {}
   const inputStyle: React.CSSProperties = isLight ? { color: '#1f2937' } : {}
-  const langStyle: React.CSSProperties = isLight ? { background: '#f5f7fa', borderColor: '#d9dee7', color: '#1f2937' } : {}
   const btnStyle: React.CSSProperties = isLight ? { color: '#64748b' } : {}
   const titleStyle: React.CSSProperties = isLight ? { color: '#1f2937' } : {}
 
@@ -137,7 +148,10 @@ function TreeView() {
             placeholder="JMESPath 查询…"
             style={inputStyle}
             value={query}
+            onFocus={() => setHistoryOpen(true)}
+            onBlur={() => setTimeout(() => setHistoryOpen(false), 150)}
             onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && query.trim()) addJmesHistory(query) }}
           />
           {query && (
             <button
@@ -149,10 +163,31 @@ function TreeView() {
               <CloseIcon size={13} color={isLight ? '#64748b' : undefined} />
             </button>
           )}
+          {historyOpen && jmesHistory.length > 0 && (
+            <div className="tree-history" onMouseDown={e => e.preventDefault()}>
+              <div className="tree-history-title">最近查询</div>
+              {jmesHistory.map(h => (
+                <button
+                  key={h}
+                  className="tree-history-item"
+                  onClick={() => { setQuery(h); addJmesHistory(h) }}
+                >
+                  <SearchIcon size={11} color={isLight ? '#94a3b8' : undefined} />
+                  <span>{h}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-        <select className="tree-lang" defaultValue="jmespath" style={langStyle}>
-          <option value="jmespath">JMESPath</option>
-        </select>
+        <span className="tree-lang-badge">JMESPath</span>
+        <button
+          className={`tree-icon-btn ${pathMode ? 'selected' : ''}`}
+          style={pathMode ? { color: '#5a9cf0', background: 'rgba(90,156,240,0.14)' } : btnStyle}
+          title={pathMode ? '复制模式：节点路径（点击切回值）' : '复制模式：节点值（点击切到路径）'}
+          onClick={() => setPathMode(v => !v)}
+        >
+          <PathIcon size={13} color={pathMode ? '#5a9cf0' : (isLight ? '#64748b' : undefined)} />
+        </button>
         <button className="tree-icon-btn" style={btnStyle} title="JMESPath 速查表" onClick={() => setShowHelp(true)}><InfoIcon size={13} color={isLight ? '#64748b' : undefined} /></button>
         <button className="tree-icon-btn" style={btnStyle} title={collapsed ? '全部展开' : '全部收起'} onClick={() => setCollapsed(v => !v)}>
           {collapsed
@@ -193,6 +228,10 @@ function TreeView() {
               collapsed={collapsed ? 1 : false}
               style={isLight ? lightTheme : darkTheme}
               shortenTextAfterLength={120}
+              beforeCopy={(copyText, _keyName, _value, _parent, _expandKey, keys) =>
+                pathMode && keys && keys.length ? keysToPath(keys) : copyText
+              }
+              onCopied={(text) => showToast(pathMode ? `已复制路径 ${text}` : '已复制')}
             />
           </div>
         )}

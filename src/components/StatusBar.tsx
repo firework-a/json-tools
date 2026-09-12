@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useAppStore } from '../store'
 import { getJsonStats } from '../utils/json'
 import { computeDiff } from '../utils/jsonDiffer'
+import UpdateButton from './UpdateButton'
 
 const formatSize = (bytes: number) => {
   if (bytes < 1024) return `${bytes} B`
@@ -60,6 +61,7 @@ function StatusBar() {
             <span>{rightStats.lineCount} 行</span>
           </>
         )}
+        <UpdateButton />
       </div>
     </footer>
   )

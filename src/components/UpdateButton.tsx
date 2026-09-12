@@ -3,10 +3,10 @@ import { useUpdateStore } from '@/updateStore'
 import { DownloadIcon, CheckIcon, AlertCircleIcon } from './Icons'
 
 /**
- * 右下角更新按钮（单一状态源 useUpdateStore 的展示层）。
+ * 更新状态项（单一状态源 useUpdateStore 的展示层），内嵌在底部状态栏右侧。
  * 状态路径：
- *   available   → 圆形下载图标按钮，点击触发 startDownload
- *   downloading → 环绕进度（conic-gradient 圆环）+ 百分比，点击无效
+ *   available   → 小圆形下载按钮，点击触发 startDownload
+ *   downloading → 按钮外环绕进度（conic-gradient 圆环）+ 旁挂百分比文字
  *   downloaded  → 自动弹出安装确认弹窗；弹窗关闭后点按钮可再次打开
  *   installing → 图标旋转，禁用
  *   error       → 警示图标，点击重新检查
@@ -56,26 +56,29 @@ export default function UpdateButton() {
   return (
     <>
       {!showInstallConfirm && (
-        <button
-          type="button"
-          className={`update-button ${isDownloading ? 'downloading' : ''} ${isDownloaded ? 'ready' : ''} ${isError ? 'error' : ''}`}
-          style={{ '--update-progress': percent } as React.CSSProperties}
-          onClick={handleClick}
-          disabled={isInstalling}
-          title={title}
-        >
-          {/* 环绕进度：仅下载中显示，由 --update-progress 驱动 */}
-          {isDownloading && <span className="update-ring" aria-hidden="true" />}
-          {isDownloading ? (
-            <span className="update-button-percent">{percent}%</span>
-          ) : isDownloaded ? (
-            <CheckIcon size={18} />
-          ) : isError ? (
-            <AlertCircleIcon size={18} />
-          ) : (
-            <DownloadIcon size={18} className={isInstalling ? 'update-btn-spin' : undefined} />
-          )}
-        </button>
+        <div className="update-status">
+          <button
+            type="button"
+            className={`update-button ${isDownloading ? 'downloading' : ''} ${isDownloaded ? 'ready' : ''} ${isError ? 'error' : ''}`}
+            style={{ '--update-progress': percent } as React.CSSProperties}
+            onClick={handleClick}
+            disabled={isInstalling}
+            title={title}
+          >
+            {/* 环绕进度：仅下载中显示，由 --update-progress 驱动 */}
+            {isDownloading && <span className="update-ring" aria-hidden="true" />}
+            {isDownloading ? (
+              <DownloadIcon size={12} />
+            ) : isDownloaded ? (
+              <CheckIcon size={12} />
+            ) : isError ? (
+              <AlertCircleIcon size={12} />
+            ) : (
+              <DownloadIcon size={12} className={isInstalling ? 'update-btn-spin' : undefined} />
+            )}
+          </button>
+          {isDownloading && <span className="update-percent">{percent}%</span>}
+        </div>
       )}
 
       {/* 安装确认弹窗（现有弹窗，下载完成后自动触发） */}

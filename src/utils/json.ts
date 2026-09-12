@@ -22,13 +22,117 @@ const wrapAsJsonString = (input: string): string => {
   return out
 }
 
+const isWs = (c: string) => c === ' ' || c === '\t' || c === '\n' || c === '\r'
+
+// 非标准字面量 → 合法 JSON 字面量（仅出现在“值”位置时替换）
+const LITERAL_MAP: Record<string, string> = {
+  True: 'true', False: 'false', None: 'null',
+  undefined: 'null', NaN: 'null', Infinity: 'null',
+}
+
+/**
+ * 宽松修复非标准 JSON（best-effort），单遍状态机扫描，字符串内容不受影响：
+ * 1. 去 BOM、智能引号（“ ” ‘ ’）→ 直引号
+ * 2. 删除 // 行注释与 /* *\/ 块注释
+ * 3. 单引号字符串 → 双引号（内部双引号自动转义）
+ * 4. 无引号键 → 补双引号；伪字面量（True/None/undefined…）→ 合法字面量
+ * 5. 删除 } ] 前的尾逗号
+ */
+export const repairJson = (input: string): string => {
+  let src = input.replace(/^\uFEFF/, '')
+  src = src.replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'")
+  const n = src.length
+  const out: string[] = []
+  let i = 0
+  while (i < n) {
+    const ch = src[i]
+    // 注释
+    if (ch === '/' && (src[i + 1] === '/' || src[i + 1] === '*')) {
+      if (src[i + 1] === '/') {
+        i += 2
+        while (i < n && src[i] !== '\n') i++
+      } else {
+        i += 2
+        while (i < n && !(src[i] === '*' && src[i + 1] === '/')) i++
+        i += 2
+      }
+      continue
+    }
+    // 双引号字符串：原样搬运（含转义）
+    if (ch === '"') {
+      out.push('"'); i++
+      while (i < n) {
+        const c = src[i]
+        if (c === '\\') {
+          out.push(c)
+          if (i + 1 < n) { out.push(src[i + 1]); i += 2 } else i++
+          continue
+        }
+        out.push(c); i++
+        if (c === '"') break
+      }
+      continue
+    }
+    // 单引号字符串：转双引号，内部双引号转义
+    if (ch === "'") {
+      out.push('"'); i++
+      while (i < n) {
+        const c = src[i]
+        if (c === '\\') {
+          const next = src[i + 1]
+          if (next === "'") { out.push("'"); i += 2; continue } // \' → '
+          out.push(c)
+          if (i + 1 < n) { out.push(next); i += 2 } else i++
+          continue
+        }
+        if (c === "'") { out.push('"'); i++; break }
+        if (c === '"') { out.push('\\"'); i++; continue }
+        if (c === '\n') { out.push('\\n'); i++; continue } // 单引号串内换行转义，避免破坏结构
+        out.push(c); i++
+      }
+      continue
+    }
+    // 裸词：键（后跟 :）补引号；值位置做伪字面量映射
+    if (/[A-Za-z_$]/.test(ch)) {
+      let j = i
+      while (j < n && /[A-Za-z0-9_$-]/.test(src[j])) j++
+      const word = src.slice(i, j)
+      let k = j
+      while (k < n && isWs(src[k])) k++
+      if (src[k] === ':') {
+        out.push(`"${word}"`)
+      } else {
+        out.push(LITERAL_MAP[word] ?? word)
+      }
+      i = j
+      continue
+    }
+    // 尾逗号：, 后第一个“有效字符”（跳过空白与注释）是 } 或 ] 则丢弃
+    if (ch === ',') {
+      let k = i + 1
+      while (k < n) {
+        if (isWs(src[k])) { k++; continue }
+        if (src[k] === '/' && src[k + 1] === '/') { k += 2; while (k < n && src[k] !== '\n') k++; continue }
+        if (src[k] === '/' && src[k + 1] === '*') { k += 2; while (k < n && !(src[k] === '*' && src[k + 1] === '/')) k++; k += 2; continue }
+        break
+      }
+      if (src[k] === '}' || src[k] === ']') { i++; continue }
+      out.push(','); i++
+      continue
+    }
+    out.push(ch); i++
+  }
+  return out.join('')
+}
+
 /**
  * 宽松 JSON 解析，自动兼容三种输入：
  * 1. 普通 JSON：{"a":1}
  * 2. 完整 JSON 字符串："{\"a\":1}" 或 "{\"a\":1}"
  * 3. 转义后无外层引号：{\"a\":1} 或 {\"a\":\"b\\nc\"}
+ * 均失败时尝试 repairJson 修复非标准 JSON（注释/单引号/尾逗号/无引号键等）
  */
-const tryParseJson = (input: string): { parsed: unknown; error: string | null } => {
+export const tryParseJson = (input: string): { parsed: unknown; error: string | null } => {
   const trimmed = input.trim()
   if (!trimmed) return { parsed: '', error: null }
 
@@ -41,7 +145,15 @@ const tryParseJson = (input: string): { parsed: unknown; error: string | null } 
     return { parsed: decodeRecursive(JSON.parse(trimmed)), error: null }
   } catch {}
   try {
-    return { parsed: decodeRecursive(JSON.parse(wrapAsJsonString(trimmed))), error: null }
+    const wrapped = decodeRecursive(JSON.parse(wrapAsJsonString(trimmed)))
+    // 仅当确实发生反转义（结果与原文不同）才认定命中；
+    // 否则说明这只是把整段非标准 JSON 当成巨型字符串，应继续尝试 repairJson
+    if (typeof wrapped !== 'string' || wrapped !== trimmed) {
+      return { parsed: wrapped, error: null }
+    }
+  } catch {}
+  try {
+    return { parsed: decodeRecursive(JSON.parse(repairJson(trimmed))), error: null }
   } catch {}
   return { parsed: null, error: 'JSON 解析错误' }
 }
@@ -143,7 +255,6 @@ export interface JsonStats {
   lineCount: number
   valid: boolean
 }
-
 const byteLength = (s: string) => new Blob([s]).size
 
 export const getJsonStats = (text: string): JsonStats => {
@@ -184,4 +295,20 @@ export const getJsonStats = (text: string): JsonStats => {
     lineCount: formatted.split('\n').length,
     valid: true,
   }
+}
+
+export type DetectedFormat = 'json' | 'xml' | 'yaml' | 'csv' | 'text'
+
+/** 智能识别输入文本的格式（用于粘贴提示与工具箱） */
+export const detectFormat = (input: string): DetectedFormat => {
+  const t = input.trim()
+  if (!t) return 'text'
+  if (!tryParseJson(t).error) return 'json'
+  if (/^<\?xml[\s\S]*>|^<[a-zA-Z_][\w:.-]*(\s|>|\/)/.test(t)) return 'xml'
+  // 含逗号且行数一致，像 CSV
+  const lines = t.split(/\r?\n/).filter(Boolean)
+  if (lines.length > 1 && lines.every(l => l.includes(','))) return 'csv'
+  // YAML：含 key: value 或 - 列表项且非 JSON
+  if (/^(\s*-\s|\s*[\w"']+\s*:(\s|$))/m.test(t) && /:\s/.test(t)) return 'yaml'
+  return 'text'
 }

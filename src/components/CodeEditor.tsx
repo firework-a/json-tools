@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react'
 import Editor, { type OnMount } from '@monaco-editor/react'
 import type * as Monaco from 'monaco-editor'
 import { useAppStore } from '../store'
+import { detectFormat } from '../utils/json'
 import { registerMainEditor } from '../editorRegistry'
 import '../monaco-setup'
 
@@ -74,6 +75,18 @@ export default function CodeEditor({ value, onChange, readOnly, language }: Prop
       }
       restoreView()
       requestAnimationFrame(restoreView)
+
+      // 智能粘贴检测：JSON 编辑区粘贴了非 JSON 内容（YAML/XML/CSV）时提示一键转换
+      if (!readOnly && resolvedLanguage === 'json') {
+        const pasted = editor.getModel()?.getValueInRange(range) ?? ''
+        if (pasted.trim().length > 12) {
+          const fmt = detectFormat(pasted)
+          if (fmt === 'yaml' || fmt === 'xml' || fmt === 'csv') {
+            const label = fmt === 'yaml' ? 'YAML' : fmt === 'xml' ? 'XML' : 'CSV'
+            useAppStore.getState().showToast(`检测到粘贴内容可能是 ${label}，可在「格式转换」中处理`)
+          }
+        }
+      }
     })
   }
 

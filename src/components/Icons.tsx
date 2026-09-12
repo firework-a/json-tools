@@ -134,6 +134,29 @@ export const SchemaIcon = ({ size, color }: P) => (
     <path d="m9 12 2 2 4-4" />
   </I>
 )
+export const ToolboxIcon = ({ size, color }: P) => (
+  <I size={size} color={color || '#5ac8c8'}>
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+  </I>
+)
+export const CommandIcon = ({ size, color }: P) => (
+  <I size={size} color={color || 'currentColor'}>
+    <path d="M15 6a3 3 0 1 1 3 3h-3z" />
+    <path d="M9 6a3 3 0 1 0-3 3h3z" />
+    <path d="M9 18a3 3 0 1 1-3-3h3z" />
+    <path d="M15 18a3 3 0 1 0 3-3h-3z" />
+    <rect x="9" y="9" width="6" height="6" rx="1" />
+  </I>
+)
+export const PathIcon = ({ size = 16, color }: P) => (
+  <I size={size} color={color || 'currentColor'}>
+    <circle cx="6" cy="19" r="2" />
+    <circle cx="18" cy="5" r="2" />
+    <path d="M8 19h6a3 3 0 0 0 3-3V7" />
+  </I>
+)
+
+// 工具模式顶栏图标
 
 // 工具模式顶栏图标
 export const BackIcon = ({ size = 24, color = 'currentColor' }: P) => (

@@ -182,7 +182,7 @@ function UpdatesSection() {
       <div className="set-section-title">更新设置</div>
       <ToggleRow
         label="自动检查更新"
-        desc="启动时及每 4 小时自动在后台检查新版本"
+        desc="启动 8 秒后及每 4 小时后台检查；距上次检查不足 24 小时则跳过本次启动检查"
         value={s.autoCheckUpdates}
         onChange={s.setAutoCheckUpdates}
       />

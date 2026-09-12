@@ -51,6 +51,9 @@ export const useUpdateStore = create<UpdateStore>((set, get) => ({
       const message = e instanceof Error ? e.message : String(e)
       set({ status: { state: 'error', message } })
       if (opts?.notify) useAppStore.getState().showToast(`检查更新失败: ${message}`)
+    } finally {
+      // 记录本次实际发起检查的时间（失败也记录，避免离线时每次启动都重试）
+      useAppStore.getState().setLastUpdateCheckAt(Date.now())
     }
   },
 

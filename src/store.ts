@@ -4,7 +4,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { isTauri } from '@tauri-apps/api/core'
 import type { CodeLang } from './utils/codeGen'
 
-export type ViewMode = 'edit' | 'diff' | 'convert' | 'ts' | 'schema'
+export type ViewMode = 'edit' | 'diff' | 'convert' | 'ts' | 'schema' | 'tools'
 export type ConvertFormat = 'yaml' | 'xml' | 'toml' | 'csv'
 export type ThemeMode = 'dark' | 'light'
 export type EditorLanguage = 'json' | 'plaintext'
@@ -65,6 +65,18 @@ interface AppState {
   treeOpen: boolean
   setTreeOpen: (v: boolean) => void
 
+  // 命令面板（Ctrl+K）
+  paletteOpen: boolean
+  setPaletteOpen: (v: boolean) => void
+
+  // JMESPath 查询历史（持久化，最多 10 条）
+  jmesHistory: string[]
+  addJmesHistory: (q: string) => void
+
+  // 工具箱当前工具（供命令面板跳转选择）
+  toolsTool: string | null
+  setToolsTool: (t: string | null) => void
+
   theme: ThemeMode
   toggleTheme: () => void
   setTheme: (t: ThemeMode) => void
@@ -99,6 +111,9 @@ interface AppState {
   setAutoCheckUpdates: (v: boolean) => void
   autoDownloadUpdates: boolean
   setAutoDownloadUpdates: (v: boolean) => void
+  // 上次自动检查更新的时间戳（epoch ms），用于跨启动按 24h 节流，避免每次启动都打网络
+  lastUpdateCheckAt: number
+  setLastUpdateCheckAt: (t: number) => void
 
   toast: string | null
   showToast: (msg: string | null) => void
@@ -144,6 +159,20 @@ export const useAppStore = create<AppState>()(
 
       treeOpen: true,
       setTreeOpen: (treeOpen) => set({ treeOpen }),
+
+      paletteOpen: false,
+      setPaletteOpen: (paletteOpen) => set({ paletteOpen }),
+
+      jmesHistory: [],
+      addJmesHistory: (q) => set((s) => {
+        const v = q.trim()
+        if (!v) return s
+        const next = [v, ...s.jmesHistory.filter(h => h !== v)].slice(0, 10)
+        return { jmesHistory: next }
+      }),
+
+      toolsTool: null,
+      setToolsTool: (toolsTool) => set({ toolsTool }),
 
       newTab: () => set((s) => {
         const tab = makeTab()
@@ -309,6 +338,8 @@ export const useAppStore = create<AppState>()(
       setAutoCheckUpdates: (autoCheckUpdates) => set({ autoCheckUpdates }),
       autoDownloadUpdates: false,
       setAutoDownloadUpdates: (autoDownloadUpdates) => set({ autoDownloadUpdates }),
+      lastUpdateCheckAt: 0,
+      setLastUpdateCheckAt: (lastUpdateCheckAt) => set({ lastUpdateCheckAt }),
       toast: null,
       showToast: (toast) => set({ toast }),
     }),
@@ -335,6 +366,7 @@ export const useAppStore = create<AppState>()(
         exportLineNumbers: s.exportLineNumbers,
         autoCheckUpdates: s.autoCheckUpdates,
         autoDownloadUpdates: s.autoDownloadUpdates,
+        lastUpdateCheckAt: s.lastUpdateCheckAt,
       }),
       onRehydrateStorage: () => (state) => {
         if (!state) return

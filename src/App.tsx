@@ -6,7 +6,7 @@ import EditorArea from './components/EditorArea'
 import TreeView from './components/TreeView'
 import StatusBar from './components/StatusBar'
 import SettingsPanel from './components/SettingsPanel'
-import UpdateButton from './components/UpdateButton'
+import CommandPalette from './components/CommandPalette'
 import { useAppStore } from './store'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { isTauri } from '@tauri-apps/api/core'
@@ -21,7 +21,7 @@ function App() {
   const isEditMode = mode === 'edit'
   const [dragOver, setDragOver] = useState(false)
 
-  useAutoUpdate({ immediate: true })
+  useAutoUpdate()
 
   useEffect(() => {
     if (!toast) return
@@ -85,6 +85,22 @@ function App() {
     return () => window.removeEventListener('keydown', onKeyDown, true)
   }, [])
 
+  // 命令面板：Ctrl+K / Cmd+K 或 Ctrl+Shift+P 唤起（全模式可用）
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const mod = e.ctrlKey || e.metaKey
+      if (!mod || e.altKey) return
+      const key = e.key.toLowerCase()
+      if (key === 'k' || (e.shiftKey && key === 'p')) {
+        e.preventDefault()
+        const st = useAppStore.getState()
+        st.setPaletteOpen(!st.paletteOpen)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [])
+
   // 浏览器预览环境的 HTML5 拖拽（同时阻止浏览器直接打开文件）
   useEffect(() => {
     if (isTauri()) return
@@ -125,7 +141,7 @@ function App() {
       </div>
       <StatusBar />
       <SettingsPanel />
-      <UpdateButton />
+      <CommandPalette />
       {toast && <div className="app-toast">{toast}</div>}
       {dragOver && (
         <div className="drop-overlay">

@@ -8,7 +8,7 @@ import { writeFile } from '@tauri-apps/plugin-fs'
 import {
   NewFileIcon, OpenIcon, SaveIcon, ExportIcon,
   BeautifyIcon, CompressIcon, EscapeIcon, UnescapeIcon, FoldIcon, UnfoldIcon,
-  DiffIcon, ConvertIcon, CodeIcon, SchemaIcon,
+  DiffIcon, ConvertIcon, CodeIcon, SchemaIcon, ToolboxIcon, CommandIcon,
   TreeIcon, ThemeIcon, SettingsIcon, PinIcon, PinOffIcon,
 } from './Icons'
 import { foldAllEditors, unfoldAllEditors } from '../editorRegistry'
@@ -18,12 +18,18 @@ import { openTextFile, saveTextFileAs, writeTextFile, basename } from '../utils/
 interface TBProps {
   icon: React.ReactNode
   label: string
+  title?: string
   onClick?: () => void
   active?: boolean
 }
-function TB({ icon, label, onClick, active }: TBProps) {
+function TB({ icon, label, title, onClick, active }: TBProps) {
   return (
-    <button className={`tb ${active ? 'active' : ''}`} onClick={onClick}>
+    <button
+      className={`tb ${active ? 'active' : ''}`}
+      onClick={onClick}
+      title={title ?? label}
+      aria-label={label}
+    >
       <span className="tb-icon">{icon}</span>
       <span className="tb-label">{label}</span>
     </button>
@@ -242,11 +248,15 @@ function Toolbar() {
         <TB icon={<ConvertIcon size={14} color="#5a9cf0" />} label="格式转换" active={mode === 'convert'} onClick={() => switchMode('convert')} />
         <TB icon={<CodeIcon size={14} color="#b578f0" />} label="生成代码" active={mode === 'ts'} onClick={() => switchMode('ts')} />
         <TB icon={<SchemaIcon size={14} color="#f0b840" />} label="Schema" active={mode === 'schema'} onClick={() => switchMode('schema')} />
+        <TB icon={<ToolboxIcon size={14} color="#5ac8c8" />} label="工具箱" active={mode === 'tools'} onClick={() => switchMode('tools')} />
       </div>
 
       <div className="tb-spacer" />
 
       <div className="tb-right">
+        <button className="tb-icon-btn" onClick={() => useAppStore.getState().setPaletteOpen(true)} title="命令面板 (Ctrl+K)" aria-label="命令面板">
+          <CommandIcon size={15} />
+        </button>
         <button className={`tb-icon-btn ${treeOpen ? 'selected' : ''}`} onClick={() => setTreeOpen(!treeOpen)} title={treeOpen ? '隐藏树形视图' : '显示树形视图'}>
           <TreeIcon size={16} />
         </button>
