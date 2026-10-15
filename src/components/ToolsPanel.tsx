@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAppStore } from '../store'
 import { detectFormat } from '../utils/json'
-import { sortJsonKeys, flattenJson, unflattenJson, removeEmptyValues, type TransformResult } from '../utils/jsonTransform'
+import { sortJsonKeys, flattenJson, unflattenJson, removeEmptyValues, dedupJson, type TransformResult } from '../utils/jsonTransform'
 import {
   base64Encode, base64Decode, urlEncode, urlDecode, decodeJwt,
   hashText, convertTimestamp, convertNumberBase, HASH_ALGOS, type HashAlgo,
@@ -12,7 +12,7 @@ import { analyzeJson, formatInsightsReport } from '../utils/insights'
 import { BackIcon, ChevronDown } from './Icons'
 import CustomSelect from './CustomSelect'
 
-type ToolId = 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase' | 'mock' | 'ndjson' | 'insights'
+type ToolId = 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'dedup' | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase' | 'mock' | 'ndjson' | 'insights'
 
 interface ToolMeta { id: ToolId; label: string; group: string; json?: boolean }
 const TOOLS: ToolMeta[] = [
@@ -20,6 +20,7 @@ const TOOLS: ToolMeta[] = [
   { id: 'flatten', label: '扁平化', group: 'JSON 变换', json: true },
   { id: 'unflatten', label: '扁平还原', group: 'JSON 变换', json: true },
   { id: 'removeEmpty', label: '去空值', group: 'JSON 变换', json: true },
+  { id: 'dedup', label: '去重', group: 'JSON 变换', json: true },
   { id: 'base64', label: 'Base64', group: '编解码' },
   { id: 'url', label: 'URL 编码', group: '编解码' },
   { id: 'jwt', label: 'JWT 解析', group: '编解码' },
@@ -83,6 +84,7 @@ export default function ToolsPanel() {
       case 'flatten': return flattenJson(input)
       case 'unflatten': return unflattenJson(input)
       case 'removeEmpty': return removeEmptyValues(input, removeOnlyNull)
+      case 'dedup': return dedupJson(input)
       case 'base64': return decode ? base64Decode(input) : base64Encode(input)
       case 'url': return decode ? urlDecode(input) : urlEncode(input)
       case 'jwt': return decodeJwt(input)

@@ -1,7 +1,7 @@
 import { useAppStore, type ViewMode } from './store'
 import { useUpdateStore } from './updateStore'
 import { formatJson, compressJson, escapeJson, unescapeJson, copyToClipboard, repairJsonDeep } from './utils/json'
-import { sortJsonKeys, flattenJson, unflattenJson, removeEmptyValues } from './utils/jsonTransform'
+import { sortJsonKeys, flattenJson, unflattenJson, removeEmptyValues, dedupJson } from './utils/jsonTransform'
 import { openTextFile, saveTextFileAs, writeTextFile, basename } from './utils/files'
 import { foldAllEditors, unfoldAllEditors } from './editorRegistry'
 
@@ -101,6 +101,7 @@ export const COMMANDS: AppCommand[] = [
   { id: 'json.unflatten', label: '扁平还原', group: 'JSON 变换', keywords: 'unflatten 还原 嵌套', run: () => applyTransform(unflattenJson, 'json', '已还原') },
   { id: 'json.removeNull', label: '去除 null 值', group: 'JSON 变换', keywords: 'remove null 空值', run: () => applyTransform(c => removeEmptyValues(c, true), 'json', '已去除 null') },
   { id: 'json.removeEmpty', label: '去除所有空值', group: 'JSON 变换', keywords: 'remove empty 空值 空字符串', run: () => applyTransform(c => removeEmptyValues(c, false), 'json', '已去除空值') },
+  { id: 'json.dedup', label: '数组去重', group: 'JSON 变换', keywords: 'dedup duplicate 去重 重复', run: () => applyTransform(c => dedupJson(c), 'json', '已去重') },
   { id: 'json.copyCompact', label: '复制压缩后的 JSON', group: 'JSON 变换', keywords: 'copy 复制 压缩', run: async () => {
     const st = s()
     if (!st.content.trim()) { st.showToast('编辑器内容为空'); return }

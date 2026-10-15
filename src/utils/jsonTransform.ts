@@ -111,3 +111,21 @@ export const removeEmptyValues = (input: string, onlyNull = true): TransformResu
   if (parsed === null || parsed === undefined || typeof parsed !== 'object') return err('去空值要求根节点是对象或数组')
   return ok(walk(parsed))
 }
+
+/** 数组去重：移除完全重复的对象/值（根为数组时生效） */
+export const dedupJson = (input: string): TransformResult => {
+  const { parsed, error } = tryParseJson(input)
+  if (error) return err(error)
+  if (Array.isArray(parsed)) {
+    const seen = new Set<string>()
+    const items = parsed.filter(item => {
+      const key = JSON.stringify(item)
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    return ok(items)
+  }
+  if (parsed === null || typeof parsed !== 'object') return err('去重要求根节点是数组')
+  return ok(parsed)
+}
