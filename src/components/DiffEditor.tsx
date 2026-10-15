@@ -14,8 +14,18 @@ interface Props {
 export default function DiffEditor({ original, modified, onOriginalChange, onModifiedChange }: Props) {
   const theme = useAppStore(s => s.theme)
   const showLineNumbers = useAppStore(s => s.showLineNumbers)
+  const wordWrap = useAppStore(s => s.wordWrap)
   const syncing = useRef(false)
   const editorRef = useRef<Monaco.editor.IStandaloneDiffEditor | null>(null)
+
+  // 设置页切换自动换行时同步到两侧编辑器
+  useEffect(() => {
+    const ed = editorRef.current
+    if (!ed) return
+    const w = wordWrap ? 'on' : 'off'
+    ed.getOriginalEditor().updateOptions({ wordWrap: w })
+    ed.getModifiedEditor().updateOptions({ wordWrap: w })
+  }, [wordWrap])
 
   const onMount: DiffOnMount = (editor) => {
     editorRef.current = editor
@@ -100,7 +110,7 @@ export default function DiffEditor({ original, modified, onOriginalChange, onMod
         scrollBeyondLastLine: false,
         smoothScrolling: true,
         renderLineHighlight: 'line',
-        wordWrap: 'on',
+        wordWrap: wordWrap ? 'on' : 'off',
         folding: true,
         padding: { top: 8, bottom: 12 },
         scrollbar: {
