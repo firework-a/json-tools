@@ -45,6 +45,12 @@ function StatusBar() {
     <footer className="status-bar">
       <div className="status-left">
         <span className="status-filename">{fileName}</span>
+        {mode !== 'edit' && (
+          <>
+            <span className="status-sep">|</span>
+            <span className="status-mode">{mode === 'diff' ? '对比模式' : mode === 'convert' ? '格式转换' : mode === 'ts' ? '生成代码' : mode === 'schema' ? 'Schema' : mode === 'table' ? '表格视图' : '工具箱'}</span>
+          </>
+        )}
         <span className="status-sep">|</span>
         <span>{leftStats.keyCount} 个键</span>
         <span className="status-sep">|</span>
