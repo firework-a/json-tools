@@ -2849,6 +2849,11 @@ select {
   font-size: 12px;
   line-height: 20px;
 
+  .rjv-link {
+    color: $blue;
+    text-decoration: underline;
+  }
+
   // 覆盖 rjv 的内边距
   .w-json-view-container {
     background: transparent !important;
