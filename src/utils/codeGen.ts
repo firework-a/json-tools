@@ -4,7 +4,7 @@
 // 类型用 import type 引入（编译期擦除，不产生运行时依赖）。
 import type { JSONSchemaTargetLanguage } from 'quicktype-core'
 
-export type CodeLang = 'typescript' | 'python' | 'go' | 'java' | 'csharp' | 'rust'
+export type CodeLang = 'typescript' | 'python' | 'go' | 'java' | 'csharp' | 'rust' | 'kotlin'
 
 export interface CodeLangMeta {
   id: CodeLang
@@ -22,6 +22,7 @@ export const CODE_LANGS: CodeLangMeta[] = [
   { id: 'java', label: 'Java', shiki: 'java', rootLabel: '类名' },
   { id: 'csharp', label: 'C#', shiki: 'csharp', rootLabel: '类名' },
   { id: 'rust', label: 'Rust', shiki: 'rust', rootLabel: '结构体名' },
+  { id: 'kotlin', label: 'Kotlin', shiki: 'kotlin', rootLabel: '数据类名' },
 ]
 
 const RENDERER_OPTIONS: Partial<Record<CodeLang, Record<string, string>>> = {
@@ -44,6 +45,7 @@ const RENDERER_OPTIONS: Partial<Record<CodeLang, Record<string, string>>> = {
     'csharp-version': '8',
   },
   rust: { 'density': 'normal', 'visibility': 'public' },
+  kotlin: {},
 }
 
 const sanitizeName = (s: string, fallback: string) => {
