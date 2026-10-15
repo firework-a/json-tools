@@ -3111,6 +3111,34 @@ select {
     }
   }
 }
+.status-bar {
+  .status-icon-btn {
+    @include flex-center;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    color: $text-secondary;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.12s $ease-out, color 0.12s $ease-out;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: $text-primary;
+    }
+  }
+}
+
+[data-theme='light'] .status-bar .status-icon-btn {
+  color: #64748b;
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.06);
+    color: #0f172a;
+  }
+}
+
 /* =================== 工具箱（tools 模式） =================== */
 .tools-shell {
   flex: 1;

@@ -4,6 +4,7 @@ import { getJsonStats, repairJsonDeep } from '../utils/json'
 import { computeDiff } from '../utils/jsonDiffer'
 import { onEditorCursor } from '../editorRegistry'
 import UpdateButton from './UpdateButton'
+import { CommandIcon, ThemeIcon, SettingsIcon } from './Icons'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
 
 const formatSize = (bytes: number) => {
@@ -92,6 +93,29 @@ function StatusBar() {
             <span>{formatSize(rightStats.size)}</span>
             <span className="status-sep">|</span>
             <span>{rightStats.lineCount} 行</span>
+            <span className="status-sep">|</span>
+          </>
+        )}
+        {mode !== 'edit' && (
+          <>
+            <button
+              className="status-icon-btn"
+              title="命令面板 (Ctrl+K)"
+              aria-label="命令面板"
+              onClick={() => useAppStore.getState().setPaletteOpen(true)}
+            ><CommandIcon size={13} /></button>
+            <button
+              className="status-icon-btn"
+              title="切换主题"
+              aria-label="切换主题"
+              onClick={() => useAppStore.getState().toggleTheme()}
+            ><ThemeIcon size={13} /></button>
+            <button
+              className="status-icon-btn"
+              title="设置"
+              aria-label="设置"
+              onClick={() => useAppStore.getState().setSettingsOpen(true)}
+            ><SettingsIcon size={13} /></button>
           </>
         )}
         <UpdateButton />
