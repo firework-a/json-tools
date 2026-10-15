@@ -1063,6 +1063,20 @@ select {
     user-select: none;
     transition: background 0.12s $ease-out, color 0.12s $ease-out;
 
+    .grid-col-resizer {
+      position: absolute;
+      right: -3px;
+      top: 0;
+      bottom: 0;
+      width: 7px;
+      cursor: col-resize;
+      z-index: 3;
+
+      &:hover {
+        background: rgba($blue, 0.25);
+      }
+    }
+
     &:hover {
       background: $bg-hover;
       color: $text-primary;

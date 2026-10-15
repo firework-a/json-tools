@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import { useAppStore } from '../store'
 import { BackIcon, DownloadIcon } from './Icons'
 import { SAMPLE_JSON } from '../utils/sample'
@@ -160,6 +160,31 @@ export default function GridView() {
 
   const [showStats, setShowStats] = useState(false)
   const [filter, setFilter] = useState('')
+  const [colWidths, setColWidths] = useState<Record<string, number>>({})
+  const resizing = useRef<{ col: string; startX: number; startW: number } | null>(null)
+
+  // 列宽拖拽：按住列头右侧手柄左右调整
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const r = resizing.current
+      if (!r) return
+      const w = Math.max(60, Math.min(640, r.startW + e.clientX - r.startX))
+      setColWidths(prev => ({ ...prev, [r.col]: w }))
+    }
+    const onUp = () => { resizing.current = null; document.body.style.cursor = ''; document.body.style.userSelect = '' }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+  }, [])
+
+  const startResize = (e: React.MouseEvent, col: string) => {
+    e.stopPropagation()
+    e.preventDefault()
+    resizing.current = { col, startX: e.clientX, startW: colWidths[col] ?? 140 }
+  }
 
   const filteredRows = useMemo(() => {
     const q = filter.trim().toLowerCase()
@@ -300,9 +325,21 @@ export default function GridView() {
             <tr>
               <th className="grid-index">#</th>
               {table.columns.map(col => (
-                <th key={col} className={sortKey === col ? 'sorted' : ''} onClick={() => toggleSort(col)} title={col}>
+                <th
+                  key={col}
+                  className={sortKey === col ? 'sorted' : ''}
+                  style={colWidths[col] ? { width: colWidths[col], minWidth: colWidths[col] } : undefined}
+                  onClick={() => toggleSort(col)}
+                  title={col}
+                >
                   <span className="grid-col-name">{col}</span>
                   <span className="grid-sort-mark">{sortKey === col ? (sortAsc ? '↑' : '↓') : ''}</span>
+                  <span
+                    className="grid-col-resizer"
+                    onMouseDown={e => startResize(e, col)}
+                    onClick={e => e.stopPropagation()}
+                    title="拖动调整列宽"
+                  />
                 </th>
               ))}
             </tr>
