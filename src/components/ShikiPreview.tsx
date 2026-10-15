@@ -23,6 +23,8 @@ export default function ShikiPreview({ code, lang = 'json' }: Props) {
   useEffect(() => {
     let cancelled = false
     if (!code) { setHtml(''); return }
+    // 性能保护：超大内容跳过 Shiki 高亮（正则高亮开销大），直接纯文本展示
+    if (code.length > 500_000) { setHtml(`<pre class="shiki-fallback">${escapeForPre(code)}</pre>`); return }
     const key = `${lang}|${theme}|${code.length}|${code.slice(0, 64)}|${code.slice(-64)}`
     const cached = htmlCache.get(key)
     if (cached) { setHtml(cached); return }
