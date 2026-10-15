@@ -138,6 +138,16 @@ function EditorSection() {
       <ToggleRow label="缩进参考线" value={s.renderIndentGuides} onChange={s.setRenderIndentGuides} />
       <ToggleRow label="迷你地图" desc="显示代码缩略导航" value={s.minimap} onChange={s.setMinimap} />
       <ToggleRow label="粘贴自动格式化" desc="粘贴单行压缩 JSON 时自动展开" value={s.autoFormat} onChange={s.setAutoFormat} />
+      <SegRow<0 | 1 | 2>
+        label="树形默认展开层级"
+        value={s.treeDefaultCollapse}
+        options={[
+          { value: 0, label: '全部展开' },
+          { value: 1, label: '第 1 层' },
+          { value: 2, label: '第 2 层' },
+        ]}
+        onChange={s.setTreeDefaultCollapse}
+      />
     </div>
   )
 }

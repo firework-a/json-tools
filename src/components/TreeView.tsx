@@ -93,8 +93,12 @@ function TreeView() {
   const queryLang = useAppStore(s => s.queryLang)
   const setQueryLang = useAppStore(s => s.setQueryLang)
   const treeWidth = useAppStore(s => s.treeWidth)
+  const treeDefaultCollapse = useAppStore(s => s.treeDefaultCollapse)
   const scrollRef = useRef<HTMLDivElement>(null)
   const syncingRef = useRef(false)
+
+  // 设置页修改默认展开层级时重置折叠状态
+  useEffect(() => { setCollapsed(treeDefaultCollapse > 0) }, [treeDefaultCollapse])
 
   const isLight = theme === 'light'
 
@@ -287,7 +291,7 @@ function TreeView() {
               displayDataTypes={false}
               displayObjectSize={true}
               enableClipboard={true}
-              collapsed={collapsed ? 1 : false}
+              collapsed={collapsed ? (treeDefaultCollapse || 1) : false}
               style={isLight ? lightTheme : darkTheme}
               shortenTextAfterLength={120}
               beforeCopy={(copyText, _keyName, _value, _parent, _expandKey, keys) =>

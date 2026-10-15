@@ -82,6 +82,10 @@ interface AppState {
   treeWidth: number
   setTreeWidth: (w: number) => void
 
+  // 树形视图默认展开层级（0=全部展开，1/2=默认折叠到第 N 层；持久化）
+  treeDefaultCollapse: 0 | 1 | 2
+  setTreeDefaultCollapse: (v: 0 | 1 | 2) => void
+
   // 最近打开文件（持久化，最多 10 条，仅记录有路径的）
   recentFiles: { path: string; name: string; openedAt: number }[]
   addRecentFile: (path: string, name: string) => void
@@ -198,6 +202,9 @@ export const useAppStore = create<AppState>()(
 
       treeWidth: 340,
       setTreeWidth: (treeWidth) => set({ treeWidth: Math.max(260, Math.min(560, treeWidth)) }),
+
+      treeDefaultCollapse: 0,
+      setTreeDefaultCollapse: (treeDefaultCollapse) => set({ treeDefaultCollapse }),
 
       toolsTool: null,
       setToolsTool: (toolsTool) => set({ toolsTool }),
@@ -393,6 +400,7 @@ export const useAppStore = create<AppState>()(
         codeRootName: s.codeRootName,
         treeOpen: s.treeOpen,
         treeWidth: s.treeWidth,
+        treeDefaultCollapse: s.treeDefaultCollapse,
         queryLang: s.queryLang,
         jmesHistory: s.jmesHistory,
         recentFiles: s.recentFiles,
