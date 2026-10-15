@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from 'react'
+import { useMemo, useState, useRef, useEffect, useDeferredValue } from 'react'
 import { useAppStore } from '../store'
 import { BackIcon, DownloadIcon } from './Icons'
 import { SAMPLE_JSON } from '../utils/sample'
@@ -129,6 +129,8 @@ export default function GridView() {
 
   const [showStats, setShowStats] = useState(false)
   const [filter, setFilter] = useState('')
+  // 大表格过滤输入防卡顿：输入框即时响应，过滤计算延迟一帧
+  const deferredFilter = useDeferredValue(filter)
   const [colWidths, setColWidths] = useState<Record<string, number>>({})
   const [hiddenCols, setHiddenCols] = useState<string[]>([])
   const [columnOrder, setColumnOrder] = useState<string[]>([])
@@ -182,11 +184,11 @@ export default function GridView() {
   }
 
   const filteredRows = useMemo(() => {
-    const q = filter.trim().toLowerCase()
+    const q = deferredFilter.trim().toLowerCase()
     if (!q) return sortedRows
     return sortedRows.filter(({ row }) =>
       Object.values(row).some(v => cellText(v).toLowerCase().includes(q)))
-  }, [sortedRows, filter])
+  }, [sortedRows, deferredFilter])
 
   const exportTable = async (fmt: 'markdown' | 'csv') => {
     if (!table) return
