@@ -35,7 +35,7 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 - JSON Schema 应用到编辑器实时校验（Monaco diagnostics）
 - YAML / XML / TOML / CSV 格式转换（支持反向：YAML/XML/TOML/CSV → JSON），NDJSON ↔ JSON 互转
 - JSON Schema 生成与校验
-- TypeScript / Python / Go / Java / C# / Rust 多语言类型生成
+- TypeScript / Python / Go / Java / C# / Rust / Kotlin 多语言类型生成
 - 代码图片导出
 - 深色 / 浅色主题（macOS 风格材质），字体、缩进、自动换行等编辑器设置持久化
 - 命令面板（`Ctrl+K`）覆盖全部操作，状态栏含键数 / 深度 / 大小 / 行数 / 光标位置
