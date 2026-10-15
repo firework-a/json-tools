@@ -135,7 +135,7 @@ export default function GridView() {
   const hideColumn = (col: string) => setHiddenCols(prev => [...prev, col])
 
   // 列统计：每列 null / 类型分布（点击「统计」开关）
-  const RENDER_LIMIT = 5000
+  const RENDER_LIMIT = 2000
   const columnStats = useMemo(() => {
     if (!table) return []
     return visibleColumns.map(col => {
@@ -327,7 +327,7 @@ export default function GridView() {
           <BackIcon />
         </button>
         <span className="table-title">{table.title}</span>
-        <span className="table-meta">{table.rows.length} 行 × {table.columns.length} 列{sortKey ? ` · 按 ${sortKey} ${sortAsc ? '升序' : '降序'}` : ''}{filter ? ' · 已过滤' : ''}{table.rows.length > RENDER_LIMIT ? ' · 仅渲染前 5000 行' : ''}</span>
+        <span className="table-meta">{table.rows.length} 行 × {table.columns.length} 列{sortKey ? ` · 按 ${sortKey} ${sortAsc ? '升序' : '降序'}` : ''}{filter ? ' · 已过滤' : ''}{table.rows.length > RENDER_LIMIT ? ' · 仅渲染前 2000 行' : ''}</span>
         <div className="table-spacer" />
         <input
           className="table-filter"
