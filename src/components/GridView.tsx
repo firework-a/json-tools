@@ -161,6 +161,7 @@ export default function GridView() {
   const [showStats, setShowStats] = useState(false)
   const [filter, setFilter] = useState('')
   const [colWidths, setColWidths] = useState<Record<string, number>>({})
+  const [hiddenCols, setHiddenCols] = useState<string[]>([])
   const resizing = useRef<{ col: string; startX: number; startW: number } | null>(null)
 
   // 列宽拖拽：按住列头右侧手柄左右调整
@@ -185,6 +186,13 @@ export default function GridView() {
     e.preventDefault()
     resizing.current = { col, startX: e.clientX, startW: colWidths[col] ?? 140 }
   }
+
+  // 列隐藏：右键列头隐藏；顶栏可恢复
+  const visibleColumns = useMemo(
+    () => table ? table.columns.filter(c => !hiddenCols.includes(c)) : [],
+    [table, hiddenCols],
+  )
+  const hideColumn = (col: string) => setHiddenCols(prev => [...prev, col])
 
   const filteredRows = useMemo(() => {
     const q = filter.trim().toLowerCase()
@@ -353,6 +361,13 @@ export default function GridView() {
           <DownloadIcon size={13} /> CSV
         </button>
         <span className="table-hint">点击列头排序 · 点击行复制 · 双击单元格编辑</span>
+        {hiddenCols.length > 0 && (
+          <button
+            className="tool-back-flat"
+            title="恢复隐藏的列"
+            onClick={() => setHiddenCols([])}
+          >已隐藏 {hiddenCols.length} 列 · 恢复</button>
+        )}
       </div>
       {showStats && (
         <div className="table-stats">
@@ -369,13 +384,14 @@ export default function GridView() {
           <thead>
             <tr>
               <th className="grid-index">#</th>
-              {table.columns.map(col => (
+              {visibleColumns.map(col => (
                 <th
                   key={col}
                   className={sortKey === col ? 'sorted' : ''}
                   style={colWidths[col] ? { width: colWidths[col], minWidth: colWidths[col] } : undefined}
                   onClick={() => toggleSort(col)}
-                  title={col}
+                  onContextMenu={e => { e.preventDefault(); hideColumn(col) }}
+                  title={`${col}（右键隐藏列）`}
                 >
                   <span className="grid-col-name">{col}</span>
                   <span className="grid-sort-mark">{sortKey === col ? (sortAsc ? '↑' : '↓') : ''}</span>
@@ -401,7 +417,7 @@ export default function GridView() {
                     onClick={e => { e.stopPropagation(); deleteRow(idx) }}
                   >×</button>
                 </td>
-                {table.columns.map(col => {
+                {visibleColumns.map(col => {
                   const v = row[col]
                   const isObj = v !== null && typeof v === 'object'
                   const isNum = typeof v === 'number'
