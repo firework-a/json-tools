@@ -75,16 +75,18 @@ function EditorArea() {
     if (mode === 'edit' || mode === 'diff' || mode === 'tools') return
     let cancelled = false
     const reverseConvert = (f: ConvertFormat, input: string) => {
-      // 输入可能是转义后的 JSON 字符串（如来自「压缩转义」操作），先用宽松解析还原
-      let src = input
+      // 输入可能是转义后的 JSON 字符串（如来自「压缩转义」操作）或宽松 JSON：
+      // 先用宽松解析还原，能还原为对象/数组时直接输出格式化 JSON
       try {
         const { parsed, error } = tryParseJson(input)
-        if (!error && typeof parsed === 'string' && parsed.trim()) src = parsed
-      } catch { /* keep original */ }
-      if (f === 'yaml') return yamlToJson(src)
-      if (f === 'xml') return xmlToJson(src)
-      if (f === 'toml') return tomlToJson(src)
-      return csvToJson(src)
+        if (!error && parsed !== null && typeof parsed === 'object') {
+          return { result: JSON.stringify(parsed, null, 2), error: null }
+        }
+      } catch { /* 按目标格式解析 */ }
+      if (f === 'yaml') return yamlToJson(input)
+      if (f === 'xml') return xmlToJson(input)
+      if (f === 'toml') return tomlToJson(input)
+      return csvToJson(input)
     }
     const t = setTimeout(async () => {
       let r: { result: string; error: string | null }
