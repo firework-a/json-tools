@@ -131,6 +131,8 @@ export default function GridView() {
   const [filter, setFilter] = useState('')
   const [colWidths, setColWidths] = useState<Record<string, number>>({})
   const [hiddenCols, setHiddenCols] = useState<string[]>([])
+  const [columnOrder, setColumnOrder] = useState<string[]>([])
+  const [dragCol, setDragCol] = useState<string | null>(null)
   const resizing = useRef<{ col: string; startX: number; startW: number } | null>(null)
 
   // 列宽拖拽：按住列头右侧手柄左右调整
@@ -157,11 +159,27 @@ export default function GridView() {
   }
 
   // 列隐藏：右键列头隐藏；顶栏可恢复
-  const visibleColumns = useMemo(
-    () => table ? table.columns.filter(c => !hiddenCols.includes(c)) : [],
-    [table, hiddenCols],
-  )
+  const orderedColumns = useMemo(() => {
+    if (!table) return []
+    const cols = table.columns.filter(c => !hiddenCols.includes(c))
+    if (columnOrder.length === 0) return cols
+    // 按 columnOrder 排序，未出现在 order 中的列按原顺序附后
+    return [...columnOrder.filter(c => cols.includes(c)), ...cols.filter(c => !columnOrder.includes(c))]
+  }, [table, hiddenCols, columnOrder])
+  const visibleColumns = orderedColumns
   const hideColumn = (col: string) => setHiddenCols(prev => [...prev, col])
+
+  // 列重排：拖拽列头到目标列
+  const reorderColumn = (from: string, to: string) => {
+    if (from === to) return
+    setColumnOrder(prev => {
+      const base = prev.length ? prev : table!.columns.filter(c => !hiddenCols.includes(c))
+      const next = base.filter(c => c !== from)
+      const idx = next.indexOf(to)
+      next.splice(idx >= 0 ? idx : next.length, 0, from)
+      return next
+    })
+  }
 
   const filteredRows = useMemo(() => {
     const q = filter.trim().toLowerCase()
@@ -346,12 +364,12 @@ export default function GridView() {
         >
           保存
         </button>
-        <span className="table-hint">点击列头排序 · 点击行复制 · 双击单元格编辑</span>
+        <span className="table-hint">点击列头排序 · 拖拽列头重排 · 双击单元格编辑</span>
         {hiddenCols.length > 0 && (
           <button
             className="tool-back-flat"
             title="恢复隐藏的列与列宽"
-            onClick={() => { setHiddenCols([]); setColWidths({}) }}
+            onClick={() => { setHiddenCols([]); setColWidths({}); setColumnOrder([]) }}
           >已隐藏 {hiddenCols.length} 列 · 恢复</button>
         )}
       </div>
@@ -377,7 +395,12 @@ export default function GridView() {
                   style={colWidths[col] ? { width: colWidths[col], minWidth: colWidths[col] } : undefined}
                   onClick={() => toggleSort(col)}
                   onContextMenu={e => { e.preventDefault(); hideColumn(col) }}
-                  title={`${col}（右键隐藏列）`}
+                  title={`${col}（右键隐藏列 · 拖拽重排）`}
+                  draggable
+                  onDragStart={() => setDragCol(col)}
+                  onDragOver={e => { if (dragCol && dragCol !== col) e.preventDefault() }}
+                  onDrop={e => { e.preventDefault(); if (dragCol) reorderColumn(dragCol, col); setDragCol(null) }}
+                  onDragEnd={() => setDragCol(null)}
                 >
                   <span className="grid-col-name">{col}</span>
                   <span className="grid-sort-mark">{sortKey === col ? (sortAsc ? '↑' : '↓') : ''}</span>
