@@ -263,6 +263,24 @@ function AboutSection() {
         TypeScript 等多语言类型生成、JSON Schema、代码对比与图片导出。
       </p>
       <div className="about-tech">
+        <div className="about-tech-title">快捷键</div>
+        <div className="about-keys">
+          {[
+            ['Ctrl+N', '新建标签页'],
+            ['Ctrl+O', '打开文件'],
+            ['Ctrl+S / Ctrl+Shift+S', '保存 / 另存为'],
+            ['Ctrl+B', '美化 JSON'],
+            ['Ctrl+V', '粘贴（编辑器外直接粘贴剪贴板）'],
+            ['Ctrl+K', '命令面板'],
+          ].map(([k, d]) => (
+            <div className="about-key-row" key={k}>
+              <kbd className="about-kbd">{k}</kbd>
+              <span className="about-key-desc">{d}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="about-tech">
         <div className="about-tech-title">技术栈</div>
         <div className="about-tech-tags">
           <span className="about-tag">Tauri 2</span>

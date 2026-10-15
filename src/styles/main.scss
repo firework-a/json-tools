@@ -1595,6 +1595,44 @@ select {
   border: 1px solid rgba($blue, 0.2);
 }
 
+.about-keys {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.about-key-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.about-kbd {
+  display: inline-block;
+  min-width: 130px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-family: $font-mono;
+  color: $text-secondary;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.about-key-desc {
+  color: $text-secondary;
+}
+
+[data-theme='light'] .about-kbd {
+  color: #475569;
+  background: #f1f5f9;
+  border-color: #d9dee7;
+}
+
 /* 亮色主题 */
 [data-theme='light'] .settings-overlay {
   background: rgba(15, 23, 42, 0.35);
