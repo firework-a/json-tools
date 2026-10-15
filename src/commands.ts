@@ -47,6 +47,19 @@ export const COMMANDS: AppCommand[] = [
     const f = await openTextFile()
     if (f) s().openLoadedFile(f)
   } },
+  { id: 'file.openUrl', label: '从 URL 导入 JSON', group: '文件', keywords: 'url import 远程 导入 网络', run: async () => {
+    const url = window.prompt('输入 JSON 文件的 URL（如 https://api.github.com/...）')
+    if (!url || !url.trim()) return
+    try {
+      const res = await fetch(url.trim())
+      if (!res.ok) { s().showToast(`导入失败：HTTP ${res.status}`); return }
+      const text = await res.text()
+      const name = url.split('/').pop()?.split('?')[0] || 'remote.json'
+      s().openLoadedFile({ name: name.endsWith('.json') ? name : `${name}.json`, content: text, language: 'json' })
+    } catch (e) {
+      s().showToast('导入失败（可能被 CORS 拦截）：' + (e instanceof Error ? e.message : String(e)))
+    }
+  } },
   { id: 'file.save', label: '保存', group: '文件', keywords: 'save 保存', hint: 'Ctrl+S', run: async () => {
     const st = s()
     const tab = st.tabs.find(t => t.id === st.activeTabId)
