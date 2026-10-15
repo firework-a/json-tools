@@ -159,12 +159,13 @@ function TreeView() {
           <span className="tree-icon"><TreeIcon /></span>
           <span className="tree-title" style={titleStyle}>树形视图</span>
         </div>
-        <button className="tree-icon-btn" style={btnStyle} onClick={() => setTreeOpen(false)}><CloseIcon size={13} color={isLight ? '#64748b' : undefined} /></button>
+        <button className="tree-icon-btn" style={btnStyle} aria-label="关闭树形视图" onClick={() => setTreeOpen(false)}><CloseIcon size={13} color={isLight ? '#64748b' : undefined} /></button>
       </div>
       <div className="tree-search">
         <div className="tree-search-box" style={searchStyle}>
           <SearchIcon size={13} color={isLight ? '#94a3b8' : undefined} />
           <input
+            aria-label={`${queryLangLabel(queryLang)} 查询输入`}
             placeholder={`${queryLangLabel(queryLang)} 查询…`}
             style={inputStyle}
             value={query}
@@ -177,6 +178,7 @@ function TreeView() {
             <button
               className="tree-icon-btn"
               style={btnStyle}
+              aria-label="清空查询"
               title="清空查询"
               onClick={() => setQuery('')}
             >
@@ -207,16 +209,18 @@ function TreeView() {
         <button
           className={`tree-icon-btn ${pathMode ? 'selected' : ''}`}
           style={pathMode ? { color: '#5a9cf0', background: 'rgba(90,156,240,0.14)' } : btnStyle}
+          aria-label="复制模式切换"
           title={pathMode ? '复制模式：节点路径（点击切回值）' : '复制模式：节点值（点击切到路径）'}
           onClick={() => setPathMode(v => !v)}
         >
           <PathIcon size={13} color={pathMode ? '#5a9cf0' : (isLight ? '#64748b' : undefined)} />
         </button>
-        <button className="tree-icon-btn" style={btnStyle} title={`${queryLangLabel(queryLang)} 速查表`} onClick={() => setShowHelp(true)}><InfoIcon size={13} color={isLight ? '#64748b' : undefined} /></button>
+        <button className="tree-icon-btn" style={btnStyle} aria-label="查询速查表" title={`${queryLangLabel(queryLang)} 速查表`} onClick={() => setShowHelp(true)}><InfoIcon size={13} color={isLight ? '#64748b' : undefined} /></button>
         {queryResult.active && !queryResult.error && queryResult.value !== undefined && (
           <button
             className="tree-icon-btn"
             style={btnStyle}
+            aria-label="查询结果写入编辑器"
             title="把查询结果写入编辑器（替换当前内容）"
             onClick={() => {
               const st = useAppStore.getState()
@@ -227,7 +231,7 @@ function TreeView() {
             <DownloadIcon size={13} color={isLight ? '#64748b' : undefined} />
           </button>
         )}
-        <button className="tree-icon-btn" style={btnStyle} title={collapsed ? '全部展开' : '全部收起'} onClick={() => setCollapsed(v => !v)}>
+        <button className="tree-icon-btn" style={btnStyle} aria-label={collapsed ? '全部展开' : '全部收起'} title={collapsed ? '全部展开' : '全部收起'} onClick={() => setCollapsed(v => !v)}>
           {collapsed
             ? <ChevronsUpDown size={13} color={isLight ? '#64748b' : undefined} />
             : <ChevronsDownUp size={13} color={isLight ? '#64748b' : undefined} />}

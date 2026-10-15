@@ -25,15 +25,19 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 ## 核心能力
 
 - JSON 格式化、压缩、转义和解转义（粘贴单行 JSON 自动美化）
-- 多标签页编辑，支持文件打开 / 保存 / 另存为，带未保存状态提示
-- 文件拖拽打开（`.json` / `.txt` / `.yaml` / `.yml`）
-- JSON 树形结构查看与查询
-- JSON Diff 对比，支持行级差异高亮
-- YAML / XML / TOML / CSV 格式转换
+- JSON 修复：自定义修复规则 + jsonrepair 兜底，覆盖注释 / 单引号 / 尾逗号 / 截断 payload 等非标准 JSON
+- 多标签页编辑，支持文件打开 / 保存 / 另存为，带未保存状态提示（中键关闭标签）
+- 文件拖拽打开（`.json` / `.txt` / `.yaml` / `.yml`），编辑器外 `Ctrl+V` 直接粘贴剪贴板内容
+- JSON 树形结构查看，支持 JMESPath / JSONPath 双查询语言（速查表、历史记录、结果写回编辑器）
+- JSON Diff 对比，行级差异高亮，一键生成 RFC 6902 JSON Patch
+- 表格视图：对象数组渲染为电子表格（自动下钻、列头排序、单元格编辑、导出 Markdown / CSV）
+- Mock 数据生成：从样例结构或 JSON Schema 生成仿真数据
+- YAML / XML / TOML / CSV 格式转换，NDJSON ↔ JSON 互转
 - JSON Schema 生成与校验
 - TypeScript / Python / Go / Java / C# / Rust 多语言类型生成
 - 代码图片导出
-- 深色 / 浅色主题，字体、缩进、自动换行等编辑器设置持久化
+- 深色 / 浅色主题（macOS 风格材质），字体、缩进、自动换行等编辑器设置持久化
+- 命令面板（`Ctrl+K`）覆盖全部操作，状态栏含键数 / 深度 / 大小 / 行数 / 光标位置
 - 窗口置顶、窗口原生拖拽与无边框标题栏
 - GitHub Releases 内置更新检查
 
@@ -46,6 +50,8 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 | 保存 | `Ctrl/Cmd + S` |
 | 另存为 | `Ctrl/Cmd + Shift + S` |
 | 美化 JSON | `Ctrl/Cmd + B` |
+| 命令面板 | `Ctrl/Cmd + K` |
+| 全局粘贴（编辑器外） | `Ctrl/Cmd + V` |
 
 ## 安装与更新
 
