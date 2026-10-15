@@ -20,7 +20,9 @@
 - 表格视图支持添加行（克隆末行结构）与删除行（行号悬停显示删除按钮）。
 - Schema 模式新增「应用校验」：把 Schema 应用到编辑器实时校验（Monaco diagnostics 实时标出不符合项）。
 - 新增 JSON Patch 生成：对比模式一键生成 RFC 6902 JSON Patch 并复制（显示变更处数）。
-- 新增单元测试（vitest）：覆盖 JSON 修复/解析、NDJSON 互转、Mock 生成等核心工具（21 个用例），`pnpm test` 运行。
+- 新增从 URL 导入 JSON（命令面板，受 CORS 限制）。
+- 新增工作区状态恢复：标签页内容跨启动持久化（超大内容跳过、恢复后保留未保存标记）。
+- 新增单元测试（vitest）：覆盖 JSON 修复/解析、NDJSON 互转、Mock 生成、表格构建、命令搜索等核心工具（31 个用例），`pnpm test` 运行。
 - 树形视图查询结果可一键写入编辑器（替换当前内容）。
 - 新增内置示例 JSON（utils/sample.ts）。
 - 新增「修复」按钮与命令面板命令（json.repair）：自定义修复规则 + jsonrepair 库兜底，覆盖截断 payload、缺失引号、尾逗号等复杂情况，一键把非标准 JSON 修复为合法 JSON。
