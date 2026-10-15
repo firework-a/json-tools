@@ -15,10 +15,11 @@ export default function DiffEditor({ original, modified, onOriginalChange, onMod
   const theme = useAppStore(s => s.theme)
   const showLineNumbers = useAppStore(s => s.showLineNumbers)
   const wordWrap = useAppStore(s => s.wordWrap)
+  const fontSize = useAppStore(s => s.fontSize)
   const syncing = useRef(false)
   const editorRef = useRef<Monaco.editor.IStandaloneDiffEditor | null>(null)
 
-  // 设置页切换自动换行时同步到两侧编辑器
+  // 设置页切换自动换行/字号/行号时同步到两侧编辑器
   useEffect(() => {
     const ed = editorRef.current
     if (!ed) return
@@ -26,6 +27,21 @@ export default function DiffEditor({ original, modified, onOriginalChange, onMod
     ed.getOriginalEditor().updateOptions({ wordWrap: w })
     ed.getModifiedEditor().updateOptions({ wordWrap: w })
   }, [wordWrap])
+
+  useEffect(() => {
+    const ed = editorRef.current
+    if (!ed) return
+    ed.getOriginalEditor().updateOptions({ fontSize: fontSize })
+    ed.getModifiedEditor().updateOptions({ fontSize: fontSize })
+  }, [fontSize])
+
+  useEffect(() => {
+    const ed = editorRef.current
+    if (!ed) return
+    const ln = showLineNumbers ? 'on' : 'off'
+    ed.getOriginalEditor().updateOptions({ lineNumbers: ln })
+    ed.getModifiedEditor().updateOptions({ lineNumbers: ln })
+  }, [showLineNumbers])
 
   const onMount: DiffOnMount = (editor) => {
     editorRef.current = editor
@@ -103,7 +119,7 @@ export default function DiffEditor({ original, modified, onOriginalChange, onMod
         originalEditable: true,
         renderSideBySide: true,
         minimap: { enabled: false },
-        fontSize: 13,
+        fontSize,
         fontFamily: "'JetBrains Mono', 'Cascadia Code', 'Fira Code', Consolas, Menlo, monospace",
         fontLigatures: true,
         lineNumbers: showLineNumbers ? 'on' : 'off',
