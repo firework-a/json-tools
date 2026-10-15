@@ -234,6 +234,48 @@ export default function GridView() {
     setEditing(null)
   }
 
+  // 添加行：克隆末行结构，值置空，写回编辑器
+  const addRow = () => {
+    if (!table) return
+    try {
+      const doc = JSON.parse(content)
+      let arr: unknown = doc
+      for (const key of table.path) arr = (arr as Record<string, unknown>)[key]
+      if (!Array.isArray(arr)) { showToast('无法添加行'); return }
+      const last = arr.length > 0 ? arr[arr.length - 1] : null
+      const empty = last && typeof last === 'object' && !Array.isArray(last)
+        ? Object.fromEntries(Object.entries(last as Record<string, unknown>).map(([k, v]) => {
+            if (typeof v === 'string') return [k, '']
+            if (typeof v === 'number') return [k, 0]
+            if (typeof v === 'boolean') return [k, false]
+            return [k, null]
+          }))
+        : null
+      arr.push(empty)
+      setContent(JSON.stringify(doc, null, 2))
+      showToast('已添加行')
+    } catch {
+      showToast('添加失败')
+    }
+  }
+
+  // 删除行（行序号为索引，写回编辑器）
+  const deleteRow = (idx: number) => {
+    if (!table) return
+    try {
+      const doc = JSON.parse(content)
+      let arr: unknown = doc
+      for (const key of table.path) arr = (arr as Record<string, unknown>)[key]
+      if (!Array.isArray(arr)) { showToast('无法删除行'); return }
+      if (arr.length <= 1) { showToast('至少保留一行'); return }
+      arr.splice(idx, 1)
+      setContent(JSON.stringify(doc, null, 2))
+      showToast('已删除行')
+    } catch {
+      showToast('删除失败')
+    }
+  }
+
   // 空状态也要有顶栏（含返回按钮），否则表格模式下无法回到编辑器
   const emptyTopbar = (
     <div className="table-topbar">
@@ -298,6 +340,9 @@ export default function GridView() {
           spellCheck={false}
           onChange={e => setFilter(e.target.value)}
         />
+        <button className="tool-back-flat" onClick={addRow} title="添加一行（克隆末行结构）">
+          + 行
+        </button>
         <button className="tool-back-flat" onClick={() => setShowStats(v => !v)} title="显示/隐藏列统计">
           统计
         </button>
@@ -347,7 +392,15 @@ export default function GridView() {
           <tbody>
             {filteredRows.slice(0, RENDER_LIMIT).map(({ row, idx }, i) => (
               <tr key={idx} onClick={() => copyRow(row)} title="点击复制整行 JSON · 双击单元格编辑">
-                <td className="grid-index">{i + 1}</td>
+                <td className="grid-index">
+                  <span className="grid-index-num">{i + 1}</span>
+                  <button
+                    className="row-del"
+                    title="删除该行"
+                    aria-label="删除该行"
+                    onClick={e => { e.stopPropagation(); deleteRow(idx) }}
+                  >×</button>
+                </td>
                 {table.columns.map(col => {
                   const v = row[col]
                   const isObj = v !== null && typeof v === 'object'
