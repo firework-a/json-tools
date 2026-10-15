@@ -49,6 +49,7 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 | 操作 | 快捷键 |
 | --- | --- |
 | 新建标签页 | `Ctrl/Cmd + N` |
+| 标签页切换 | `Ctrl/Cmd + Tab`（前后）/ `Ctrl/Cmd + 1-9`（直达） |
 | 打开文件 | `Ctrl/Cmd + O` |
 | 保存 | `Ctrl/Cmd + S` |
 | 另存为 | `Ctrl/Cmd + Shift + S` |
