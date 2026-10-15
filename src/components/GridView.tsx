@@ -367,12 +367,12 @@ export default function GridView() {
           保存
         </button>
         <span className="table-hint">点击列头排序 · 拖拽列头重排 · 双击单元格编辑</span>
-        {hiddenCols.length > 0 && (
+        {(hiddenCols.length > 0 || Object.keys(colWidths).length > 0) && (
           <button
             className="tool-back-flat"
-            title="恢复隐藏的列与列宽"
+            title="恢复隐藏的列、列宽与列顺序"
             onClick={() => { setHiddenCols([]); setColWidths({}); setColumnOrder([]) }}
-          >已隐藏 {hiddenCols.length} 列 · 恢复</button>
+          >{hiddenCols.length > 0 ? `已隐藏 ${hiddenCols.length} 列 · 恢复` : '重置列视图'}</button>
         )}
       </div>
       {showStats && (
