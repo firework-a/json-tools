@@ -29,10 +29,11 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 - 多标签页编辑，支持文件打开 / 保存 / 另存为，带未保存状态提示（中键关闭标签）
 - 文件拖拽打开（`.json` / `.txt` / `.yaml` / `.yml`），编辑器外 `Ctrl+V` 直接粘贴剪贴板内容
 - JSON 树形结构查看，支持 JMESPath / JSONPath 双查询语言（速查表、历史记录、结果写回编辑器）
-- JSON Diff 对比，行级差异高亮，一键生成 RFC 6902 JSON Patch
-- 表格视图：对象数组渲染为电子表格（自动下钻、列头排序、单元格编辑、导出 Markdown / CSV）
+- JSON Diff 对比，行级差异高亮，一键生成/应用 RFC 6902 JSON Patch
+- 表格视图：对象数组渲染为电子表格（自动下钻、排序、过滤、单元格编辑、增删行、列宽拖拽/隐藏、列统计、导出 Markdown/CSV）
 - Mock 数据生成：从样例结构或 JSON Schema 生成仿真数据
-- YAML / XML / TOML / CSV 格式转换，NDJSON ↔ JSON 互转
+- JSON Schema 应用到编辑器实时校验（Monaco diagnostics）
+- YAML / XML / TOML / CSV 格式转换（支持反向：YAML/XML/TOML/CSV → JSON），NDJSON ↔ JSON 互转
 - JSON Schema 生成与校验
 - TypeScript / Python / Go / Java / C# / Rust 多语言类型生成
 - 代码图片导出
