@@ -7,6 +7,7 @@ import TreeView from './components/TreeView'
 import StatusBar from './components/StatusBar'
 import SettingsPanel from './components/SettingsPanel'
 import CommandPalette from './components/CommandPalette'
+import ErrorBoundary from './components/ErrorBoundary'
 import { useAppStore } from './store'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { isTauri } from '@tauri-apps/api/core'
@@ -163,25 +164,27 @@ function App() {
   }, [openLoadedFile])
 
   return (
-    <div className="app">
-      <TitleBar />
-      {isEditMode && <Toolbar />}
-      {isEditMode && <TabBar />}
-      <div className="app-body">
-        <div className="app-main"><EditorArea /></div>
-        {isEditMode && treeOpen && <TreeResizer />}
-        {isEditMode && <TreeView />}
-      </div>
-      <StatusBar />
-      <SettingsPanel />
-      <CommandPalette />
-      {toast && <div className="app-toast">{toast}</div>}
-      {dragOver && (
-        <div className="drop-overlay">
-          <div className="drop-card">松开以打开文件</div>
+    <ErrorBoundary>
+      <div className="app">
+        <TitleBar />
+        {isEditMode && <Toolbar />}
+        {isEditMode && <TabBar />}
+        <div className="app-body">
+          <div className="app-main"><EditorArea /></div>
+          {isEditMode && treeOpen && <TreeResizer />}
+          {isEditMode && <TreeView />}
         </div>
-      )}
-    </div>
+        <StatusBar />
+        <SettingsPanel />
+        <CommandPalette />
+        {toast && <div className="app-toast">{toast}</div>}
+        {dragOver && (
+          <div className="drop-overlay">
+            <div className="drop-card">松开以打开文件</div>
+          </div>
+        )}
+      </div>
+    </ErrorBoundary>
   )
 }
 

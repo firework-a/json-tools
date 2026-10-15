@@ -55,3 +55,5 @@ Cargo.lock
 .codegraph
 
 .openchamber/
+
+docs/.tmp-*.png
