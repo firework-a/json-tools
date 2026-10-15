@@ -39,6 +39,8 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 - 代码图片导出
 - 深色 / 浅色主题（macOS 风格材质），字体、缩进、自动换行等编辑器设置持久化
 - 命令面板（`Ctrl+K`）覆盖全部操作，状态栏含键数 / 深度 / 大小 / 行数 / 光标位置
+- 智能分析：本地规则引擎对 JSON 做结构摘要、字段类型统计、数据质量检查与优化建议（工具箱「智能分析」）
+- 内置 MCP Server：12 个 JSON 工具可通过 Model Context Protocol 暴露给 AI 助手（见下方配置）
 - 窗口置顶、窗口原生拖拽与无边框标题栏
 - GitHub Releases 内置更新检查
 
@@ -53,6 +55,34 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 | 美化 JSON | `Ctrl/Cmd + B` |
 | 命令面板 | `Ctrl/Cmd + K` |
 | 全局粘贴（编辑器外） | `Ctrl/Cmd + V` |
+
+## MCP Server（AI 助手集成）
+
+仓库内置一个 MCP (Model Context Protocol) Server（`mcp-server/index.ts`），把 12 个核心 JSON 工具暴露给 AI 助手：
+
+`json_repair` · `json_format` · `json_validate` · `json_convert` · `json_transform` · `json_diff` · `json_mock` · `json_stats` · `json_query`（JSONPath/JMESPath） · `json_table_extract` · `json_to_schema` · `json_insights`（智能分析）
+
+**运行**：
+
+```bash
+pnpm mcp        # 等价于 tsx mcp-server/index.ts，stdio transport
+```
+
+**配置到 Claude Desktop / Codex 等 MCP 客户端**（`claude_desktop_config.json` 示例）：
+
+```json
+{
+  "mcpServers": {
+    "json-tools": {
+      "command": "npx",
+      "args": ["tsx", "mcp-server/index.ts"],
+      "cwd": "<本仓库绝对路径>"
+    }
+  }
+}
+```
+
+MCP Server 复用 `src/utils/` 下的纯函数模块，与桌面端逻辑完全一致。`mcp-server/smoke.mjs` 为 stdio 冒烟测试脚本。
 
 ## 安装与更新
 
