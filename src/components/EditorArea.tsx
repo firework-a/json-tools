@@ -15,6 +15,7 @@ import CopyButton from './CopyButton'
 import type { ConvertFormat } from '../store'
 import { compare } from 'fast-json-patch'
 import { copyToClipboard } from '../utils/json'
+import { applyJsonSchema } from '../monaco-setup'
 
 // 单侧面板（含顶部条）
 interface EditorSideProps {
@@ -275,6 +276,20 @@ function EditorArea() {
                   useAppStore.getState().showToast(validation.valid ? 'JSON 符合当前 Schema' : validation.errors.join('；'))
                 }}>
                   <ShieldCheckIcon size={12} /> 校验
+                </button>
+                <button className="action-btn chk" title="把 Schema 应用到编辑器实时校验（编辑区实时标出不符合项）" onClick={() => {
+                  if (!rightContent.trim()) {
+                    useAppStore.getState().showToast('请先生成 Schema')
+                    return
+                  }
+                  try {
+                    applyJsonSchema(JSON.parse(rightContent))
+                    useAppStore.getState().showToast('Schema 已应用到编辑器校验')
+                  } catch {
+                    useAppStore.getState().showToast('Schema 不是合法 JSON')
+                  }
+                }}>
+                  应用校验
                 </button>
                 <CopyButton getText={() => rightContent} title="复制" />
               </>

@@ -75,3 +75,21 @@ monaco.editor.defineTheme('app-light', {
 })
 
 export { monaco }
+
+/**
+ * 把 JSON Schema 应用到编辑器实时校验（Monaco JSON diagnostics）。
+ * 传 null 清除。fileMatch '*' 匹配所有 JSON 模型。
+ */
+export const applyJsonSchema = (schema: object | null) => {
+  const jsonDefaults = (monaco.languages as unknown as {
+    json?: { jsonDefaults: { setDiagnosticsOptions: (o: unknown) => void } }
+  }).json
+  if (!jsonDefaults) return
+  jsonDefaults.jsonDefaults.setDiagnosticsOptions({
+    validate: schema !== null,
+    allowComments: false,
+    schemas: schema
+      ? [{ uri: 'app://user-schema.json', fileMatch: ['*'], schema }]
+      : [],
+  })
+}
