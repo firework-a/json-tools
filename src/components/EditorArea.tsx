@@ -130,6 +130,29 @@ function EditorArea() {
             >
               <WandIcon size={12} /> 生成 Patch
             </button>
+            <button
+              className="action-btn chk"
+              title="从剪贴板读取 JSON Patch 应用到左侧文档"
+              onClick={async () => {
+                if (!content.trim()) {
+                  useAppStore.getState().showToast('左侧需要 JSON 内容')
+                  return
+                }
+                try {
+                  const text = await navigator.clipboard.readText()
+                  const patch = JSON.parse(text)
+                  if (!Array.isArray(patch)) { useAppStore.getState().showToast('剪贴板内容不是 JSON Patch 数组'); return }
+                  const { applyPatch } = await import('fast-json-patch')
+                  const r = applyPatch(JSON.parse(content), patch)
+                  setContent(JSON.stringify(r.newDocument, null, 2))
+                  useAppStore.getState().showToast(`已应用 Patch（${patch.length} 处变更）`)
+                } catch (e) {
+                  useAppStore.getState().showToast('应用失败：' + (e instanceof Error ? e.message : String(e)))
+                }
+              }}
+            >
+              应用 Patch
+            </button>
             <CopyButton getText={() => rightContent} title="复制右侧" />
           </div>
           <DiffEditor
