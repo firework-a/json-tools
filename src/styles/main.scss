@@ -1164,6 +1164,12 @@ select {
     font-variant-numeric: tabular-nums;
   }
 
+  td.grid-bool .grid-cell {
+    color: $purple;
+    font-family: $font-mono;
+    font-size: 11px;
+  }
+
   .grid-link {
     color: $blue;
     text-decoration: none;

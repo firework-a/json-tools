@@ -441,9 +441,10 @@ export default function GridView() {
                   const v = row[col]
                   const isObj = v !== null && typeof v === 'object'
                   const isNum = typeof v === 'number'
+                  const isBool = typeof v === 'boolean'
                   const isEditing = editing?.rowIndex === idx && editing?.col === col
                   return (
-                    <td key={col} className={`${isObj ? 'grid-obj ' : ''}${isNum ? 'grid-num' : ''}`}>
+                    <td key={col} className={`${isObj ? 'grid-obj ' : ''}${isNum ? 'grid-num ' : ''}${isBool ? 'grid-bool' : ''}`}>
                       {isEditing ? (
                         <input
                           className="grid-cell-input"
