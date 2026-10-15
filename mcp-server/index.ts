@@ -111,10 +111,10 @@ server.tool(
 // 5. 结构变换
 server.tool(
   'json_transform',
-  'JSON 结构变换：按键排序 / 扁平化 / 扁平还原 / 去 null / 去空值',
+  'JSON 结构变换：按键排序 / 扁平化 / 扁平还原 / 去 null / 去空值 / 数组去重',
   {
     text: z.string().describe('JSON 文本'),
-    op: z.enum(['sortAsc', 'sortDesc', 'flatten', 'unflatten', 'removeNull', 'removeEmpty']).describe('变换操作'),
+    op: z.enum(['sortAsc', 'sortDesc', 'flatten', 'unflatten', 'removeNull', 'removeEmpty', 'dedup']).describe('变换操作'),
   },
   async ({ text: input, op }) => {
     const map: Record<string, (c: string) => { result: string; error: string | null }> = {
@@ -124,6 +124,7 @@ server.tool(
       unflatten: c => unflattenJson(c),
       removeNull: c => removeEmptyValues(c, true),
       removeEmpty: c => removeEmptyValues(c, false),
+      dedup: c => dedupJson(c),
     }
     const r = map[op](input)
     if (r.error) return fail(r.error)
