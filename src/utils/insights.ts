@@ -19,6 +19,8 @@ export interface InsightsResult {
   fields: FieldStat[]
   issues: QualityIssue[]
   suggestions: string[]
+  /** 数据质量评分 0-100（warn 扣 10 分，info 扣 2 分） */
+  score: number
 }
 
 const fmtVal = (v: unknown): string => {
@@ -37,12 +39,12 @@ const typeOf = (v: unknown): string => {
 
 export const analyzeJson = (input: string): { result: InsightsResult; error: string | null } => {
   const trimmed = input.trim()
-  if (!trimmed) return { result: { summary: '', fields: [], issues: [], suggestions: [] }, error: null }
+  if (!trimmed) return { result: { summary: '', fields: [], issues: [], suggestions: [], score: 100 }, error: null }
   let parsed: unknown
   try {
     parsed = JSON.parse(trimmed)
   } catch (e) {
-    return { result: { summary: '', fields: [], issues: [], suggestions: [] }, error: 'JSON 解析错误：' + (e instanceof Error ? e.message : String(e)) }
+    return { result: { summary: '', fields: [], issues: [], suggestions: [], score: 100 }, error: 'JSON 解析错误：' + (e instanceof Error ? e.message : String(e)) }
   }
 
   const fields: FieldStat[] = []
@@ -130,7 +132,12 @@ export const analyzeJson = (input: string): { result: InsightsResult; error: str
 
   const summary = `${rootDesc} · 共 ${nodeCount} 个节点 · 最大嵌套 ${maxDepth} 层 · ${arrayCount} 个数组 · ${objectCount} 个对象 · ${fields.length} 个叶子字段`
 
-  return { result: { summary, fields, issues, suggestions }, error: null }
+  // 数据质量评分：warn 扣 10 分，info 扣 2 分，下限 0
+  const warnCount = issues.filter(i => i.level === 'warn').length
+  const infoCount = issues.filter(i => i.level === 'info').length
+  const score = Math.max(0, 100 - warnCount * 10 - infoCount * 2)
+
+  return { result: { summary, fields, issues, suggestions, score }, error: null }
 }
 
 // 简单判断是否为单行压缩 JSON（用于建议）
@@ -145,6 +152,7 @@ export const formatInsightsReport = (r: InsightsResult): string => {
   const lines: string[] = []
   lines.push('📊 数据概览')
   lines.push(`  ${r.summary}`)
+  lines.push(`  质量评分：${r.score}/100 ${r.score >= 90 ? '✅' : r.score >= 70 ? '🟡' : '🔴'}`)
   if (r.fields.length > 0) {
     lines.push('')
     lines.push('🔤 字段统计')
