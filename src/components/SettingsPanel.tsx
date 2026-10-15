@@ -6,12 +6,13 @@ import { getAppVersion } from '../utils/updater'
 import { useUpdateStore } from '../updateStore'
 import { CloseIcon } from './Icons'
 
-type SectionId = 'appearance' | 'editor' | 'export' | 'updates' | 'about'
+type SectionId = 'appearance' | 'editor' | 'export' | 'mcp' | 'updates' | 'about'
 
 const SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'appearance', label: '外观' },
   { id: 'editor', label: '编辑器' },
   { id: 'export', label: '导出图片' },
+  { id: 'mcp', label: 'MCP' },
   { id: 'updates', label: '更新' },
   { id: 'about', label: '关于' },
 ]
@@ -164,8 +165,90 @@ function ExportSection() {
   )
 }
 
-function UpdatesSection() {
-  const s = useAppStore()
+const MCP_TOOLS: { name: string; desc: string }[] = [
+  { name: 'json_repair', desc: '修复非标准 JSON（注释/单引号/尾逗号/截断）' },
+  { name: 'json_format', desc: '格式化或压缩 JSON' },
+  { name: 'json_validate', desc: '语法校验 + 可选 Schema 校验 + 统计' },
+  { name: 'json_convert', desc: 'YAML / XML / TOML / CSV / NDJSON 互转' },
+  { name: 'json_transform', desc: '键排序 / 扁平化 / 去 null / 去重' },
+  { name: 'json_diff', desc: '对比两个 JSON 的差异' },
+  { name: 'json_mock', desc: '从样例或 Schema 生成 Mock 数据' },
+  { name: 'json_stats', desc: '键数 / 深度 / 大小 / 行数统计' },
+  { name: 'json_query', desc: 'JSONPath / JMESPath 查询' },
+  { name: 'json_table_extract', desc: '提取对象数组为表格行列' },
+  { name: 'json_to_schema', desc: '从样例推断 JSON Schema' },
+  { name: 'json_insights', desc: '智能分析：结构摘要 / 质量评分 / 建议' },
+]
+
+const MCP_CONFIG_EXAMPLE = JSON.stringify({
+  mcpServers: {
+    'json-tools': {
+      command: 'npx',
+      args: ['tsx', 'mcp-server/index.ts'],
+      cwd: '<本应用仓库绝对路径>',
+    },
+  },
+}, null, 2)
+
+function McpSection() {
+  const showToast = useAppStore(s => s.showToast)
+  const [copied, setCopied] = useState(false)
+
+  const copyConfig = async () => {
+    try {
+      await navigator.clipboard.writeText(MCP_CONFIG_EXAMPLE)
+      setCopied(true)
+      showToast('配置已复制到剪贴板')
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      showToast('复制失败，请手动选择复制')
+    }
+  }
+
+  return (
+    <div className="set-section">
+      <div className="set-section-title">MCP Server（AI 助手集成）</div>
+      <p className="mcp-desc">
+        MCP（Model Context Protocol）让 Claude Desktop、Codex、Cursor 等 AI
+        助手直接调用 JSON Tools 的 12 个工具。<b>无需手动启动</b>——配置完成后，AI
+        客户端会按下面的配置自动拉起本服务的独立进程（stdio 通信），与本应用是否运行无关。
+      </p>
+      <div className="mcp-block">
+        <div className="mcp-block-title">
+          客户端配置
+          <button className="mcp-copy" onClick={copyConfig}>
+            {copied ? '已复制 ✓' : '复制配置'}
+          </button>
+        </div>
+        <pre className="mcp-code">{MCP_CONFIG_EXAMPLE}</pre>
+        <div className="mcp-tip">
+          把 <code>cwd</code> 改为本应用仓库的绝对路径。开发调试也可以直接运行{' '}
+          <code>pnpm mcp</code>。
+        </div>
+      </div>
+      <div className="mcp-block">
+        <div className="mcp-block-title">可用工具（{MCP_TOOLS.length} 个）</div>
+        <div className="mcp-tools">
+          {MCP_TOOLS.map(t => (
+            <div key={t.name} className="mcp-tool-row">
+              <code className="mcp-tool-name">{t.name}</code>
+              <span className="mcp-tool-desc">{t.desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="mcp-block">
+        <div className="mcp-block-title">前置要求</div>
+        <div className="mcp-tip">
+          需要本机已安装 <b>Node.js</b>（AI 客户端会用 npx 拉起 tsx 运行本服务）。
+          配置后重启 AI 客户端即可在对话中使用，例如：「用 json_repair 修复这段 JSON」。
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function UpdatesSection() {  const s = useAppStore()
   const status = useUpdateStore(st => st.status)
   const progress = useUpdateStore(st => st.progress)
   const check = useUpdateStore(st => st.check)
@@ -338,6 +421,7 @@ export default function SettingsPanel() {
             {active === 'appearance' && <AppearanceSection />}
             {active === 'editor' && <EditorSection />}
             {active === 'export' && <ExportSection />}
+            {active === 'mcp' && <McpSection />}
             {active === 'updates' && <UpdatesSection />}
             {active === 'about' && <AboutSection />}
           </div>

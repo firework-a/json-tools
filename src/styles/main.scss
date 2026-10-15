@@ -3172,6 +3172,119 @@ select {
   }
 }
 
+/* =================== MCP 配置页 =================== */
+.mcp-desc {
+  font-size: 12px;
+  color: $text-secondary;
+  line-height: 1.8;
+  margin-bottom: 12px;
+
+  b {
+    color: $text-primary;
+  }
+}
+
+.mcp-block {
+  margin-bottom: 14px;
+}
+
+.mcp-block-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-primary;
+  margin-bottom: 6px;
+}
+
+.mcp-copy {
+  padding: 3px 10px;
+  font-size: 11px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: $blue;
+  background: rgba($blue, 0.12);
+  border: 1px solid rgba($blue, 0.35);
+  transition: background 0.14s $ease-out;
+
+  &:hover {
+    background: rgba($blue, 0.22);
+  }
+}
+
+.mcp-code {
+  margin: 0;
+  padding: 10px 12px;
+  font-family: $font-mono;
+  font-size: 11px;
+  line-height: 1.7;
+  color: $text-primary;
+  background: $bg-input;
+  border: 1px solid $border;
+  border-radius: 8px;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.mcp-tip {
+  font-size: 11px;
+  color: $text-muted;
+  line-height: 1.7;
+  margin-top: 6px;
+
+  code {
+    font-family: $font-mono;
+    color: $text-secondary;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+}
+
+.mcp-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  @include scroll;
+}
+
+.mcp-tool-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 5px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.mcp-tool-name {
+  font-family: $font-mono;
+  color: $blue;
+  min-width: 150px;
+}
+
+.mcp-tool-desc {
+  color: $text-secondary;
+}
+
+/* 浅色主题 MCP 配置页 */
+[data-theme='light'] .mcp-desc { color: #475569; }
+[data-theme='light'] .mcp-desc b { color: #1f2937; }
+[data-theme='light'] .mcp-block-title { color: #1f2937; }
+[data-theme='light'] .mcp-code { color: #1f2937; background: #f8fafc; border-color: #d9dee7; }
+[data-theme='light'] .mcp-tip { color: #64748b; }
+[data-theme='light'] .mcp-tip code { color: #475569; background: #f1f5f9; }
+[data-theme='light'] .mcp-tool-row:hover { background: #f1f5f9; }
+[data-theme='light'] .mcp-tool-name { color: #2563eb; }
+[data-theme='light'] .mcp-tool-desc { color: #475569; }
+
 /* =================== 工具箱（tools 模式） =================== */
 .tools-shell {
   flex: 1;
