@@ -112,6 +112,17 @@ export default function GridView() {
       if (counts.object) parts.push(`对象 ${counts.object}`)
       if (counts.null) parts.push(`null ${counts.null}`)
       if (counts.empty) parts.push(`缺失 ${counts.empty}`)
+      // 数字列附Sum/Avg
+      if (counts.number) {
+        let sum = 0
+        for (const row of table.rows) {
+          const v = row[col]
+          if (typeof v === 'number') sum += v
+        }
+        const avg = sum / counts.number
+        const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2))
+        parts.push(`Σ ${fmt(sum)}`, `Avg ${fmt(avg)}`)
+      }
       return { col, summary: parts.join(' · ') || '—' }
     })
   }, [table])
