@@ -4,7 +4,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { isTauri } from '@tauri-apps/api/core'
 import type { CodeLang } from './utils/codeGen'
 
-export type ViewMode = 'edit' | 'diff' | 'convert' | 'ts' | 'schema' | 'tools'
+export type ViewMode = 'edit' | 'diff' | 'convert' | 'ts' | 'schema' | 'tools' | 'table'
 export type ConvertFormat = 'yaml' | 'xml' | 'toml' | 'csv'
 export type ThemeMode = 'dark' | 'light'
 export type EditorLanguage = 'json' | 'plaintext'

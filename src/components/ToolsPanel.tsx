@@ -6,10 +6,11 @@ import {
   base64Encode, base64Decode, urlEncode, urlDecode, decodeJwt,
   hashText, convertTimestamp, convertNumberBase, HASH_ALGOS, type HashAlgo,
 } from '../utils/encoding'
+import { generateMock } from '../utils/mockData'
 import { BackIcon, ChevronDown } from './Icons'
 import CustomSelect from './CustomSelect'
 
-type ToolId = 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase'
+type ToolId = 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase' | 'mock'
 
 interface ToolMeta { id: ToolId; label: string; group: string; json?: boolean }
 const TOOLS: ToolMeta[] = [
@@ -23,6 +24,7 @@ const TOOLS: ToolMeta[] = [
   { id: 'hash', label: '哈希', group: '编解码' },
   { id: 'timestamp', label: '时间戳', group: '其他' },
   { id: 'numbase', label: '进制转换', group: '其他' },
+  { id: 'mock', label: 'Mock 数据', group: '其他', json: true },
 ]
 
 export default function ToolsPanel() {
@@ -35,6 +37,7 @@ export default function ToolsPanel() {
   const [removeOnlyNull, setRemoveOnlyNull] = useState(true)
   const [hashAlgo, setHashAlgo] = useState<HashAlgo>('SHA-256')
   const [base, setBase] = useState(10)
+  const [mockCount, setMockCount] = useState('5')
   const [hashOut, setHashOut] = useState<{ result: string; error: string | null }>({ result: '', error: null })
   const [groupOpen, setGroupOpen] = useState(true)
   const toolsTool = useAppStore(s => s.toolsTool)
@@ -80,9 +83,10 @@ export default function ToolsPanel() {
       case 'jwt': return decodeJwt(input)
       case 'timestamp': return convertTimestamp(input)
       case 'numbase': return convertNumberBase(input, base)
+      case 'mock': return generateMock(input, Number(mockCount) || 5)
       default: return { result: '', error: null }
     }
-  }, [input, tool, decode, sortOrder, removeOnlyNull, base, hashOut])
+  }, [input, tool, decode, sortOrder, removeOnlyNull, base, hashOut, mockCount])
 
   // 哈希异步
   useEffect(() => {
@@ -97,7 +101,7 @@ export default function ToolsPanel() {
 
   const activeMeta = TOOLS.find(t => t.id === tool)!
   const hasOptions =
-    tool === 'sort' || tool === 'removeEmpty' || tool === 'base64' || tool === 'url' || tool === 'hash' || tool === 'numbase'
+    tool === 'sort' || tool === 'removeEmpty' || tool === 'base64' || tool === 'url' || tool === 'hash' || tool === 'numbase' || tool === 'mock'
 
   const copyOut = async () => {
     if (!result.result) { showToast('没有可复制的内容'); return }
@@ -167,6 +171,14 @@ export default function ToolsPanel() {
                   onChange={v => setHashAlgo(v as HashAlgo)}
                   minWidth={100}
                   options={HASH_ALGOS.map(a => ({ value: a, label: a }))}
+                />
+              )}
+              {tool === 'mock' && (
+                <CustomSelect
+                  value={mockCount}
+                  onChange={v => setMockCount(v)}
+                  minWidth={92}
+                  options={['1', '5', '10', '20', '50'].map(n => ({ value: n, label: `${n} 条` }))}
                 />
               )}
               {tool === 'numbase' && (

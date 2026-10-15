@@ -1,4 +1,4 @@
-import { useAppStore } from './store'
+import { useAppStore, type ViewMode } from './store'
 import { useUpdateStore } from './updateStore'
 import { formatJson, compressJson, escapeJson, unescapeJson, copyToClipboard, repairJsonDeep } from './utils/json'
 import { sortJsonKeys, flattenJson, unflattenJson, removeEmptyValues } from './utils/jsonTransform'
@@ -33,7 +33,7 @@ const applyTransform = (
   st.showToast(doneMsg)
 }
 
-const switchMode = (m: 'edit' | 'diff' | 'convert' | 'ts' | 'schema' | 'tools') => s().setMode(m)
+const switchMode = (m: ViewMode) => s().setMode(m)
 
 const openTool = (tool: string) => {
   s().setToolsTool(tool)
@@ -110,6 +110,7 @@ export const COMMANDS: AppCommand[] = [
   { id: 'mode.code', label: '生成代码', group: '模式', keywords: 'code typescript go java rust 生成代码', run: () => switchMode('ts') },
   { id: 'mode.schema', label: 'JSON Schema', group: '模式', keywords: 'schema 校验', run: () => switchMode('schema') },
   { id: 'mode.tools', label: '工具箱', group: '模式', keywords: 'tools toolbox 工具箱', run: () => switchMode('tools') },
+  { id: 'mode.table', label: '表格视图', group: '模式', keywords: 'table grid 表格 表格视图', run: () => switchMode('table') },
 
   // 工具箱直达
   { id: 'tool.base64', label: 'Base64 编解码', group: '工具箱', keywords: 'base64 b64', run: () => openTool('base64') },
@@ -118,6 +119,7 @@ export const COMMANDS: AppCommand[] = [
   { id: 'tool.hash', label: '哈希计算', group: '工具箱', keywords: 'hash sha md5 checksum', run: () => openTool('hash') },
   { id: 'tool.timestamp', label: '时间戳转换', group: '工具箱', keywords: 'timestamp date 时间', run: () => openTool('timestamp') },
   { id: 'tool.numbase', label: '进制转换', group: '工具箱', keywords: 'hex binary 进制', run: () => openTool('numbase') },
+  { id: 'tool.mock', label: 'Mock 数据生成', group: '工具箱', keywords: 'mock fake 数据 生成 样例', run: () => openTool('mock') },
 
   // 其他
   { id: 'app.settings', label: '打开设置', group: '其他', keywords: 'settings 设置 偏好', run: () => s().setSettingsOpen(true) },

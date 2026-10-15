@@ -8,10 +8,47 @@ import { generateCode, CODE_LANGS, type CodeLang } from '../utils/codeGen'
 import CodeEditor from './CodeEditor'
 import ShikiPreview from './ShikiPreview'
 import DiffEditor from './DiffEditor'
+import GridView from './GridView'
 import ToolsPanel from './ToolsPanel'
-import { BackIcon, SchemaIcon, ChevronDown, WandIcon, ShieldCheckIcon } from './Icons'
+import { BackIcon, SchemaIcon, ChevronDown, WandIcon, ShieldCheckIcon, OpenIcon } from './Icons'
 import CopyButton from './CopyButton'
 import type { ConvertFormat } from '../store'
+import { SAMPLE_JSON } from '../utils/sample'
+
+// 编辑器空状态：无内容时给出明确下一步动作（成熟方案：empty state 必须有 next action）
+function EditorEmptyState() {
+  return (
+    <div className="editor-empty">
+      <div className="editor-empty-card">
+        <div className="editor-empty-title">开始使用</div>
+        <div className="editor-empty-tip">粘贴 JSON（Ctrl+V）、打开文件，或加载示例</div>
+        <div className="editor-empty-actions">
+          <button
+            className="editor-empty-btn primary"
+            onClick={() => { useAppStore.getState().setContent(SAMPLE_JSON); useAppStore.getState().showToast('已加载示例 JSON') }}
+          >
+            加载示例
+          </button>
+          <button
+            className="editor-empty-btn"
+            onClick={async () => {
+              const { openTextFile } = await import('../utils/files')
+              const file = await openTextFile()
+              if (file) useAppStore.getState().openLoadedFile(file)
+            }}
+          >
+            <OpenIcon size={13} color="#5a9cf0" /> 打开文件
+          </button>
+        </div>
+        <div className="editor-empty-keys">
+          <span><kbd>Ctrl+V</kbd> 粘贴</span>
+          <span><kbd>Ctrl+B</kbd> 美化</span>
+          <span><kbd>Ctrl+K</kbd> 命令面板</span>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // 单侧面板（含顶部条）
 interface EditorSideProps {
@@ -85,6 +122,7 @@ function EditorArea() {
       <div className="editor-shell single">
         <div className="pane-full" id="editor-export-target">
           <CodeEditor value={content} onChange={setContent} language="json" />
+          {!content.trim() && <EditorEmptyState />}
         </div>
       </div>
     )
@@ -120,6 +158,10 @@ function EditorArea() {
 
   if (mode === 'tools') {
     return <ToolsPanel />
+  }
+
+  if (mode === 'table') {
+    return <GridView />
   }
 
   if (mode === 'convert') {

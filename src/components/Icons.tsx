@@ -78,6 +78,14 @@ export const RepairIcon = ({ size, color }: P) => (
     <line x1="14.5" x2="17" y1="9.5" y2="12" />
   </I>
 )
+export const TableIcon = ({ size, color }: P) => (
+  <I size={size} color={color || '#5ac8c8'}>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <line x1="3" x2="21" y1="10" y2="10" />
+    <line x1="10" x2="10" y1="4" y2="20" />
+    <line x1="16" x2="16" y1="4" y2="20" />
+  </I>
+)
 export const CompressIcon = ({ size, color }: P) => (
   <I size={size} color={color || '#f0b840'}>
     <polyline points="4 14 10 14 10 20" />
