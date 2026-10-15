@@ -111,6 +111,8 @@ interface AppState {
   // 编辑器
   autoFormat: boolean
   setAutoFormat: (v: boolean) => void
+  autoRepair: boolean
+  setAutoRepair: (v: boolean) => void
   showLineNumbers: boolean
   setShowLineNumbers: (v: boolean) => void
   fontSize: number
@@ -383,6 +385,8 @@ export const useAppStore = create<AppState>()(
       setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
       autoFormat: true,
       setAutoFormat: (autoFormat) => set({ autoFormat }),
+      autoRepair: false,
+      setAutoRepair: (autoRepair) => set({ autoRepair }),
       showLineNumbers: true,
       setShowLineNumbers: (showLineNumbers) => set({ showLineNumbers }),
       fontSize: 13,
@@ -431,6 +435,7 @@ export const useAppStore = create<AppState>()(
         pinned: s.pinned,
         convertDirection: s.convertDirection,
         autoFormat: s.autoFormat,
+        autoRepair: s.autoRepair,
         showLineNumbers: s.showLineNumbers,
         fontSize: s.fontSize,
         tabSize: s.tabSize,

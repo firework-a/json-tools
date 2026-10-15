@@ -18,6 +18,7 @@ export default function CodeEditor({ value, onChange, readOnly, language }: Prop
   const theme = useAppStore(s => s.theme)
   const showLineNumbers = useAppStore(s => s.showLineNumbers)
   const autoFormat = useAppStore(s => s.autoFormat)
+  const autoRepair = useAppStore(s => s.autoRepair)
   const storeLanguage = useAppStore(s => s.editorLanguage)
   const fontSize = useAppStore(s => s.fontSize)
   const tabSize = useAppStore(s => s.tabSize)
@@ -60,7 +61,17 @@ export default function CodeEditor({ value, onChange, readOnly, language }: Prop
             const op = { range, text: formatted, forceMoveMarkers: true }
             editor.executeEdits('paste-format', [op])
           } catch {
-            /* keep original */
+            // 开启「粘贴自动修复」时：非标准 JSON 修复后写回
+            if (autoRepair) {
+              try {
+                const { repairJson } = await import('../utils/json')
+                const fixed = repairJson(trimmed)
+                const formatted = JSON.stringify(JSON.parse(fixed), null, 2)
+                editor.executeEdits('paste-repair', [{ range, text: formatted, forceMoveMarkers: true }])
+              } catch {
+                /* keep original */
+              }
+            }
           }
         }
       }
