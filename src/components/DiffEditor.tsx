@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { DiffEditor as MonacoDiffEditor, type DiffOnMount } from '@monaco-editor/react'
 import type * as Monaco from 'monaco-editor'
 import { useAppStore } from '../store'
@@ -15,8 +15,10 @@ export default function DiffEditor({ original, modified, onOriginalChange, onMod
   const theme = useAppStore(s => s.theme)
   const showLineNumbers = useAppStore(s => s.showLineNumbers)
   const syncing = useRef(false)
+  const editorRef = useRef<Monaco.editor.IStandaloneDiffEditor | null>(null)
 
   const onMount: DiffOnMount = (editor) => {
+    editorRef.current = editor
     editor.updateOptions({
       renderSideBySide: true,
       readOnly: false,
@@ -66,6 +68,16 @@ export default function DiffEditor({ original, modified, onOriginalChange, onMod
       requestAnimationFrame(() => { syncing.current = false })
     })
   }
+
+  // 卸载时先把 diff 模型重置为 null 再由 @monaco-editor/react dispose，
+  // 避免 "TextModel got disposed before DiffEditorWidget model got reset"（切走 diff 模式时报错）
+  useEffect(() => () => {
+    const ed = editorRef.current
+    if (ed) {
+      try { ed.setModel(null) } catch { /* ignore */ }
+      editorRef.current = null
+    }
+  }, [])
 
   return (
     <MonacoDiffEditor

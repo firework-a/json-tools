@@ -173,9 +173,21 @@ export default function GridView() {
     setEditing(null)
   }
 
+  // 空状态也要有顶栏（含返回按钮），否则表格模式下无法回到编辑器
+  const emptyTopbar = (
+    <div className="table-topbar">
+      <button className="tool-back-flat" onClick={() => useAppStore.setState({ mode: 'edit' })} title="返回">
+        <BackIcon />
+      </button>
+      <span className="table-title">表格</span>
+      <div className="table-spacer" />
+    </div>
+  )
+
   if (!content.trim()) {
     return (
       <div className="table-shell">
+        {emptyTopbar}
         <div className="table-empty">
           <div className="table-empty-title">没有数据</div>
           <div className="table-empty-tip">先在编辑器粘贴 JSON，或加载示例</div>
@@ -193,6 +205,7 @@ export default function GridView() {
   if (!table) {
     return (
       <div className="table-shell">
+        {emptyTopbar}
         <div className="table-empty">
           <div className="table-empty-title">未找到对象数组</div>
           <div className="table-empty-tip">表格视图需要「对象数组」数据，例如根数组，或根下的某个数组字段</div>
