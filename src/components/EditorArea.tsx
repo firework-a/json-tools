@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppStore } from '../store'
 import { jsonToSchema } from '../utils/jsonSchema'
-import { tryParseJson } from '../utils/json'
+import { tryParseJson, repairJsonDeep } from '../utils/json'
 import { jsonToYaml, yamlToJson } from '../utils/jsonYaml'
 import { jsonToXml, jsonToToml, jsonToCsv, xmlToJson, tomlToJson, csvToJson } from '../utils/jsonFormats'
 import { validateJsonSchema } from '../utils/schemaValidator'
@@ -76,13 +76,19 @@ function EditorArea() {
     let cancelled = false
     const reverseConvert = (f: ConvertFormat, input: string) => {
       // 输入可能是转义后的 JSON 字符串（如来自「压缩转义」操作）或宽松 JSON：
-      // 先用宽松解析还原，能还原为对象/数组时直接输出格式化 JSON
+      // 1) 宽松解析能还原为对象/数组 → 直接输出格式化 JSON
       try {
         const { parsed, error } = tryParseJson(input)
         if (!error && parsed !== null && typeof parsed === 'object') {
           return { result: JSON.stringify(parsed, null, 2), error: null }
         }
       } catch { /* 按目标格式解析 */ }
+      // 2) 看起来是转义 JSON 字符串（含 \" 转义）→ 深度修复还原
+      const looksEscapedJson = /\\["{}[\]]/.test(input) || /^"\s*[[{]/.test(input.trim())
+      if (looksEscapedJson) {
+        const r = repairJsonDeep(input)
+        if (!r.error && !r.valid) return { result: r.result, error: null }
+      }
       if (f === 'yaml') return yamlToJson(input)
       if (f === 'xml') return xmlToJson(input)
       if (f === 'toml') return tomlToJson(input)
