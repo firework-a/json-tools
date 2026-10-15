@@ -34,10 +34,13 @@ const mockString = (key: string): string => {
   if (/city|城市|address|地址/.test(k)) return `${pick(CITIES)} ${pick(WORDS)} st.`
   if (/company|公司|org/.test(k)) return pick(COMPANIES)
   if (/phone|tel|手机|电话/.test(k)) return `+86 1${rand(9) + 1}${String(rand(100000000)).padStart(9, '0')}`
-  if (/url|link|website|href/.test(k)) return `https://example.com/${pick(WORDS)}`
+  if (/url|link|website|href|source|origin|src/.test(k)) return `https://example.com/${pick(WORDS)}`
   if (/date|time|created|updated|时间|日期/.test(k)) return isoDate()
   if (/id$|_id|^id|uuid/.test(k)) return uuid()
   if (/desc|description|描述|备注|remark|comment/.test(k)) return `${pick(WORDS)} ${pick(WORDS)} ${pick(WORDS)}…`
+  if (/role|权限|角色/.test(k)) return pick(['admin', 'user', 'editor', 'viewer'])
+  if (/status|状态/.test(k)) return pick(['active', 'inactive', 'pending'])
+  if (/tag|标签|category|分类/.test(k)) return pick(['frontend', 'backend', 'design', 'devops'])
   if (/color|颜色/.test(k)) return `#${Array.from({ length: 6 }, () => '0123456789abcdef'[rand(16)]).join('')}`
   if (/token|key|secret|hash/.test(k)) return Array.from({ length: 32 }, () => '0123456789abcdef'[rand(16)]).join('')
   return `${pick(WORDS)}-${rand(1000)}`
