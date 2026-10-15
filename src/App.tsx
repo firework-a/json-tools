@@ -218,7 +218,8 @@ function TreeResizer() {
     <div
       className="tree-resizer"
       onMouseDown={() => setDragging(true)}
-      title="拖动调整树形面板宽度"
+      onDoubleClick={() => setTreeWidth(340)}
+      title="拖动调整树形面板宽度（双击重置）"
     />
   )
 }
