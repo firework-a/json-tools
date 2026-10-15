@@ -115,6 +115,25 @@ function App() {
     return () => window.removeEventListener('keydown', onKeyDown, true)
   }, [])
 
+  // 标签页切换：Ctrl+Tab / Ctrl+Shift+Tab 前后切换，Ctrl+1..9 直达（仅编辑模式）
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return
+      if (e.key !== 'Tab' && !/^[1-9]$/.test(e.key)) return
+      const st = useAppStore.getState()
+      if (st.mode !== 'edit' || st.tabs.length <= 1) return
+      const idx = st.tabs.findIndex(t => t.id === st.activeTabId)
+      let next = -1
+      if (e.key === 'Tab') next = e.shiftKey ? (idx - 1 + st.tabs.length) % st.tabs.length : (idx + 1) % st.tabs.length
+      else if (/^[1-9]$/.test(e.key)) next = Number(e.key) - 1
+      if (next < 0 || next >= st.tabs.length) return
+      e.preventDefault()
+      st.setActiveTab(st.tabs[next].id)
+    }
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [])
+
   // 全局 Ctrl+V：焦点在编辑器/输入框外时，把剪贴板内容直接粘贴到当前编辑器
   // （编辑器内的 Ctrl+V 走 Monaco 原生粘贴，不受影响）
   useEffect(() => {

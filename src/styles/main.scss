@@ -2863,19 +2863,19 @@ select {
 .rjv-host {
   padding: 4px 8px 12px;
   font-family: $font-mono !important;
-  font-size: 12px;
-  line-height: 20px;
+  font-size: inherit;
+  line-height: 1.6;
 
   .rjv-link {
     color: $blue;
     text-decoration: underline;
   }
 
-  // 覆盖 rjv 的内边距
+  // 覆盖 rjv 的内边距（字号继承 aside 的设置值）
   .w-json-view-container {
     background: transparent !important;
-    font-size: 12px;
-    line-height: 20px;
+    font-size: inherit;
+    line-height: 1.6;
   }
 
   .w-json-view-theme {

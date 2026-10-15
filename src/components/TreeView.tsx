@@ -94,6 +94,7 @@ function TreeView() {
   const setQueryLang = useAppStore(s => s.setQueryLang)
   const treeWidth = useAppStore(s => s.treeWidth)
   const treeDefaultCollapse = useAppStore(s => s.treeDefaultCollapse)
+  const fontSize = useAppStore(s => s.fontSize)
   const scrollRef = useRef<HTMLDivElement>(null)
   const syncingRef = useRef(false)
 
@@ -172,7 +173,7 @@ function TreeView() {
   if (!treeOpen) return null
 
   return (
-    <aside className="tree-panel" style={{ width: treeWidth }}>
+    <aside className="tree-panel" style={{ width: treeWidth, fontSize: `${fontSize}px` }}>
       <div className="tree-header">
         <div className="tree-title-wrap">
           <span className="tree-icon"><TreeIcon /></span>
