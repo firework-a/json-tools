@@ -73,17 +73,24 @@ function EditorArea() {
   useEffect(() => {
     if (mode === 'edit' || mode === 'diff' || mode === 'tools') return
     let cancelled = false
+    const reverseConvert = (f: ConvertFormat, input: string) => {
+      if (f === 'yaml') return yamlToJson(input)
+      if (f === 'xml') return xmlToJson(input)
+      if (f === 'toml') return tomlToJson(input)
+      return csvToJson(input)
+    }
     const t = setTimeout(async () => {
       let r: { result: string; error: string | null }
       if (mode === 'ts') r = await generateCode(content, codeLang, codeRootName)
       else if (mode === 'schema') r = jsonToSchema(content)
+      else if (mode === 'convert' && convertDirection === 'toJson') r = reverseConvert(convertFormat, content)
       else r = convertToFormat(convertFormat, content)
       if (cancelled) return
       if (r.error && content.trim()) useAppStore.getState().showToast(r.error)
       else setRightContent(r.result)
     }, 300)
     return () => { cancelled = true; clearTimeout(t) }
-  }, [content, mode, codeLang, codeRootName, convertFormat, setRightContent])
+  }, [content, mode, codeLang, codeRootName, convertFormat, convertDirection, setRightContent])
 
   if (mode === 'edit') {
     return (
@@ -166,24 +173,6 @@ function EditorArea() {
       </div>
     )
   }
-
-  // 反向转换（X → JSON）：输入变化自动重算（300ms 防抖）
-  useEffect(() => {
-    if (mode !== 'convert' || convertDirection !== 'toJson') return
-    const reverseConvert = (f: ConvertFormat, input: string) => {
-      if (f === 'yaml') return yamlToJson(input)
-      if (f === 'xml') return xmlToJson(input)
-      if (f === 'toml') return tomlToJson(input)
-      return csvToJson(input)
-    }
-    const t = setTimeout(() => {
-      if (!content.trim()) { setRightContent(''); return }
-      const r = reverseConvert(convertFormat, content)
-      if (r.error && content.trim()) useAppStore.getState().showToast(r.error)
-      else setRightContent(r.result)
-    }, 300)
-    return () => clearTimeout(t)
-  }, [content, mode, convertDirection, convertFormat])
 
   const previewLang = previewLangFor(mode, convertFormat, codeLang)
 
