@@ -170,6 +170,7 @@ const MCP_TOOLS: { name: string; desc: string }[] = [
   { name: 'json_format', desc: '格式化或压缩 JSON' },
   { name: 'json_validate', desc: '语法校验 + 可选 Schema 校验 + 统计' },
   { name: 'json_convert', desc: 'YAML / XML / TOML / CSV / NDJSON 互转' },
+  { name: 'json_ndjson', desc: 'NDJSON ↔ JSON 数组互转' },
   { name: 'json_transform', desc: '键排序 / 扁平化 / 去 null / 去重' },
   { name: 'json_diff', desc: '对比两个 JSON 的差异' },
   { name: 'json_mock', desc: '从样例或 Schema 生成 Mock 数据' },
