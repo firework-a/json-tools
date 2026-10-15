@@ -1164,6 +1164,14 @@ select {
     font-size: 11px;
   }
 
+  td.grid-num .grid-cell {
+    display: inline-block;
+    width: 100%;
+    text-align: right;
+    font-family: $font-mono;
+    font-variant-numeric: tabular-nums;
+  }
+
   .grid-cell-input {
     width: 100%;
     min-width: 80px;
