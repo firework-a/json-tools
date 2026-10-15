@@ -268,6 +268,10 @@ export const useAppStore = create<AppState>()(
       })),
 
       openLoadedFile: (file) => set((s) => {
+        // 大文件提示（不阻断，仅提醒树形渲染会跳过）
+        if (file.content.length > 1_000_000) {
+          setTimeout(() => useAppStore.getState().showToast('文件较大，树形视图已跳过渲染以保持流畅'), 50)
+        }
         // 若该路径已在某个标签中打开，直接切过去
         if (file.path) {
           const existing = s.tabs.find(t => t.filePath === file.path)
