@@ -373,7 +373,9 @@ export default function GridView() {
                           className="grid-cell"
                           title={isObj ? JSON.stringify(v) : cellText(v)}
                           onDoubleClick={e => { e.stopPropagation(); setEditingCell(idx, col, v, isObj) }}
-                        >{cellText(v)}</span>
+                        >{typeof v === 'string' && /^https?:\/\//.test(v)
+                          ? <a className="grid-link" href={v} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>{v}</a>
+                          : cellText(v)}</span>
                       )}
                     </td>
                   )

@@ -1129,6 +1129,15 @@ select {
     font-variant-numeric: tabular-nums;
   }
 
+  .grid-link {
+    color: $blue;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
   .grid-cell-input {
     width: 100%;
     min-width: 80px;
