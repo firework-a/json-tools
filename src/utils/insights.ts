@@ -102,9 +102,24 @@ export const analyzeJson = (input: string): { result: InsightsResult; error: str
     suggestions.push('根是对象数组：可用「表格视图」浏览/编辑，或导出 Markdown / CSV')
   }
   if (detectFormatSafe(trimmed) === 'minified') suggestions.push('内容是单行压缩 JSON：可「美化」后再浏览')
+  // 数组重复对象检测
+  if (Array.isArray(root)) {
+    const seen = new Set<string>()
+    let dup = 0
+    for (const item of root) {
+      const key = JSON.stringify(item)
+      if (seen.has(key)) dup++
+      else seen.add(key)
+    }
+    if (dup > 0) {
+      issues.push({ level: 'warn', message: `根数组存在 ${dup} 个完全重复的对象，可用「去重」或检查数据源` })
+      suggestions.push('存在重复对象：可用「键排序」后对比，或清洗数据源')
+    }
+  }
   if (issues.some(i => i.message.includes('类型混杂'))) suggestions.push('存在类型混杂字段：生成 Schema 前建议先统一类型')
   if (issues.some(i => i.message.includes('null'))) suggestions.push('null 较多：工具箱「去空值」可一键清理')
   if (maxDepth >= 6) suggestions.push('嵌套过深：工具箱「扁平化」可把嵌套键拍平')
+  if (issues.some(i => i.message.includes('重复'))) suggestions.push('存在重复对象：可用「键排序」后对比，或清洗数据源')
   if (suggestions.length === 0) suggestions.push('结构良好，未发现明显问题')
 
   const rootDesc = Array.isArray(root)
