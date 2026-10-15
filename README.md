@@ -20,7 +20,7 @@
 
 ---
 
-JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、React 18 与 Monaco Editor 构建。它把常见的 JSON 处理流程整合在一个离线本地应用里，适合日常格式化、压缩、转义、格式转换、Schema 校验、多语言类型生成、对比与代码图片导出。
+JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、React 18 与 Monaco Editor 构建。它把常见的 JSON 处理流程整合在一个离线本地应用里，适合日常格式化、压缩、转义、修复、格式转换、表格浏览编辑、Mock 数据、智能分析、Schema 校验、多语言类型生成、对比与代码图片导出。
 
 ## 核心能力
 
@@ -34,7 +34,6 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 - Mock 数据生成：从样例结构或 JSON Schema 生成仿真数据
 - JSON Schema 应用到编辑器实时校验（Monaco diagnostics）
 - YAML / XML / TOML / CSV 格式转换（支持反向：YAML/XML/TOML/CSV → JSON），NDJSON ↔ JSON 互转
-- JSON Schema 生成与校验
 - TypeScript / Python / Go / Java / C# / Rust / Kotlin 多语言类型生成
 - 代码图片导出
 - 深色 / 浅色主题（macOS 风格材质），字体、缩进、自动换行等编辑器设置持久化
