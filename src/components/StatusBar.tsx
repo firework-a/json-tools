@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useAppStore } from '../store'
-import { getJsonStats } from '../utils/json'
+import { getJsonStats, repairJsonDeep } from '../utils/json'
 import { computeDiff } from '../utils/jsonDiffer'
 import { onEditorCursor } from '../editorRegistry'
 import UpdateButton from './UpdateButton'
@@ -58,7 +58,19 @@ function StatusBar() {
         {!leftStats.valid && content.trim() && (
           <>
             <span className="status-sep">|</span>
-            <span className="status-error">格式错误</span>
+            <button
+              className="status-error status-fix"
+              title="点击一键修复 JSON"
+              onClick={() => {
+                const st = useAppStore.getState()
+                const { result, error, valid, changed } = repairJsonDeep(st.content)
+                if (valid) { st.showToast('JSON 本身合法，无需修复'); return }
+                if (error) { st.showToast(error); return }
+                st.setContent(result)
+                st.setEditorLanguage('json')
+                st.showToast(changed ? '已修复为合法 JSON' : 'JSON 内容未变化')
+              }}
+            >格式错误 · 一键修复</button>
           </>
         )}
       </div>

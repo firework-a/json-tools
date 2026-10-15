@@ -2993,6 +2993,22 @@ select {
   .status-error {
     color: $red;
   }
+
+  .status-fix {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: inherit;
+    padding: 0;
+    font-family: inherit;
+    border-radius: 3px;
+    transition: opacity 0.14s $ease-out;
+
+    &:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+  }
 }
 /* =================== 工具箱（tools 模式） =================== */
 .tools-shell {
