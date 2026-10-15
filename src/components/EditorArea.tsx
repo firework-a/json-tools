@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppStore } from '../store'
 import { jsonToSchema } from '../utils/jsonSchema'
+import { tryParseJson } from '../utils/json'
 import { jsonToYaml, yamlToJson } from '../utils/jsonYaml'
 import { jsonToXml, jsonToToml, jsonToCsv, xmlToJson, tomlToJson, csvToJson } from '../utils/jsonFormats'
 import { validateJsonSchema } from '../utils/schemaValidator'
@@ -74,10 +75,16 @@ function EditorArea() {
     if (mode === 'edit' || mode === 'diff' || mode === 'tools') return
     let cancelled = false
     const reverseConvert = (f: ConvertFormat, input: string) => {
-      if (f === 'yaml') return yamlToJson(input)
-      if (f === 'xml') return xmlToJson(input)
-      if (f === 'toml') return tomlToJson(input)
-      return csvToJson(input)
+      // 输入可能是转义后的 JSON 字符串（如来自「压缩转义」操作），先用宽松解析还原
+      let src = input
+      try {
+        const { parsed, error } = tryParseJson(input)
+        if (!error && typeof parsed === 'string' && parsed.trim()) src = parsed
+      } catch { /* keep original */ }
+      if (f === 'yaml') return yamlToJson(src)
+      if (f === 'xml') return xmlToJson(src)
+      if (f === 'toml') return tomlToJson(src)
+      return csvToJson(src)
     }
     const t = setTimeout(async () => {
       let r: { result: string; error: string | null }
