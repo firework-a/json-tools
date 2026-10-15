@@ -18,6 +18,7 @@ function App() {
   const toast = useAppStore(s => s.toast)
   const showToast = useAppStore(s => s.showToast)
   const openLoadedFile = useAppStore(s => s.openLoadedFile)
+  const treeOpen = useAppStore(s => s.treeOpen)
   const isEditMode = mode === 'edit'
   const [dragOver, setDragOver] = useState(false)
 
@@ -168,7 +169,7 @@ function App() {
       {isEditMode && <TabBar />}
       <div className="app-body">
         <div className="app-main"><EditorArea /></div>
-        {isEditMode && <TreeResizer />}
+        {isEditMode && treeOpen && <TreeResizer />}
         {isEditMode && <TreeView />}
       </div>
       <StatusBar />
