@@ -132,6 +132,33 @@ export default function GridView() {
   }
 
   // 导出 Markdown / CSV 表格（复制到剪贴板）
+  // 列统计：每列 null / 类型分布（点击「统计」开关）
+  const columnStats = useMemo(() => {
+    if (!table) return []
+    return table.columns.map(col => {
+      const counts = { null: 0, empty: 0, number: 0, string: 0, boolean: 0, object: 0 }
+      for (const row of table.rows) {
+        const v = row[col]
+        if (v === undefined) counts.empty++
+        else if (v === null) counts.null++
+        else if (typeof v === 'number') counts.number++
+        else if (typeof v === 'string') counts.string++
+        else if (typeof v === 'boolean') counts.boolean++
+        else counts.object++
+      }
+      const parts: string[] = []
+      if (counts.string) parts.push(`字符串 ${counts.string}`)
+      if (counts.number) parts.push(`数字 ${counts.number}`)
+      if (counts.boolean) parts.push(`布尔 ${counts.boolean}`)
+      if (counts.object) parts.push(`对象 ${counts.object}`)
+      if (counts.null) parts.push(`null ${counts.null}`)
+      if (counts.empty) parts.push(`缺失 ${counts.empty}`)
+      return { col, summary: parts.join(' · ') || '—' }
+    })
+  }, [table])
+
+  const [showStats, setShowStats] = useState(false)
+
   const exportTable = async (fmt: 'markdown' | 'csv') => {
     if (!table) return
     const cols = table.columns
@@ -229,6 +256,9 @@ export default function GridView() {
         <span className="table-title">{table.title}</span>
         <span className="table-meta">{table.rows.length} 行 × {table.columns.length} 列{sortKey ? ` · 按 ${sortKey} ${sortAsc ? '升序' : '降序'}` : ''}</span>
         <div className="table-spacer" />
+        <button className="tool-back-flat" onClick={() => setShowStats(v => !v)} title="显示/隐藏列统计">
+          统计
+        </button>
         <button className="tool-back-flat" onClick={() => exportTable('markdown')} title="复制为 Markdown 表格">
           <DownloadIcon size={13} /> MD
         </button>
@@ -237,6 +267,16 @@ export default function GridView() {
         </button>
         <span className="table-hint">点击列头排序 · 点击行复制 · 双击单元格编辑</span>
       </div>
+      {showStats && (
+        <div className="table-stats">
+          {columnStats.map(s => (
+            <div key={s.col} className="table-stat-item">
+              <span className="table-stat-col">{s.col}</span>
+              <span className="table-stat-val">{s.summary}</span>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="table-scroll">
         <table className="grid-table">
           <thead>

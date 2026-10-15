@@ -1037,6 +1037,35 @@ select {
   color: $text-muted;
 }
 
+.table-stats {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  padding: 6px 12px;
+  border-bottom: 1px solid $border;
+  background: $bg-panel;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.table-stat-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 11px;
+}
+
+.table-stat-col {
+  font-family: $font-mono;
+  color: $blue;
+  font-weight: 600;
+}
+
+.table-stat-val {
+  color: $text-secondary;
+}
+
 .table-scroll {
   flex: 1;
   min-height: 0;
