@@ -66,15 +66,32 @@ export default function CodeEditor({ value, onChange, readOnly, language }: Prop
       }
       // Monaco 默认粘贴后会把光标 reveal 到粘贴文本末尾（大段内容会瞬间滚到最底部）。
       // 这里把光标放回粘贴内容起始处，并让视图从顶部对齐显示粘贴的内容。
+      // WebView2 里原生 paste 的 reveal 可能发生在首个 rAF 之后，所以多帧重试；
+      // 一旦用户主动滚动/输入就停止恢复，避免和用户操作抢滚动条。
       const start = { lineNumber: range.startLineNumber, column: range.startColumn }
+      let cancelled = false
+      const cancel = () => { cancelled = true }
+      const domNode = editor.getDomNode()
+      domNode?.addEventListener('wheel', cancel, { once: true, passive: true })
+      domNode?.addEventListener('mousedown', cancel, { once: true })
       const restoreView = () => {
-        // rAF 兜底时编辑器可能已卸载（切标签/重挂），跳过避免操作已销毁实例
-        if (editorRef.current !== editor) return
+        if (cancelled || editorRef.current !== editor) {
+          domNode?.removeEventListener('wheel', cancel)
+          domNode?.removeEventListener('mousedown', cancel)
+          return
+        }
         editor.setPosition(start)
         editor.revealPositionNearTop(start, monaco.editor.ScrollType.Immediate)
       }
       restoreView()
       requestAnimationFrame(restoreView)
+      requestAnimationFrame(() => requestAnimationFrame(restoreView))
+      setTimeout(restoreView, 80)
+      setTimeout(() => {
+        restoreView()
+        domNode?.removeEventListener('wheel', cancel)
+        domNode?.removeEventListener('mousedown', cancel)
+      }, 200)
 
       // 智能粘贴检测：JSON 编辑区粘贴了非 JSON 内容（YAML/XML/CSV）时提示一键转换
       if (!readOnly && resolvedLanguage === 'json') {
@@ -126,8 +143,8 @@ export default function CodeEditor({ value, onChange, readOnly, language }: Prop
         tabSize,
         padding: { top: 8, bottom: 12 },
         scrollbar: {
-          verticalScrollbarSize: 10,
-          horizontalScrollbarSize: 10,
+          verticalScrollbarSize: 12,
+          horizontalScrollbarSize: 12,
           alwaysConsumeMouseWheel: false,
         },
         overviewRulerLanes: 0,

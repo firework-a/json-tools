@@ -2,6 +2,18 @@ import { useEffect, useState } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { TLCloseIcon, TLMinimizeIcon, TLMaximizeIcon, TLRestoreIcon } from './Icons'
 
+// 仅在 Tauri 运行时可用；浏览器（vite dev）里为 null，窗口按钮禁用
+function useAppWindow() {
+  const [win] = useState(() => {
+    try {
+      return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window ? getCurrentWindow() : null
+    } catch {
+      return null
+    }
+  })
+  return win
+}
+
 type BtnKind = 'close' | 'minimize' | 'maximize'
 
 interface LightProps {
@@ -35,11 +47,12 @@ function TrafficLight({ kind, showIcon, maximized, onClick }: LightProps) {
 }
 
 export default function TitleBar() {
-  const appWindow = getCurrentWindow()
+  const appWindow = useAppWindow()
   const [maximized, setMaximized] = useState(false)
   const [hover, setHover] = useState(false)
 
   useEffect(() => {
+    if (!appWindow) return
     let mounted = true
     const sync = () => {
       appWindow.isMaximized()
@@ -55,9 +68,10 @@ export default function TitleBar() {
     }
   }, [appWindow])
 
-  const onClose = () => appWindow.close()
-  const onMinimize = () => appWindow.minimize()
+  const onClose = () => appWindow?.close()
+  const onMinimize = () => appWindow?.minimize()
   const onMaximize = () => {
+    if (!appWindow) return
     if (maximized) {
       setMaximized(false)
       appWindow.unmaximize()

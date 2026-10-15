@@ -26,6 +26,31 @@ export default function DiffEditor({ original, modified, onOriginalChange, onMod
     const origEditor = editor.getOriginalEditor()
     const modEditor = editor.getModifiedEditor()
     ;[origEditor, modEditor].forEach(e => e.updateOptions({ tabSize: 2 }))
+
+    // 粘贴大段内容后把视图对齐到粘贴内容起始处，避免 Monaco 默认 reveal 到末尾滚到底
+    ;[origEditor, modEditor].forEach((e) => {
+      e.onDidPaste((ev) => {
+        const start = { lineNumber: ev.range.startLineNumber, column: ev.range.startColumn }
+        let cancelled = false
+        const cancel = () => { cancelled = true }
+        const domNode = e.getDomNode()
+        domNode?.addEventListener('wheel', cancel, { once: true, passive: true })
+        domNode?.addEventListener('mousedown', cancel, { once: true })
+        const restore = () => {
+          if (cancelled) return
+          e.setPosition(start)
+          e.revealPositionNearTop(start)
+        }
+        restore()
+        requestAnimationFrame(restore)
+        requestAnimationFrame(() => requestAnimationFrame(restore))
+        setTimeout(() => {
+          restore()
+          domNode?.removeEventListener('wheel', cancel)
+          domNode?.removeEventListener('mousedown', cancel)
+        }, 200)
+      })
+    })
     const origModel = origEditor.getModel()
     const modModel = modEditor.getModel()
     origModel?.onDidChangeContent(() => {
@@ -67,8 +92,8 @@ export default function DiffEditor({ original, modified, onOriginalChange, onMod
         folding: true,
         padding: { top: 8, bottom: 12 },
         scrollbar: {
-          verticalScrollbarSize: 10,
-          horizontalScrollbarSize: 10,
+          verticalScrollbarSize: 12,
+          horizontalScrollbarSize: 12,
           alwaysConsumeMouseWheel: false,
         },
         overviewRulerLanes: 0,

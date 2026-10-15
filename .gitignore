@@ -53,3 +53,5 @@ Cargo.lock
 .serena
 .spec-workflow
 .codegraph
+
+.openchamber/

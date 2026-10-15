@@ -41,8 +41,8 @@ monaco.editor.defineTheme('app-dark', {
     'editorIndentGuide.background1': '#ffffff10',
     'editorWidget.background': '#1f2330',
     'editorWidget.border': '#23272f',
-    'scrollbarSlider.background': '#ffffff1a',
-    'scrollbarSlider.hoverBackground': '#ffffff26',
+    'scrollbarSlider.background': '#ffffff52',
+    'scrollbarSlider.hoverBackground': '#ffffff80',
   },
 })
 
@@ -69,8 +69,8 @@ monaco.editor.defineTheme('app-light', {
     'editorIndentGuide.background1': '#00000010',
     'editorWidget.background': '#f5f7fa',
     'editorWidget.border': '#d9dee7',
-    'scrollbarSlider.background': '#0000001a',
-    'scrollbarSlider.hoverBackground': '#00000026',
+    'scrollbarSlider.background': '#0000004d',
+    'scrollbarSlider.hoverBackground': '#0000007a',
   },
 })
 

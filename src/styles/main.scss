@@ -29,8 +29,8 @@ body {
 
 /* =================== 全局滚动条样式 =================== */
 *::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 *::-webkit-scrollbar-track {
@@ -38,13 +38,13 @@ body {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 3px;
-  border: 1.5px solid transparent;
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 5px;
+  border: 2px solid transparent;
   background-clip: padding-box;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.45);
     background-clip: padding-box;
   }
 }
@@ -56,15 +56,15 @@ body {
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 
 /* Monaco Editor 滚动条 - 强制覆盖原生样式 */
 .monaco-editor .scrollbar.vertical .slider,
 .monaco-editor .scrollbar.horizontal .slider {
-  background: rgba(255, 255, 255, 0.18) !important;
-  border-radius: 3px !important;
-  border: 1.5px solid transparent !important;
+  background: rgba(255, 255, 255, 0.32) !important;
+  border-radius: 5px !important;
+  border: 2px solid transparent !important;
   background-clip: padding-box !important;
   min-height: 20px !important;
   min-width: 20px !important;
@@ -73,14 +73,14 @@ body {
 
 .monaco-editor .scrollbar.vertical .slider:hover,
 .monaco-editor .scrollbar.horizontal .slider:hover {
-  background: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.5) !important;
 }
 
 .monaco-editor .scrollbar.vertical,
 .monaco-editor .scrollbar.horizontal {
   background: transparent !important;
-  width: 6px !important;
-  height: 6px !important;
+  width: 10px !important;
+  height: 10px !important;
 }
 
 .monaco-editor .scrollbar.vertical.has-scrollable .slider,
@@ -101,25 +101,25 @@ body {
 /* 浅色主题下的 Monaco 滚动条 */
 [data-theme='light'] .monaco-editor .scrollbar.vertical .slider,
 [data-theme='light'] .monaco-editor .scrollbar.horizontal .slider {
-  background: rgba(15, 23, 42, 0.18) !important;
+  background: rgba(15, 23, 42, 0.3) !important;
 }
 
 [data-theme='light'] .monaco-editor .scrollbar.vertical .slider:hover,
 [data-theme='light'] .monaco-editor .scrollbar.horizontal .slider:hover {
-  background: rgba(15, 23, 42, 0.32) !important;
+  background: rgba(15, 23, 42, 0.48) !important;
 }
 
 [data-theme='light'] {
   *::-webkit-scrollbar-thumb {
-    background: rgba(15, 23, 42, 0.18);
+    background: rgba(15, 23, 42, 0.3);
 
     &:hover {
-      background: rgba(15, 23, 42, 0.32);
+      background: rgba(15, 23, 42, 0.48);
     }
   }
 
   * {
-    scrollbar-color: rgba(15, 23, 42, 0.25) transparent;
+    scrollbar-color: rgba(15, 23, 42, 0.38) transparent;
   }
 }
 
