@@ -297,7 +297,7 @@ function EditorArea() {
                     </div>
                   )}
                 </div>
-                <input className="name-input" value={codeRootName}
+                <input className="name-input" name="code-root-name" value={codeRootName}
                   placeholder={activeMeta.rootLabel}
                   onChange={e => setCodeRootName(e.target.value)} spellCheck={false} />
                 <CopyButton getText={() => rightContent} title="复制" />

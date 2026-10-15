@@ -230,6 +230,7 @@ export default function ToolsPanel() {
             <div className="tools-io-title">输入 {detectFormat(input) !== 'text' && input.trim() && <span className="tools-detect">识别为 {detectFormat(input).toUpperCase()}</span>}</div>
             <textarea
               className="tools-input"
+              name="tools-input"
               value={input}
               spellCheck={false}
               placeholder={`在此粘贴要处理的文本`}
