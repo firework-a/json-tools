@@ -4,10 +4,14 @@ import JsonView from '@uiw/react-json-view'
 import { lightTheme } from '@uiw/react-json-view/light'
 import { darkTheme } from '@uiw/react-json-view/dark'
 import { search as jmesSearch } from 'jmespath'
+import { JSONPath } from 'jsonpath-plus'
 import { useAppStore } from '../store'
 import { onEditorScroll } from '../editorRegistry'
 import { TreeIcon, SearchIcon, CloseIcon, InfoIcon, CopyIcon, ChevronsUpDown, ChevronsDownUp, ExternalLinkIcon, PathIcon } from './Icons'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
+
+type QueryLang = 'jmespath' | 'jsonpath'
+const queryLangLabel = (l: QueryLang) => (l === 'jmespath' ? 'JMESPath' : 'JSONPath')
 
 /** 把 JsonView 的 keys 路径数组转成 JMESPath 风格字符串，如 people[0].name */
 const keysToPath = (keys: (string | number)[]): string =>
@@ -16,7 +20,7 @@ const keysToPath = (keys: (string | number)[]): string =>
     return acc ? `${acc}.${k}` : String(k)
   }, '')
 
-function JmesPathCheatSheet({ onClose }: { onClose: () => void }) {
+function QueryCheatSheet({ lang, onClose }: { lang: QueryLang; onClose: () => void }) {
   const exampleJson = `{
   "people": [
     {"name": "Alice", "age": 20},
@@ -24,20 +28,28 @@ function JmesPathCheatSheet({ onClose }: { onClose: () => void }) {
   ],
   "meta": {"count": 2}
 }`
-  const examples = [
-    { expr: 'people[0].name', result: '"Alice"' },
-    { expr: 'people[*].name', result: '["Alice", "Bob"]' },
-    { expr: 'people[?age > `25`].name', result: '["Bob"]' },
-    { expr: 'meta.count', result: '2' },
-    { expr: 'length(people)', result: '2' },
-  ]
+  const examples = lang === 'jmespath'
+    ? [
+        { expr: 'people[0].name', result: '"Alice"' },
+        { expr: 'people[*].name', result: '["Alice", "Bob"]' },
+        { expr: 'people[?age > `25`].name', result: '["Bob"]' },
+        { expr: 'meta.count', result: '2' },
+        { expr: 'length(people)', result: '2' },
+      ]
+    : [
+        { expr: '$.people[0].name', result: '"Alice"' },
+        { expr: '$.people[*].name', result: '["Alice", "Bob"]' },
+        { expr: '$..name', result: '["Alice", "Bob"]' },
+        { expr: '$.people[?(@.age > 25)]', result: '[{"name":"Bob","age":30}]' },
+        { expr: '$.meta.count', result: '2' },
+      ]
 
   return createPortal(
     <div className="jmespath-overlay" onClick={onClose}>
       <div className="jmespath-panel" onClick={e => e.stopPropagation()}>
         <div className="jmespath-header">
-          <span className="jmespath-title">JMESPath 速查表</span>
-          <a className="jmespath-docs" href="https://jmespath.org/tutorial.html" target="_blank" rel="noreferrer">
+          <span className="jmespath-title">{queryLangLabel(lang)} 速查表</span>
+          <a className="jmespath-docs" href={lang === 'jmespath' ? 'https://jmespath.org/tutorial.html' : 'https://goessner.net/articles/JsonPath/'} target="_blank" rel="noreferrer">
             文档 <ExternalLinkIcon size={12} />
           </a>
         </div>
@@ -77,6 +89,7 @@ function TreeView() {
   const [collapsed, setCollapsed] = useState(false)
   const [pathMode, setPathMode] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [queryLang, setQueryLang] = useState<QueryLang>('jmespath')
   const scrollRef = useRef<HTMLDivElement>(null)
   const syncingRef = useRef(false)
 
@@ -107,7 +120,7 @@ function TreeView() {
 
   const [query, setQuery] = useState('')
 
-  // 对已解析的 JSON 执行 JMESPath 查询。
+  // 对已解析的 JSON 执行 JMESPath / JSONPath 查询。
   // 返回三态：未触发 / 成功（结果值）/ 失败（错误信息），供界面分别处理。
   const queryResult = useMemo<{
     active: boolean
@@ -117,11 +130,15 @@ function TreeView() {
     const expr = query.trim()
     if (!expr || parsed === undefined) return { active: false }
     try {
+      if (queryLang === 'jsonpath') {
+        const r = JSONPath({ json: parsed as object, path: expr, wrap: false }) as unknown
+        return { active: true, value: r }
+      }
       return { active: true, value: jmesSearch(parsed, expr) }
     } catch (e) {
       return { active: true, error: e instanceof Error ? e.message : String(e) }
     }
-  }, [query, parsed])
+  }, [query, parsed, queryLang])
 
   // 查询命中时展示查询结果，否则展示整份 JSON；两者都归一为对象/数组供 JsonView 渲染
   const viewData = useMemo(() => {
@@ -148,7 +165,7 @@ function TreeView() {
         <div className="tree-search-box" style={searchStyle}>
           <SearchIcon size={13} color={isLight ? '#94a3b8' : undefined} />
           <input
-            placeholder="JMESPath 查询…"
+            placeholder={`${queryLangLabel(queryLang)} 查询…`}
             style={inputStyle}
             value={query}
             onFocus={() => setHistoryOpen(true)}
@@ -182,7 +199,11 @@ function TreeView() {
             </div>
           )}
         </div>
-        <span className="tree-lang-badge">JMESPath</span>
+        <button
+          className="tree-lang-badge"
+          title="切换查询语言（点击切换 JMESPath / JSONPath）"
+          onClick={() => setQueryLang(l => l === 'jmespath' ? 'jsonpath' : 'jmespath')}
+        >{queryLangLabel(queryLang)}</button>
         <button
           className={`tree-icon-btn ${pathMode ? 'selected' : ''}`}
           style={pathMode ? { color: '#5a9cf0', background: 'rgba(90,156,240,0.14)' } : btnStyle}
@@ -191,7 +212,7 @@ function TreeView() {
         >
           <PathIcon size={13} color={pathMode ? '#5a9cf0' : (isLight ? '#64748b' : undefined)} />
         </button>
-        <button className="tree-icon-btn" style={btnStyle} title="JMESPath 速查表" onClick={() => setShowHelp(true)}><InfoIcon size={13} color={isLight ? '#64748b' : undefined} /></button>
+        <button className="tree-icon-btn" style={btnStyle} title={`${queryLangLabel(queryLang)} 速查表`} onClick={() => setShowHelp(true)}><InfoIcon size={13} color={isLight ? '#64748b' : undefined} /></button>
         <button className="tree-icon-btn" style={btnStyle} title={collapsed ? '全部展开' : '全部收起'} onClick={() => setCollapsed(v => !v)}>
           {collapsed
             ? <ChevronsUpDown size={13} color={isLight ? '#64748b' : undefined} />
@@ -218,7 +239,7 @@ function TreeView() {
         ) : queryResult.active && viewData === undefined ? (
           <div className="tree-empty">
             <div className="tree-empty-title">无匹配结果</div>
-            <div className="tree-empty-tip">JMESPath 表达式未命中任何数据</div>
+            <div className="tree-empty-tip">{queryLangLabel(queryLang)} 表达式未命中任何数据</div>
           </div>
         ) : (
           <div className="rjv-host">
@@ -239,7 +260,7 @@ function TreeView() {
           </div>
         )}
       </div>
-      {showHelp && <JmesPathCheatSheet onClose={() => setShowHelp(false)} />}
+      {showHelp && <QueryCheatSheet lang={queryLang} onClose={() => setShowHelp(false)} />}
     </aside>
   )
 }

@@ -692,8 +692,9 @@ select {
   gap: 6px;
   height: 40px;
   padding: 0 8px;
-  background: $bg-toolbar;
+  background: linear-gradient(180deg, #12151b 0%, $bg-toolbar 100%);
   border-bottom: 1px solid $border;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 4px 12px rgba(0, 0, 0, 0.18);
   flex-shrink: 0;
   overflow-x: auto;
   white-space: nowrap;
@@ -710,9 +711,10 @@ select {
   gap: 0;
   height: 30px;
   padding: 3px;
-  background: rgba(255, 255, 255, 0.04);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0.028) 100%);
   border: 1px solid $border;
   border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
   flex-shrink: 0;
 }
 
@@ -747,8 +749,12 @@ select {
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.07);
     color: $text-primary;
+  }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.1);
   }
 
   &.active {
@@ -783,8 +789,12 @@ select {
   transition: background 0.1s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.07);
     color: $text-primary;
+  }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.1);
   }
 
   &.selected {
@@ -2195,8 +2205,9 @@ select {
   z-index: 5;
   width: 340px;
   flex-shrink: 0;
-  background: $bg-panel;
+  background: linear-gradient(180deg, $bg-panel 0%, #14171e 100%);
   border-left: 1px solid $border;
+  box-shadow: -6px 0 16px rgba(0, 0, 0, 0.14);
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -2886,11 +2897,19 @@ select {
   @include flex-center;
   font-size: 11px;
   font-weight: 600;
-  color: $text-muted;
+  color: $text-secondary;
   background: rgba(255,255,255,0.04);
   border: 1px solid $border;
   border-radius: 4px;
   letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+
+  &:hover {
+    background: rgba(90, 156, 240, 0.12);
+    border-color: rgba(90, 156, 240, 0.4);
+    color: $blue;
+  }
 }
 .tree-search-box { position: relative; }
 .tree-history {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAppStore, ViewMode } from '../store'
-import { formatJson, compressJson, escapeJson, unescapeJson } from '../utils/json'
+import { formatJson, compressJson, escapeJson, unescapeJson, repairJsonDeep } from '../utils/json'
 import { isTauri } from '@tauri-apps/api/core'
 import { save } from '@tauri-apps/plugin-dialog'
 import { writeFile } from '@tauri-apps/plugin-fs'
@@ -9,7 +9,7 @@ import {
   NewFileIcon, OpenIcon, SaveIcon, ExportIcon,
   BeautifyIcon, CompressIcon, EscapeIcon, UnescapeIcon, FoldIcon, UnfoldIcon,
   DiffIcon, ConvertIcon, CodeIcon, SchemaIcon, ToolboxIcon, CommandIcon,
-  TreeIcon, ThemeIcon, SettingsIcon, PinIcon, PinOffIcon,
+  TreeIcon, ThemeIcon, SettingsIcon, PinIcon, PinOffIcon, RepairIcon,
 } from './Icons'
 import { foldAllEditors, unfoldAllEditors } from '../editorRegistry'
 import ExportCanvas from './ExportCanvas'
@@ -165,6 +165,26 @@ function Toolbar() {
     useAppStore.getState().showToast('导出图片失败: ' + (err instanceof Error ? err.message : String(err)))
   }
 
+  // 修复非标准 JSON（自定义规则 + jsonrepair 兜底）
+  const repairContent = () => {
+    if (!content.trim()) {
+      useAppStore.getState().showToast('没有可修复的内容')
+      return
+    }
+    const { result, error, valid, changed } = repairJsonDeep(content)
+    if (valid) {
+      useAppStore.getState().showToast('JSON 本身合法，无需修复')
+      return
+    }
+    if (error) {
+      useAppStore.getState().showToast(error)
+      return
+    }
+    setContent(result)
+    setEditorLanguage('json')
+    useAppStore.getState().showToast(changed ? '已修复为合法 JSON' : 'JSON 内容未变化')
+  }
+
   const report = (result: string, error: string | null, language?: 'json' | 'plaintext') => {
     if (error) {
       useAppStore.getState().showToast(error)
@@ -227,6 +247,7 @@ function Toolbar() {
           const { result, error } = compressJson(content)
           report(result, error, 'plaintext')
         }} />
+        <TB icon={<RepairIcon size={14} color="#f0b840" />} label="修复" onClick={repairContent} />
         <TB icon={<EscapeIcon size={14} color="#b578f0" />} label="转义" onClick={() => {
           const { result, error } = escapeJson(content)
           report(result, error, 'plaintext')

@@ -1,6 +1,6 @@
 import { useAppStore } from './store'
 import { useUpdateStore } from './updateStore'
-import { formatJson, compressJson, escapeJson, unescapeJson, copyToClipboard } from './utils/json'
+import { formatJson, compressJson, escapeJson, unescapeJson, copyToClipboard, repairJsonDeep } from './utils/json'
 import { sortJsonKeys, flattenJson, unflattenJson, removeEmptyValues } from './utils/jsonTransform'
 import { openTextFile, saveTextFileAs, writeTextFile, basename } from './utils/files'
 import { foldAllEditors, unfoldAllEditors } from './editorRegistry'
@@ -72,6 +72,16 @@ export const COMMANDS: AppCommand[] = [
   { id: 'json.compress', label: '压缩 JSON', group: 'JSON 变换', keywords: 'compress minify 压缩', run: () => applyTransform(compressJson, 'plaintext', '已压缩') },
   { id: 'json.escape', label: '转义', group: 'JSON 变换', keywords: 'escape 转义', run: () => applyTransform(escapeJson, 'plaintext', '已转义') },
   { id: 'json.unescape', label: '反转义', group: 'JSON 变换', keywords: 'unescape 反转义', run: () => applyTransform(unescapeJson, 'json', '已反转义') },
+  { id: 'json.repair', label: '修复 JSON', group: 'JSON 变换', keywords: 'repair fix 修复 容错', run: () => {
+    const st = s()
+    if (!st.content.trim()) { st.showToast('没有可修复的内容'); return }
+    const { result, error, valid, changed } = repairJsonDeep(st.content)
+    if (valid) { st.showToast('JSON 本身合法，无需修复'); return }
+    if (error) { st.showToast(error); return }
+    st.setContent(result)
+    st.setEditorLanguage('json')
+    st.showToast(changed ? '已修复为合法 JSON' : 'JSON 内容未变化')
+  } },
   { id: 'json.sortAsc', label: '按键升序排序', group: 'JSON 变换', keywords: 'sort 排序 键', run: () => applyTransform(c => sortJsonKeys(c, 'asc'), 'json', '已升序排序') },
   { id: 'json.sortDesc', label: '按键降序排序', group: 'JSON 变换', keywords: 'sort desc 排序 降序', run: () => applyTransform(c => sortJsonKeys(c, 'desc'), 'json', '已降序排序') },
   { id: 'json.flatten', label: '扁平化', group: 'JSON 变换', keywords: 'flatten 扁平 展开', run: () => applyTransform(flattenJson, 'json', '已扁平化') },

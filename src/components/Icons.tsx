@@ -72,6 +72,12 @@ export const BeautifyIcon = ({ size, color }: P) => (
     <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
   </I>
 )
+export const RepairIcon = ({ size, color }: P) => (
+  <I size={size} color={color || '#f0b840'}>
+    <path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L3 18l3 3 5.7-5.7a4.5 4.5 0 0 0 6-6L14.5 12l-2.5-2.5z" />
+    <line x1="14.5" x2="17" y1="9.5" y2="12" />
+  </I>
+)
 export const CompressIcon = ({ size, color }: P) => (
   <I size={size} color={color || '#f0b840'}>
     <polyline points="4 14 10 14 10 20" />

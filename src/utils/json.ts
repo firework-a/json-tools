@@ -1,4 +1,6 @@
 // 基础 JSON 工具
+import { jsonrepair } from 'jsonrepair'
+
 const wrapAsJsonString = (input: string): string => {
   let out = '"'
   for (let i = 0; i < input.length; i++) {
@@ -123,6 +125,29 @@ export const repairJson = (input: string): string => {
     out.push(ch); i++
   }
   return out.join('')
+}
+
+/**
+ * 深度 JSON 修复：自定义修复失败时再用 jsonrepair 库兜底
+ * （覆盖截断 payload、缺失引号值、NaN、单引号等更复杂的情况）。
+ * valid: 输入本身合法；changed: 修复后内容是否有变化
+ */
+export const repairJsonDeep = (input: string): { result: string; error: string | null; valid: boolean; changed: boolean } => {
+  const trimmed = input.trim()
+  if (!trimmed) return { result: '', error: '内容为空', valid: false, changed: false }
+  try {
+    JSON.parse(trimmed)
+    return { result: trimmed, error: null, valid: true, changed: false }
+  } catch {}
+  for (const attempt of [() => repairJson(trimmed), () => jsonrepair(trimmed)]) {
+    try {
+      const fixed = attempt()
+      const parsed = JSON.parse(fixed)
+      const result = JSON.stringify(parsed, null, 2)
+      return { result, error: null, valid: false, changed: result !== trimmed }
+    } catch {}
+  }
+  return { result: '', error: '无法自动修复，请检查 JSON 语法', valid: false, changed: false }
 }
 
 /**
