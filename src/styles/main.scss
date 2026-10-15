@@ -373,17 +373,7 @@ select {
   background: #ffffff;
 }
 
-/* 空状态：浅色 */
-[data-theme='light'] .editor-empty-card {
-  background: rgba(255, 255, 255, 0.92);
-  border-color: #d9dee7;
-  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.14);
-}
-
-[data-theme='light'] .editor-empty-title { color: #1f2937; }
-[data-theme='light'] .editor-empty-tip { color: #475569; }
-[data-theme='light'] .editor-empty-keys { color: #94a3b8; }
-
+/* 空状态按钮：浅色 */
 [data-theme='light'] .editor-empty-btn {
   background: #f1f5f9;
   border-color: #d9dee7;
@@ -900,49 +890,7 @@ select {
   display: inline-flex;
 }
 
-/* =================== 编辑器空状态 =================== */
-.editor-empty {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 4;
-}
-
-.editor-empty-card {
-  pointer-events: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 28px 36px;
-  background: rgba(28, 31, 39, 0.86);
-  backdrop-filter: blur(20px) saturate(1.5);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.05) inset;
-  animation: cmdk-pop 0.24s $ease-out;
-}
-
-.editor-empty-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: $text-primary;
-}
-
-.editor-empty-tip {
-  font-size: 12px;
-  color: $text-secondary;
-}
-
-.editor-empty-actions {
-  display: flex;
-  gap: 8px;
-}
-
+/* 编辑器空状态按钮（表格视图空状态复用） */
 .editor-empty-btn {
   @include flex-center;
   gap: 6px;
@@ -973,26 +921,6 @@ select {
     &:hover {
       background: rgba($blue, 0.24);
     }
-  }
-}
-
-.editor-empty-keys {
-  display: flex;
-  gap: 14px;
-  font-size: 11px;
-  color: $text-muted;
-
-  kbd {
-    display: inline-block;
-    padding: 1px 5px;
-    margin-right: 3px;
-    font-size: 10px;
-    font-family: $font-mono;
-    color: $text-secondary;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-bottom-width: 2px;
-    border-radius: 4px;
   }
 }
 
