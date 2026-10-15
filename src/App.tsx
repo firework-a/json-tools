@@ -34,6 +34,13 @@ function App() {
     document.documentElement.dataset.theme = useAppStore.getState().theme
   }, [])
 
+  // 窗口标题显示当前文件名（Tauri 窗口标题 + 浏览器标签页标题）
+  const fileName = useAppStore(s => s.fileName)
+  useEffect(() => {
+    const t = fileName && fileName !== 'Untitled-1' ? `${fileName} · JSON TOOLS` : 'JSON TOOLS'
+    document.title = t
+  }, [fileName])
+
   // 窗口初始 visible:false, 等 React 挂载完再显示, 避免出现透明空窗
   useEffect(() => {
     if (!isTauri()) return

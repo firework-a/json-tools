@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import { useAppStore } from '../store'
 import { TLCloseIcon, TLMinimizeIcon, TLMaximizeIcon, TLRestoreIcon } from './Icons'
 
 // 仅在 Tauri 运行时可用；浏览器（vite dev）里为 null，窗口按钮禁用
@@ -48,6 +49,7 @@ function TrafficLight({ kind, showIcon, maximized, onClick }: LightProps) {
 
 export default function TitleBar() {
   const appWindow = useAppWindow()
+  const fileName = useAppStore(s => s.fileName)
   const [maximized, setMaximized] = useState(false)
   const [hover, setHover] = useState(false)
 
@@ -93,7 +95,7 @@ export default function TitleBar() {
         <TrafficLight kind="minimize" showIcon={hover} onClick={onMinimize} />
         <TrafficLight kind="maximize" showIcon={hover} maximized={maximized} onClick={onMaximize} />
       </div>
-      <div className="tl-title" data-tauri-drag-region>JSON TOOLS</div>
+      <div className="tl-title" data-tauri-drag-region>{fileName && fileName !== 'Untitled-1' ? `${fileName} · JSON TOOLS` : 'JSON TOOLS'}</div>
     </div>
   )
 }
