@@ -158,6 +158,14 @@ export default function GridView() {
   }, [table])
 
   const [showStats, setShowStats] = useState(false)
+  const [filter, setFilter] = useState('')
+
+  const filteredRows = useMemo(() => {
+    const q = filter.trim().toLowerCase()
+    if (!q) return sortedRows
+    return sortedRows.filter(({ row }) =>
+      Object.values(row).some(v => cellText(v).toLowerCase().includes(q)))
+  }, [sortedRows, filter])
 
   const exportTable = async (fmt: 'markdown' | 'csv') => {
     if (!table) return
@@ -254,8 +262,16 @@ export default function GridView() {
           <BackIcon />
         </button>
         <span className="table-title">{table.title}</span>
-        <span className="table-meta">{table.rows.length} 行 × {table.columns.length} 列{sortKey ? ` · 按 ${sortKey} ${sortAsc ? '升序' : '降序'}` : ''}</span>
+        <span className="table-meta">{table.rows.length} 行 × {table.columns.length} 列{sortKey ? ` · 按 ${sortKey} ${sortAsc ? '升序' : '降序'}` : ''}{filter ? ' · 已过滤' : ''}</span>
         <div className="table-spacer" />
+        <input
+          className="table-filter"
+          value={filter}
+          placeholder="过滤行…"
+          aria-label="过滤行"
+          spellCheck={false}
+          onChange={e => setFilter(e.target.value)}
+        />
         <button className="tool-back-flat" onClick={() => setShowStats(v => !v)} title="显示/隐藏列统计">
           统计
         </button>
@@ -291,7 +307,7 @@ export default function GridView() {
             </tr>
           </thead>
           <tbody>
-            {sortedRows.map(({ row, idx }, i) => (
+            {filteredRows.map(({ row, idx }, i) => (
               <tr key={idx} onClick={() => copyRow(row)} title="点击复制整行 JSON · 双击单元格编辑">
                 <td className="grid-index">{i + 1}</td>
                 {table.columns.map(col => {
