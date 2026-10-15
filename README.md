@@ -136,8 +136,9 @@ json-tools/
 ## 已知限制
 
 - XML / CSV / TOML 等格式转换可能存在结构信息损失，不保证可逆。
-- 超大 JSON（百万级节点）的树形渲染、Diff 与图片导出仍需要进一步性能保护。
+- 超大 JSON（百万级节点）：树形视图超过 1MB 跳过渲染、表格超过 5000 行仅渲染前 5000 行，图片导出仍需注意体积。
 - 更新分发完全基于 GitHub Releases，无独立更新服务器。
+- 从 URL 导入受浏览器 CORS 限制（Tauri 桌面端同样受 WebView2 CORS 策略约束）。
 - Windows 代码签名、macOS 签名与 notarization 尚未配置，正式商业分发前需补齐。
 
 ## 后续路线
