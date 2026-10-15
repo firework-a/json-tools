@@ -603,6 +603,21 @@ select {
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
 }
 
+/* 表格过滤输入与列统计：浅色 */
+[data-theme='light'] .table-filter {
+  color: #1f2937;
+  background: #f8fafc;
+  border-color: #d9dee7;
+}
+
+[data-theme='light'] .table-stats {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme='light'] .table-stat-col { color: #2563eb; }
+[data-theme='light'] .table-stat-val { color: #475569; }
+
 /* diff 统计条 */
 [data-theme='light'] .diff-stat {
   background: rgba(255, 255, 255, 0.96);
