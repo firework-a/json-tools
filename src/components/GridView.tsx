@@ -350,8 +350,8 @@ export default function GridView() {
         {hiddenCols.length > 0 && (
           <button
             className="tool-back-flat"
-            title="恢复隐藏的列"
-            onClick={() => setHiddenCols([])}
+            title="恢复隐藏的列与列宽"
+            onClick={() => { setHiddenCols([]); setColWidths({}) }}
           >已隐藏 {hiddenCols.length} 列 · 恢复</button>
         )}
       </div>
