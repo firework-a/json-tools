@@ -417,6 +417,12 @@ select {
 
     .grid-index { background: #eef2f7; }
   }
+
+  tbody tr:nth-child(even):not(:hover) {
+    background: #fbfcfe;
+
+    .grid-index { background: #f8fafc; }
+  }
 }
 
 [data-theme='light'] .tool-pane.is-empty {
@@ -1126,6 +1132,14 @@ select {
   tbody tr {
     cursor: pointer;
     transition: background 0.1s $ease-out;
+
+    &:nth-child(even):not(:hover) {
+      background: rgba(255, 255, 255, 0.015);
+
+      .grid-index {
+        background: $bg-panel;
+      }
+    }
 
     &:hover {
       background: rgba(255, 255, 255, 0.03);
