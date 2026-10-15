@@ -14,6 +14,8 @@ import { BackIcon, SchemaIcon, ChevronDown, WandIcon, ShieldCheckIcon, OpenIcon 
 import CopyButton from './CopyButton'
 import type { ConvertFormat } from '../store'
 import { SAMPLE_JSON } from '../utils/sample'
+import { compare } from 'fast-json-patch'
+import { copyToClipboard } from '../utils/json'
 
 // 编辑器空状态：无内容时给出明确下一步动作（成熟方案：empty state 必须有 next action）
 function EditorEmptyState() {
@@ -141,6 +143,29 @@ function EditorArea() {
               <span className="pill pill-json">左侧 (original)</span>
               <span className="pill pill-json">右侧 (modified)</span>
             </div>
+            <button
+              className="action-btn gen"
+              title="生成 JSON Patch (RFC 6902) 并复制"
+              onClick={async () => {
+                if (!content.trim() || !rightContent.trim()) {
+                  useAppStore.getState().showToast('两侧都需要 JSON 内容')
+                  return
+                }
+                try {
+                  const patch = compare(JSON.parse(content), JSON.parse(rightContent))
+                  if (patch.length === 0) {
+                    useAppStore.getState().showToast('两侧内容一致，无差异')
+                    return
+                  }
+                  const ok = await copyToClipboard(JSON.stringify(patch, null, 2))
+                  useAppStore.getState().showToast(ok ? `已复制 JSON Patch（${patch.length} 处变更）` : '复制失败')
+                } catch (e) {
+                  useAppStore.getState().showToast('生成失败：' + (e instanceof Error ? e.message : String(e)))
+                }
+              }}
+            >
+              <WandIcon size={12} /> 生成 Patch
+            </button>
             <CopyButton getText={() => rightContent} title="复制右侧" />
           </div>
           <DiffEditor

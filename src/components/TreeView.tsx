@@ -7,7 +7,7 @@ import { search as jmesSearch } from 'jmespath'
 import { JSONPath } from 'jsonpath-plus'
 import { useAppStore } from '../store'
 import { onEditorScroll } from '../editorRegistry'
-import { TreeIcon, SearchIcon, CloseIcon, InfoIcon, CopyIcon, ChevronsUpDown, ChevronsDownUp, ExternalLinkIcon, PathIcon } from './Icons'
+import { TreeIcon, SearchIcon, CloseIcon, InfoIcon, CopyIcon, ChevronsUpDown, ChevronsDownUp, ExternalLinkIcon, PathIcon, DownloadIcon } from './Icons'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
 
 type QueryLang = 'jmespath' | 'jsonpath'
@@ -213,6 +213,20 @@ function TreeView() {
           <PathIcon size={13} color={pathMode ? '#5a9cf0' : (isLight ? '#64748b' : undefined)} />
         </button>
         <button className="tree-icon-btn" style={btnStyle} title={`${queryLangLabel(queryLang)} 速查表`} onClick={() => setShowHelp(true)}><InfoIcon size={13} color={isLight ? '#64748b' : undefined} /></button>
+        {queryResult.active && !queryResult.error && queryResult.value !== undefined && (
+          <button
+            className="tree-icon-btn"
+            style={btnStyle}
+            title="把查询结果写入编辑器（替换当前内容）"
+            onClick={() => {
+              const st = useAppStore.getState()
+              st.setContent(JSON.stringify(queryResult.value, null, 2))
+              st.showToast('查询结果已写入编辑器')
+            }}
+          >
+            <DownloadIcon size={13} color={isLight ? '#64748b' : undefined} />
+          </button>
+        )}
         <button className="tree-icon-btn" style={btnStyle} title={collapsed ? '全部展开' : '全部收起'} onClick={() => setCollapsed(v => !v)}>
           {collapsed
             ? <ChevronsUpDown size={13} color={isLight ? '#64748b' : undefined} />
