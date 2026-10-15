@@ -94,7 +94,7 @@ export default function GridView() {
   const RENDER_LIMIT = 5000
   const columnStats = useMemo(() => {
     if (!table) return []
-    return table.columns.map(col => {
+    return visibleColumns.map(col => {
       const counts = { null: 0, empty: 0, number: 0, string: 0, boolean: 0, object: 0 }
       for (const row of table.rows) {
         const v = row[col]
