@@ -56,6 +56,16 @@ export default function GridView() {
     return sortAsc ? indexed : indexed.reverse()
   }, [table, sortKey, sortAsc])
 
+  const [showStats, setShowStats] = useState(false)
+  const [filter, setFilter] = useState('')
+  // 大表格过滤输入防卡顿：输入框即时响应，过滤计算延迟一帧
+  const deferredFilter = useDeferredValue(filter)
+  const [colWidths, setColWidths] = useState<Record<string, number>>({})
+  const [hiddenCols, setHiddenCols] = useState<string[]>([])
+  const [columnOrder, setColumnOrder] = useState<string[]>([])
+  const [dragCol, setDragCol] = useState<string | null>(null)
+  const resizing = useRef<{ col: string; startX: number; startW: number } | null>(null)
+
   const toggleSort = (key: string) => {
     if (sortKey === key) {
       if (sortAsc) setSortAsc(false)
@@ -90,6 +100,40 @@ export default function GridView() {
   }
 
   // 导出 Markdown / CSV 表格（复制到剪贴板）
+  // 列宽拖拽：按住列头右侧手柄左右调整
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const r = resizing.current
+      if (!r) return
+      const w = Math.max(60, Math.min(640, r.startW + e.clientX - r.startX))
+      setColWidths(prev => ({ ...prev, [r.col]: w }))
+    }
+    const onUp = () => { resizing.current = null; document.body.style.cursor = ''; document.body.style.userSelect = '' }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+  }, [])
+
+  const startResize = (e: React.MouseEvent, col: string) => {
+    e.stopPropagation()
+    e.preventDefault()
+    resizing.current = { col, startX: e.clientX, startW: colWidths[col] ?? 140 }
+  }
+
+  // 列隐藏：右键列头隐藏；顶栏可恢复
+  const orderedColumns = useMemo(() => {
+    if (!table) return []
+    const cols = table.columns.filter(c => !hiddenCols.includes(c))
+    if (columnOrder.length === 0) return cols
+    // 按 columnOrder 排序，未出现在 order 中的列按原顺序附后
+    return [...columnOrder.filter(c => cols.includes(c)), ...cols.filter(c => !columnOrder.includes(c))]
+  }, [table, hiddenCols, columnOrder])
+  const visibleColumns = orderedColumns
+  const hideColumn = (col: string) => setHiddenCols(prev => [...prev, col])
+
   // 列统计：每列 null / 类型分布（点击「统计」开关）
   const RENDER_LIMIT = 5000
   const columnStats = useMemo(() => {
@@ -125,51 +169,7 @@ export default function GridView() {
       }
       return { col, summary: parts.join(' · ') || '—' }
     })
-  }, [table])
-
-  const [showStats, setShowStats] = useState(false)
-  const [filter, setFilter] = useState('')
-  // 大表格过滤输入防卡顿：输入框即时响应，过滤计算延迟一帧
-  const deferredFilter = useDeferredValue(filter)
-  const [colWidths, setColWidths] = useState<Record<string, number>>({})
-  const [hiddenCols, setHiddenCols] = useState<string[]>([])
-  const [columnOrder, setColumnOrder] = useState<string[]>([])
-  const [dragCol, setDragCol] = useState<string | null>(null)
-  const resizing = useRef<{ col: string; startX: number; startW: number } | null>(null)
-
-  // 列宽拖拽：按住列头右侧手柄左右调整
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      const r = resizing.current
-      if (!r) return
-      const w = Math.max(60, Math.min(640, r.startW + e.clientX - r.startX))
-      setColWidths(prev => ({ ...prev, [r.col]: w }))
-    }
-    const onUp = () => { resizing.current = null; document.body.style.cursor = ''; document.body.style.userSelect = '' }
-    window.addEventListener('mousemove', onMove)
-    window.addEventListener('mouseup', onUp)
-    return () => {
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('mouseup', onUp)
-    }
-  }, [])
-
-  const startResize = (e: React.MouseEvent, col: string) => {
-    e.stopPropagation()
-    e.preventDefault()
-    resizing.current = { col, startX: e.clientX, startW: colWidths[col] ?? 140 }
-  }
-
-  // 列隐藏：右键列头隐藏；顶栏可恢复
-  const orderedColumns = useMemo(() => {
-    if (!table) return []
-    const cols = table.columns.filter(c => !hiddenCols.includes(c))
-    if (columnOrder.length === 0) return cols
-    // 按 columnOrder 排序，未出现在 order 中的列按原顺序附后
-    return [...columnOrder.filter(c => cols.includes(c)), ...cols.filter(c => !columnOrder.includes(c))]
-  }, [table, hiddenCols, columnOrder])
-  const visibleColumns = orderedColumns
-  const hideColumn = (col: string) => setHiddenCols(prev => [...prev, col])
+  }, [table, visibleColumns])
 
   // 列重排：拖拽列头到目标列
   const reorderColumn = (from: string, to: string) => {
