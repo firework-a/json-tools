@@ -124,6 +124,7 @@ export default function CodeEditor({ value, onChange, readOnly, language }: Prop
       options={{
         readOnly,
         automaticLayout: true,
+        placeholder: '粘贴 JSON（Ctrl+V）、拖入文件或 Ctrl+K 打开命令面板',
         minimap: { enabled: minimap },
         fontSize,
         fontFamily: "'JetBrains Mono', 'Cascadia Code', 'Fira Code', Consolas, Menlo, monospace",
