@@ -389,7 +389,8 @@ export default function GridView() {
         <table className="grid-table">
           <thead>
             <tr>
-              <th className="grid-index">#</th>              {visibleColumns.map(col => (
+              <th className="grid-index">#</th>
+              {visibleColumns.map(col => (
                 <th
                   key={col}
                   className={sortKey === col ? 'sorted' : ''}
