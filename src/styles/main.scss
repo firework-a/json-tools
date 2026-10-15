@@ -3005,7 +3005,7 @@ select {
   width: 150px;
   flex-shrink: 0;
   border-right: 1px solid $border;
-  background: $bg-panel;
+  background: linear-gradient(180deg, $bg-panel 0%, #14171e 100%);
   overflow-y: auto;
   padding: 8px 0;
 }
@@ -3210,6 +3210,11 @@ select {
 [data-theme='light'] .csel-menu { background: #fff; border-color: #d9dee7; box-shadow: 0 12px 28px rgba(15,23,42,0.14); }
 [data-theme='light'] .csel-item { color: #475569; }
 [data-theme='light'] .csel-item:hover, [data-theme='light'] .csel-item.focused { background: #f1f5f9; color: #1f2937; }
+
+/* 浅色主题：工具箱侧栏回退纯色 */
+[data-theme='light'] .tools-sidebar {
+  background: #ffffff;
+}
 
 /* =================== 命令面板 CommandPalette =================== */
 .cmdk-overlay {
