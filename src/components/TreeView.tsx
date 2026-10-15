@@ -84,6 +84,7 @@ function TreeView() {
   const setTreeOpen = useAppStore(s => s.setTreeOpen)
   const jmesHistory = useAppStore(s => s.jmesHistory)
   const addJmesHistory = useAppStore(s => s.addJmesHistory)
+  const clearJmesHistory = useAppStore(s => s.clearJmesHistory)
   const showToast = useAppStore(s => s.showToast)
   const [showHelp, setShowHelp] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
@@ -193,7 +194,15 @@ function TreeView() {
           )}
           {historyOpen && jmesHistory.length > 0 && (
             <div className="tree-history" onMouseDown={e => e.preventDefault()}>
-              <div className="tree-history-title">最近查询</div>
+              <div className="tree-history-title">
+                <span>最近查询</span>
+                <button
+                  className="tree-history-clear"
+                  title="清空查询历史"
+                  aria-label="清空查询历史"
+                  onClick={() => clearJmesHistory()}
+                >清空</button>
+              </div>
               {jmesHistory.map(h => (
                 <button
                   key={h}

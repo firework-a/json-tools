@@ -72,6 +72,7 @@ interface AppState {
   // JMESPath 查询历史（持久化，最多 10 条）
   jmesHistory: string[]
   addJmesHistory: (q: string) => void
+  clearJmesHistory: () => void
 
   // 树形视图查询语言（持久化）
   queryLang: 'jmespath' | 'jsonpath'
@@ -189,6 +190,8 @@ export const useAppStore = create<AppState>()(
         const next = [{ path, name, openedAt: Date.now() }, ...s.recentFiles.filter(f => f.path !== path)].slice(0, 10)
         return { recentFiles: next }
       }),
+
+      clearJmesHistory: () => set({ jmesHistory: [] }),
 
       queryLang: 'jmespath',
       setQueryLang: (queryLang) => set({ queryLang }),

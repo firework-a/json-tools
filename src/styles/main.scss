@@ -3415,7 +3415,8 @@ select {
   max-height: 220px;
   overflow-y: auto;
 }
-.tree-history-title { font-size: 10px; color: $text-muted; padding: 4px 8px 6px; letter-spacing: 0.04em; }
+.tree-history-title { font-size: 10px; color: $text-muted; padding: 4px 8px 6px; letter-spacing: 0.04em; display: flex; align-items: center; justify-content: space-between; }
+.tree-history-clear { background: transparent; border: none; color: $text-muted; font-size: 10px; cursor: pointer; padding: 1px 4px; border-radius: 3px; font-family: inherit; transition: all 0.12s; &:hover { color: $red; background: rgba($red, 0.1); } }
 .tree-history-item {
   display: flex;
   align-items: center;
