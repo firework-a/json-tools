@@ -387,8 +387,7 @@ export default function GridView() {
         <table className="grid-table">
           <thead>
             <tr>
-              <th className="grid-index">#</th>
-              {visibleColumns.map(col => (
+              <th className="grid-index">#</th>              {visibleColumns.map(col => (
                 <th
                   key={col}
                   className={sortKey === col ? 'sorted' : ''}
@@ -415,7 +414,16 @@ export default function GridView() {
             </tr>
           </thead>
           <tbody>
-            {filteredRows.slice(0, RENDER_LIMIT).map(({ row, idx }, i) => (
+            {filteredRows.length === 0 ? (
+              <tr>
+                <td colSpan={visibleColumns.length + 1} style={{ textAlign: 'center', padding: '24px 0', color: 'var(--muted-foreground, #5c6372)' }}>
+                  无匹配行
+                  {filter && (
+                    <button className="tool-back-flat" style={{ marginLeft: 8 }} onClick={() => setFilter('')}>清除过滤</button>
+                  )}
+                </td>
+              </tr>
+            ) : filteredRows.slice(0, RENDER_LIMIT).map(({ row, idx }, i) => (
               <tr key={idx} onClick={() => copyRow(row)} title="点击复制整行 JSON · 双击单元格编辑">
                 <td className="grid-index">
                   <span className="grid-index-num">{i + 1}</span>
