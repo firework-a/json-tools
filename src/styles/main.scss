@@ -616,6 +616,17 @@ select {
   border-color: #d9dee7;
 }
 
+/* 浅色主题：新元素颜色覆盖 */
+[data-theme='light'] .tree-history-clear:hover { color: #dc2626; background: rgba(220, 38, 38, 0.08); }
+[data-theme='light'] .status-fix { color: #dc2626; }
+[data-theme='light'] .grid-link { color: #2563eb; }
+[data-theme='light'] .rjv-link { color: #2563eb; }
+[data-theme='light'] .row-del { color: #dc2626; }
+[data-theme='light'] .row-del:hover { background: rgba(220, 38, 38, 0.08); }
+[data-theme='light'] .tab-rename { color: #1f2937; background: #ffffff; border-color: rgba(37, 99, 235, 0.55); }
+[data-theme='light'] td.grid-bool .grid-cell { color: #7c3aed; }
+[data-theme='light'] .grid-col-resizer:hover { background: rgba(37, 99, 235, 0.2); }
+
 [data-theme='light'] .table-stats {
   background: #f8fafc;
   border-color: #e2e8f0;
