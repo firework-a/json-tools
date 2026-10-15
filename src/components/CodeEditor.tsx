@@ -48,7 +48,7 @@ export default function CodeEditor({ value, onChange, readOnly, language }: Prop
     unregisterRef.current = registerMainEditor(editor)
 
     // 粘贴时自动格式化单行压缩 JSON（与旧逻辑一致）
-    editor.onDidPaste((e) => {
+    editor.onDidPaste(async (e) => {
       const range = e.range
       if (autoFormat && resolvedLanguage === 'json' && !readOnly) {
         const text = editor.getModel()?.getValueInRange(range) ?? ''
@@ -101,6 +101,14 @@ export default function CodeEditor({ value, onChange, readOnly, language }: Prop
           if (fmt === 'yaml' || fmt === 'xml' || fmt === 'csv') {
             const label = fmt === 'yaml' ? 'YAML' : fmt === 'xml' ? 'XML' : 'CSV'
             useAppStore.getState().showToast(`检测到粘贴内容可能是 ${label}，可在「格式转换」中处理`)
+          } else {
+            // 非标准 JSON（注释/单引号/尾逗号等）：提示一键修复
+            let isStandard = false
+            try { JSON.parse(pasted); isStandard = true } catch { /* not standard */ }
+            if (!isStandard) {
+              const { repairJson } = await import('../utils/json')
+              try { JSON.parse(repairJson(pasted)); useAppStore.getState().showToast('检测到非标准 JSON，可点击工具栏「修复」一键修复') } catch { /* unrepairable */ }
+            }
           }
         }
       }
