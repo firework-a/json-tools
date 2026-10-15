@@ -73,6 +73,14 @@ interface AppState {
   jmesHistory: string[]
   addJmesHistory: (q: string) => void
 
+  // 树形视图查询语言（持久化）
+  queryLang: 'jmespath' | 'jsonpath'
+  setQueryLang: (l: 'jmespath' | 'jsonpath') => void
+
+  // 树形面板宽度（可拖拽调整，持久化）
+  treeWidth: number
+  setTreeWidth: (w: number) => void
+
   // 最近打开文件（持久化，最多 10 条，仅记录有路径的）
   recentFiles: { path: string; name: string; openedAt: number }[]
   addRecentFile: (path: string, name: string) => void
@@ -181,6 +189,12 @@ export const useAppStore = create<AppState>()(
         const next = [{ path, name, openedAt: Date.now() }, ...s.recentFiles.filter(f => f.path !== path)].slice(0, 10)
         return { recentFiles: next }
       }),
+
+      queryLang: 'jmespath',
+      setQueryLang: (queryLang) => set({ queryLang }),
+
+      treeWidth: 340,
+      setTreeWidth: (treeWidth) => set({ treeWidth: Math.max(260, Math.min(560, treeWidth)) }),
 
       toolsTool: null,
       setToolsTool: (toolsTool) => set({ toolsTool }),
@@ -375,6 +389,10 @@ export const useAppStore = create<AppState>()(
         codeLang: s.codeLang,
         codeRootName: s.codeRootName,
         treeOpen: s.treeOpen,
+        treeWidth: s.treeWidth,
+        queryLang: s.queryLang,
+        jmesHistory: s.jmesHistory,
+        recentFiles: s.recentFiles,
         theme: s.theme,
         pinned: s.pinned,
         autoFormat: s.autoFormat,

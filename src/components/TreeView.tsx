@@ -89,7 +89,9 @@ function TreeView() {
   const [collapsed, setCollapsed] = useState(false)
   const [pathMode, setPathMode] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
-  const [queryLang, setQueryLang] = useState<QueryLang>('jmespath')
+  const queryLang = useAppStore(s => s.queryLang)
+  const setQueryLang = useAppStore(s => s.setQueryLang)
+  const treeWidth = useAppStore(s => s.treeWidth)
   const scrollRef = useRef<HTMLDivElement>(null)
   const syncingRef = useRef(false)
 
@@ -157,7 +159,7 @@ function TreeView() {
   if (!treeOpen) return null
 
   return (
-    <aside className="tree-panel">
+    <aside className="tree-panel" style={{ width: treeWidth }}>
       <div className="tree-header">
         <div className="tree-title-wrap">
           <span className="tree-icon"><TreeIcon /></span>
@@ -208,7 +210,7 @@ function TreeView() {
         <button
           className="tree-lang-badge"
           title="切换查询语言（点击切换 JMESPath / JSONPath）"
-          onClick={() => setQueryLang(l => l === 'jmespath' ? 'jsonpath' : 'jmespath')}
+          onClick={() => setQueryLang(queryLang === 'jmespath' ? 'jsonpath' : 'jmespath')}
         >{queryLangLabel(queryLang)}</button>
         <button
           className={`tree-icon-btn ${pathMode ? 'selected' : ''}`}

@@ -161,6 +161,7 @@ function App() {
       {isEditMode && <TabBar />}
       <div className="app-body">
         <div className="app-main"><EditorArea /></div>
+        {isEditMode && <TreeResizer />}
         {isEditMode && <TreeView />}
       </div>
       <StatusBar />
@@ -173,6 +174,36 @@ function App() {
         </div>
       )}
     </div>
+  )
+}
+
+/** 树形面板宽度拖拽条（按住左右拖动调整宽度） */
+function TreeResizer() {
+  const setTreeWidth = useAppStore(s => s.setTreeWidth)
+  const [dragging, setDragging] = useState(false)
+
+  useEffect(() => {
+    if (!dragging) return
+    const onMove = (e: MouseEvent) => setTreeWidth(window.innerWidth - e.clientX)
+    const onUp = () => setDragging(false)
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+  }, [dragging, setTreeWidth])
+
+  return (
+    <div
+      className="tree-resizer"
+      onMouseDown={() => setDragging(true)}
+      title="拖动调整树形面板宽度"
+    />
   )
 }
 

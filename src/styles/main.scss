@@ -2584,6 +2584,39 @@ select {
   min-height: 0;
 }
 
+/* 树形面板宽度拖拽条 */
+.tree-resizer {
+  width: 5px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  position: relative;
+  z-index: 6;
+  transition: background 0.15s $ease-out;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 28px;
+    border-radius: 1px;
+    background: $border-strong;
+    opacity: 0;
+    transition: opacity 0.15s $ease-out;
+  }
+
+  &:hover::after,
+  &:active::after {
+    opacity: 1;
+  }
+
+  &:hover {
+    background: rgba($blue, 0.08);
+  }
+}
+
 .tree-header {
   @include flex-between;
   height: 38px;
