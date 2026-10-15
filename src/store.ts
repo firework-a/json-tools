@@ -408,6 +408,9 @@ export const useAppStore = create<AppState>()(
         queryLang: s.queryLang,
         jmesHistory: s.jmesHistory,
         recentFiles: s.recentFiles,
+        // 工作区恢复：持久化标签页（超大内容跳过，恢复后保留 dirty 标记）
+        tabs: s.tabs.map(t => ({ ...t, content: t.content.length < 100_000 ? t.content : '', dirty: t.content.length >= 100_000 ? true : t.dirty })),
+        activeTabId: s.activeTabId,
         theme: s.theme,
         pinned: s.pinned,
         autoFormat: s.autoFormat,
