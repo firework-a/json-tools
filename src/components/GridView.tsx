@@ -133,6 +133,7 @@ export default function GridView() {
 
   // 导出 Markdown / CSV 表格（复制到剪贴板）
   // 列统计：每列 null / 类型分布（点击「统计」开关）
+  const RENDER_LIMIT = 5000
   const columnStats = useMemo(() => {
     if (!table) return []
     return table.columns.map(col => {
@@ -262,7 +263,7 @@ export default function GridView() {
           <BackIcon />
         </button>
         <span className="table-title">{table.title}</span>
-        <span className="table-meta">{table.rows.length} 行 × {table.columns.length} 列{sortKey ? ` · 按 ${sortKey} ${sortAsc ? '升序' : '降序'}` : ''}{filter ? ' · 已过滤' : ''}</span>
+        <span className="table-meta">{table.rows.length} 行 × {table.columns.length} 列{sortKey ? ` · 按 ${sortKey} ${sortAsc ? '升序' : '降序'}` : ''}{filter ? ' · 已过滤' : ''}{table.rows.length > RENDER_LIMIT ? ' · 仅渲染前 5000 行' : ''}</span>
         <div className="table-spacer" />
         <input
           className="table-filter"
@@ -307,7 +308,7 @@ export default function GridView() {
             </tr>
           </thead>
           <tbody>
-            {filteredRows.map(({ row, idx }, i) => (
+            {filteredRows.slice(0, RENDER_LIMIT).map(({ row, idx }, i) => (
               <tr key={idx} onClick={() => copyRow(row)} title="点击复制整行 JSON · 双击单元格编辑">
                 <td className="grid-index">{i + 1}</td>
                 {table.columns.map(col => {
