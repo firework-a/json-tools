@@ -120,6 +120,7 @@ export const COMMANDS: AppCommand[] = [
   { id: 'tool.timestamp', label: '时间戳转换', group: '工具箱', keywords: 'timestamp date 时间', run: () => openTool('timestamp') },
   { id: 'tool.numbase', label: '进制转换', group: '工具箱', keywords: 'hex binary 进制', run: () => openTool('numbase') },
   { id: 'tool.mock', label: 'Mock 数据生成', group: '工具箱', keywords: 'mock fake 数据 生成 样例', run: () => openTool('mock') },
+  { id: 'tool.ndjson', label: 'NDJSON 转换', group: '工具箱', keywords: 'ndjson jsonl newline 流', run: () => openTool('ndjson') },
 
   // 其他
   { id: 'app.settings', label: '打开设置', group: '其他', keywords: 'settings 设置 偏好', run: () => s().setSettingsOpen(true) },

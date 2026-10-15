@@ -7,10 +7,11 @@ import {
   hashText, convertTimestamp, convertNumberBase, HASH_ALGOS, type HashAlgo,
 } from '../utils/encoding'
 import { generateMock } from '../utils/mockData'
+import { convertNdjson } from '../utils/ndjson'
 import { BackIcon, ChevronDown } from './Icons'
 import CustomSelect from './CustomSelect'
 
-type ToolId = 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase' | 'mock'
+type ToolId = 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase' | 'mock' | 'ndjson'
 
 interface ToolMeta { id: ToolId; label: string; group: string; json?: boolean }
 const TOOLS: ToolMeta[] = [
@@ -25,6 +26,7 @@ const TOOLS: ToolMeta[] = [
   { id: 'timestamp', label: '时间戳', group: '其他' },
   { id: 'numbase', label: '进制转换', group: '其他' },
   { id: 'mock', label: 'Mock 数据', group: '其他', json: true },
+  { id: 'ndjson', label: 'NDJSON', group: '其他', json: true },
 ]
 
 export default function ToolsPanel() {
@@ -38,6 +40,7 @@ export default function ToolsPanel() {
   const [hashAlgo, setHashAlgo] = useState<HashAlgo>('SHA-256')
   const [base, setBase] = useState(10)
   const [mockCount, setMockCount] = useState('5')
+  const [ndjsonMode, setNdjsonMode] = useState('toJson')
   const [hashOut, setHashOut] = useState<{ result: string; error: string | null }>({ result: '', error: null })
   const [groupOpen, setGroupOpen] = useState(true)
   const toolsTool = useAppStore(s => s.toolsTool)
@@ -83,10 +86,11 @@ export default function ToolsPanel() {
       case 'jwt': return decodeJwt(input)
       case 'timestamp': return convertTimestamp(input)
       case 'numbase': return convertNumberBase(input, base)
+      case 'ndjson': return convertNdjson(input, ndjsonMode === 'toJson')
       case 'mock': return generateMock(input, Number(mockCount) || 5)
       default: return { result: '', error: null }
     }
-  }, [input, tool, decode, sortOrder, removeOnlyNull, base, hashOut, mockCount])
+  }, [input, tool, decode, sortOrder, removeOnlyNull, base, hashOut, mockCount, ndjsonMode])
 
   // 哈希异步
   useEffect(() => {
@@ -101,7 +105,7 @@ export default function ToolsPanel() {
 
   const activeMeta = TOOLS.find(t => t.id === tool)!
   const hasOptions =
-    tool === 'sort' || tool === 'removeEmpty' || tool === 'base64' || tool === 'url' || tool === 'hash' || tool === 'numbase' || tool === 'mock'
+    tool === 'sort' || tool === 'removeEmpty' || tool === 'base64' || tool === 'url' || tool === 'hash' || tool === 'numbase' || tool === 'mock' || tool === 'ndjson'
 
   const copyOut = async () => {
     if (!result.result) { showToast('没有可复制的内容'); return }
@@ -179,6 +183,17 @@ export default function ToolsPanel() {
                   onChange={v => setMockCount(v)}
                   minWidth={92}
                   options={['1', '5', '10', '20', '50'].map(n => ({ value: n, label: `${n} 条` }))}
+                />
+              )}
+              {tool === 'ndjson' && (
+                <CustomSelect
+                  value={ndjsonMode}
+                  onChange={v => setNdjsonMode(v)}
+                  minWidth={130}
+                  options={[
+                    { value: 'toJson', label: 'NDJSON → JSON' },
+                    { value: 'toNd', label: 'JSON → NDJSON' },
+                  ]}
                 />
               )}
               {tool === 'numbase' && (

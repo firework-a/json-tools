@@ -14,6 +14,8 @@ interface TableData {
   rows: Record<string, unknown>[]
   columns: string[]
   title: string
+  /** 指向该数组在文档中的路径（根数组为 []，root.items 为 ['items']） */
+  path: (string | number)[]
 }
 
 const buildTable = (parsed: unknown): TableData | null => {
@@ -22,6 +24,7 @@ const buildTable = (parsed: unknown): TableData | null => {
 
   let rows: Record<string, unknown>[] | null = null
   let title = '根数组'
+  let path: (string | number)[] = []
 
   if (isObjArr(parsed)) {
     rows = parsed
@@ -30,6 +33,7 @@ const buildTable = (parsed: unknown): TableData | null => {
       if (isObjArr(value)) {
         rows = value
         title = `root.${key}`
+        path = [key]
         break
       }
     }
@@ -47,7 +51,7 @@ const buildTable = (parsed: unknown): TableData | null => {
     }
     if (columns.length >= MAX_COLUMNS) break
   }
-  return { rows, columns, title }
+  return { rows, columns, title, path }
 }
 
 const cellText = (v: unknown): string => {
@@ -60,9 +64,12 @@ const cellText = (v: unknown): string => {
 
 export default function GridView() {
   const content = useAppStore(s => s.content)
+  const setContent = useAppStore(s => s.setContent)
   const showToast = useAppStore(s => s.showToast)
   const [sortKey, setSortKey] = useState<string | null>(null)
   const [sortAsc, setSortAsc] = useState(true)
+  const [editing, setEditing] = useState<{ rowIndex: number; col: string } | null>(null)
+  const [editValue, setEditValue] = useState('')
 
   const table = useMemo(() => {
     try {
@@ -72,13 +79,14 @@ export default function GridView() {
     }
   }, [content])
 
+  // 排序后仍携带原始索引，编辑写回时定位原始行
   const sortedRows = useMemo(() => {
     if (!table) return []
-    if (!sortKey) return table.rows
-    const rows = [...table.rows]
-    rows.sort((a, b) => {
-      const av = a[sortKey]
-      const bv = b[sortKey]
+    const indexed = table.rows.map((row, idx) => ({ row, idx }))
+    if (!sortKey) return indexed
+    indexed.sort((a, b) => {
+      const av = a.row[sortKey]
+      const bv = b.row[sortKey]
       if (av === undefined) return 1
       if (bv === undefined) return -1
       const an = typeof av === 'number'
@@ -86,7 +94,7 @@ export default function GridView() {
       if (an && bn) return (av as number) - (bv as number)
       return String(av).localeCompare(String(bv))
     })
-    return sortAsc ? rows : rows.reverse()
+    return sortAsc ? indexed : indexed.reverse()
   }, [table, sortKey, sortAsc])
 
   const toggleSort = (key: string) => {
@@ -103,6 +111,44 @@ export default function GridView() {
     navigator.clipboard.writeText(JSON.stringify(row, null, 2))
       .then(() => showToast('已复制整行 JSON'))
       .catch(() => showToast('复制失败'))
+  }
+
+  // 单元格编辑：把输入解析为标量（数字/布尔/null），写回文档对应路径
+  const parseCell = (raw: string): unknown => {
+    const t = raw.trim()
+    if (t === '') return ''
+    if (t === 'null') return null
+    if (t === 'true') return true
+    if (t === 'false') return false
+    if (/^-?\d+(\.\d+)?$/.test(t)) return Number(t)
+    return raw
+  }
+
+  const setEditingCell = (rowIndex: number, col: string, current: unknown, isObj: boolean) => {
+    if (isObj) return
+    setEditing({ rowIndex, col })
+    setEditValue(cellText(current))
+  }
+
+  const commitEdit = () => {
+    if (!editing || !table) { setEditing(null); return }
+    const { rowIndex, col } = editing
+    try {
+      const doc = JSON.parse(content)
+      // 按 path 定位数组（根数组为 []）
+      let arr: unknown = doc
+      for (const key of table.path) arr = (arr as Record<string, unknown>)[key]
+      if (!Array.isArray(arr)) { setEditing(null); return }
+      const row = arr[rowIndex]
+      if (row && typeof row === 'object' && !Array.isArray(row)) {
+        ;(row as Record<string, unknown>)[col] = parseCell(editValue)
+        setContent(JSON.stringify(doc, null, 2))
+        showToast('已更新单元格')
+      }
+    } catch {
+      showToast('更新失败')
+    }
+    setEditing(null)
   }
 
   if (!content.trim()) {
@@ -148,7 +194,7 @@ export default function GridView() {
         <span className="table-title">{table.title}</span>
         <span className="table-meta">{table.rows.length} 行 × {table.columns.length} 列{sortKey ? ` · 按 ${sortKey} ${sortAsc ? '升序' : '降序'}` : ''}</span>
         <div className="table-spacer" />
-        <span className="table-hint">点击列头排序 · 点击行复制 JSON</span>
+        <span className="table-hint">点击列头排序 · 点击行复制 · 双击单元格编辑</span>
       </div>
       <div className="table-scroll">
         <table className="grid-table">
@@ -164,15 +210,35 @@ export default function GridView() {
             </tr>
           </thead>
           <tbody>
-            {sortedRows.map((row, i) => (
-              <tr key={i} onClick={() => copyRow(row)} title="点击复制整行 JSON">
+            {sortedRows.map(({ row, idx }, i) => (
+              <tr key={idx} onClick={() => copyRow(row)} title="点击复制整行 JSON · 双击单元格编辑">
                 <td className="grid-index">{i + 1}</td>
                 {table.columns.map(col => {
                   const v = row[col]
                   const isObj = v !== null && typeof v === 'object'
+                  const isEditing = editing?.rowIndex === idx && editing?.col === col
                   return (
                     <td key={col} className={isObj ? 'grid-obj' : ''}>
-                      <span className="grid-cell" title={isObj ? JSON.stringify(v) : cellText(v)}>{cellText(v)}</span>
+                      {isEditing ? (
+                        <input
+                          className="grid-cell-input"
+                          value={editValue}
+                          autoFocus
+                          onClick={e => e.stopPropagation()}
+                          onChange={e => setEditValue(e.target.value)}
+                          onBlur={commitEdit}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') commitEdit()
+                            if (e.key === 'Escape') setEditing(null)
+                          }}
+                        />
+                      ) : (
+                        <span
+                          className="grid-cell"
+                          title={isObj ? JSON.stringify(v) : cellText(v)}
+                          onDoubleClick={e => { e.stopPropagation(); setEditingCell(idx, col, v, isObj) }}
+                        >{cellText(v)}</span>
+                      )}
                     </td>
                   )
                 })}

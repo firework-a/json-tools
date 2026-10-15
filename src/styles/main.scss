@@ -1101,12 +1101,37 @@ select {
     font-size: 11px;
   }
 
+  .grid-cell-input {
+    width: 100%;
+    min-width: 80px;
+    height: 22px;
+    padding: 0 6px;
+    font-size: 12px;
+    font-family: $font-mono;
+    color: $text-primary;
+    background: $bg-input;
+    border: 1px solid rgba($blue, 0.55);
+    border-radius: 4px;
+    outline: none;
+
+    &:focus {
+      box-shadow: 0 0 0 2px rgba($blue, 0.18);
+    }
+  }
+
   .grid-sort-mark {
     display: inline-block;
     min-width: 10px;
     margin-left: 4px;
     color: $blue;
   }
+}
+
+/* 浅色主题表格单元格输入框 */
+[data-theme='light'] .grid-table .grid-cell-input {
+  color: #1f2937;
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.55);
 }
 
 .table-empty {
