@@ -54,6 +54,9 @@ interface AppState {
   // 转换格式（convert 模式下）
   convertFormat: ConvertFormat
   setConvertFormat: (f: ConvertFormat) => void
+  // 转换方向：fromJson = JSON → X；toJson = X → JSON
+  convertDirection: 'fromJson' | 'toJson'
+  setConvertDirection: (d: 'fromJson' | 'toJson') => void
 
   // 代码生成：目标语言 & 根类型名
   codeLang: CodeLang
@@ -168,6 +171,8 @@ export const useAppStore = create<AppState>()(
 
       convertFormat: 'yaml',
       setConvertFormat: (convertFormat) => set({ convertFormat }),
+      convertDirection: 'fromJson',
+      setConvertDirection: (convertDirection) => set({ convertDirection, rightContent: '' }),
 
       codeLang: 'typescript',
       setCodeLang: (codeLang) => set({ codeLang }),
@@ -413,6 +418,7 @@ export const useAppStore = create<AppState>()(
         activeTabId: s.activeTabId,
         theme: s.theme,
         pinned: s.pinned,
+        convertDirection: s.convertDirection,
         autoFormat: s.autoFormat,
         showLineNumbers: s.showLineNumbers,
         fontSize: s.fontSize,

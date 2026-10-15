@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppStore } from '../store'
 import { jsonToSchema } from '../utils/jsonSchema'
-import { jsonToYaml } from '../utils/jsonYaml'
-import { jsonToXml, jsonToToml, jsonToCsv } from '../utils/jsonFormats'
+import { jsonToYaml, yamlToJson } from '../utils/jsonYaml'
+import { jsonToXml, jsonToToml, jsonToCsv, xmlToJson, tomlToJson, csvToJson } from '../utils/jsonFormats'
 import { validateJsonSchema } from '../utils/schemaValidator'
 import { generateCode, CODE_LANGS, type CodeLang } from '../utils/codeGen'
 import CodeEditor from './CodeEditor'
@@ -52,6 +52,7 @@ function EditorArea() {
     rightContent, setRightContent,
     mode,
     convertFormat, setConvertFormat,
+    convertDirection, setConvertDirection,
     codeLang, setCodeLang,
     codeRootName, setCodeRootName,
   } = useAppStore()
@@ -166,6 +167,24 @@ function EditorArea() {
     )
   }
 
+  // 反向转换（X → JSON）：输入变化自动重算（300ms 防抖）
+  useEffect(() => {
+    if (mode !== 'convert' || convertDirection !== 'toJson') return
+    const reverseConvert = (f: ConvertFormat, input: string) => {
+      if (f === 'yaml') return yamlToJson(input)
+      if (f === 'xml') return xmlToJson(input)
+      if (f === 'toml') return tomlToJson(input)
+      return csvToJson(input)
+    }
+    const t = setTimeout(() => {
+      if (!content.trim()) { setRightContent(''); return }
+      const r = reverseConvert(convertFormat, content)
+      if (r.error && content.trim()) useAppStore.getState().showToast(r.error)
+      else setRightContent(r.result)
+    }, 300)
+    return () => clearTimeout(t)
+  }, [content, mode, convertDirection, convertFormat])
+
   const previewLang = previewLangFor(mode, convertFormat, codeLang)
 
   if (mode === 'tools') {
@@ -178,6 +197,8 @@ function EditorArea() {
 
   if (mode === 'convert') {
     const fmts: ConvertFormat[] = ['yaml', 'xml', 'toml', 'csv']
+    const reverse = convertDirection === 'toJson'
+    const reverseLangMap: Record<ConvertFormat, string> = { yaml: 'yaml', xml: 'xml', toml: 'toml', csv: 'text' }
     return (
       <div className="tool-shell">
         <div className="tool-pane-wrap">
@@ -187,30 +208,49 @@ function EditorArea() {
                 <button className="tool-back-flat" onClick={() => useAppStore.setState({ mode: 'edit' })} title="返回">
                   <BackIcon />
                 </button>
-                <span className="pill pill-json">JSON</span>
+                <div className="pill-group">
+                  <button
+                    className={`pill ${!reverse ? 'active blue' : ''}`}
+                    title="JSON → 其他格式"
+                    onClick={() => setConvertDirection('fromJson')}
+                  >JSON → {convertFormat.toUpperCase()}</button>
+                  <button
+                    className={`pill ${reverse ? 'active blue' : ''}`}
+                    title="其他格式 → JSON"
+                    onClick={() => setConvertDirection('toJson')}
+                  >{convertFormat.toUpperCase()} → JSON</button>
+                </div>
               </>
             }
           >
-            <CodeEditor value={content} onChange={setContent} language="json" />
+            {reverse
+              ? <CodeEditor value={content} onChange={setContent} language={reverseLangMap[convertFormat]} />
+              : <CodeEditor value={content} onChange={setContent} language="json" />}
           </EditorSide>
           <EditorSide
             empty={!rightContent.trim()}
             topbar={
               <>
-                <div className="pill-group">
-                  {fmts.map(f => (
-                    <button key={f} className={`pill ${convertFormat === f ? 'active blue' : ''}`}
-                      onClick={() => {
-                        setConvertFormat(f)
-                        setRightContent(convertToFormat(f, content).result)
-                      }}>{f.toUpperCase()}</button>
-                  ))}
-                </div>
+                {reverse ? (
+                  <span className="pill pill-json">JSON</span>
+                ) : (
+                  <div className="pill-group">
+                    {fmts.map(f => (
+                      <button key={f} className={`pill ${convertFormat === f ? 'active blue' : ''}`}
+                        onClick={() => {
+                          setConvertFormat(f)
+                          setRightContent(convertToFormat(f, content).result)
+                        }}>{f.toUpperCase()}</button>
+                    ))}
+                  </div>
+                )}
                 <CopyButton getText={() => rightContent} title="复制" />
               </>
             }
           >
-            <ShikiPreview code={rightContent} lang={previewLang} />
+            {reverse
+              ? <ShikiPreview code={rightContent} lang="json" />
+              : <ShikiPreview code={rightContent} lang={previewLang} />}
           </EditorSide>
         </div>
       </div>
