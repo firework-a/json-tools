@@ -100,6 +100,14 @@ function TreeView() {
   // 设置页修改默认展开层级时重置折叠状态
   useEffect(() => { setCollapsed(treeDefaultCollapse > 0) }, [treeDefaultCollapse])
 
+  // Escape 关闭速查表
+  useEffect(() => {
+    if (!showHelp) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); setShowHelp(false) } }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [showHelp])
+
   const isLight = theme === 'light'
 
   // 跟随编辑器按比例滚动
