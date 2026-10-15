@@ -30,6 +30,8 @@ interface AppState {
   closeTab: (id: string) => void
   setActiveTab: (id: string) => void
   renameTab: (id: string, name: string) => void
+  /** 拖拽重排标签页 */
+  reorderTabs: (fromId: string, toId: string) => void
   /** 把一个已加载的文件放入新标签并激活 */
   openLoadedFile: (file: { path?: string; name: string; content: string; language: EditorLanguage }) => void
   /** 当前标签保存成功后写入路径并清除未保存状态 */
@@ -271,6 +273,15 @@ export const useAppStore = create<AppState>()(
         tabs: s.tabs.map(t => t.id === id ? { ...t, name } : t),
         ...(s.activeTabId === id ? { fileName: name } : {}),
       })),
+      reorderTabs: (fromId, toId) => set((s) => {
+        const from = s.tabs.findIndex(t => t.id === fromId)
+        const to = s.tabs.findIndex(t => t.id === toId)
+        if (from < 0 || to < 0 || from === to) return s
+        const tabs = [...s.tabs]
+        const [moved] = tabs.splice(from, 1)
+        tabs.splice(to, 0, moved)
+        return { tabs }
+      }),
 
       openLoadedFile: (file) => set((s) => {
         // 大文件提示（不阻断，仅提醒树形渲染会跳过）

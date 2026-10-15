@@ -8,7 +8,9 @@ export default function TabBar() {
   const setActiveTab = useAppStore(s => s.setActiveTab)
   const closeTab = useAppStore(s => s.closeTab)
   const renameTab = useAppStore(s => s.renameTab)
+  const reorderTabs = useAppStore(s => s.reorderTabs)
   const newTab = useAppStore(s => s.newTab)
+  const [dragTabId, setDragTabId] = useState<string | null>(null)
   const [renaming, setRenaming] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
 
@@ -40,7 +42,12 @@ export default function TabBar() {
             onClick={() => setActiveTab(t.id)}
             onDoubleClick={() => startRename(t.id, t.name)}
             onMouseDown={(e) => { if (e.button === 1) { e.preventDefault(); requestClose(t.id, t.name, t.dirty) } }}
-            title={`${t.name}（双击重命名）`}
+            title={`${t.name}（双击重命名 · 拖拽重排）`}
+            draggable
+            onDragStart={() => setDragTabId(t.id)}
+            onDragOver={e => { if (dragTabId && dragTabId !== t.id) e.preventDefault() }}
+            onDrop={e => { e.preventDefault(); if (dragTabId) reorderTabs(dragTabId, t.id); setDragTabId(null) }}
+            onDragEnd={() => setDragTabId(null)}
           >
             {renaming === t.id ? (
               <input
