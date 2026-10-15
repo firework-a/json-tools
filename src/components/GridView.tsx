@@ -316,6 +316,7 @@ export default function GridView() {
           aria-label="过滤行"
           spellCheck={false}
           onChange={e => setFilter(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setFilter('') } }}
         />
         <button className="tool-back-flat" onClick={addRow} title="添加一行（克隆末行结构）">
           + 行
