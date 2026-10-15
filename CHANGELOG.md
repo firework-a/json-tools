@@ -20,6 +20,7 @@
 - 表格视图支持添加行（克隆末行结构）与删除行（行号悬停显示删除按钮）。
 - Schema 模式新增「应用校验」：把 Schema 应用到编辑器实时校验（Monaco diagnostics 实时标出不符合项）。
 - 新增 JSON Patch 生成：对比模式一键生成 RFC 6902 JSON Patch 并复制（显示变更处数）。
+- 新增全局 ErrorBoundary：组件崩溃时显示错误详情与重新加载按钮，不再白屏。
 - 新增从 URL 导入 JSON（命令面板，受 CORS 限制）。
 - 新增 JSON Patch 应用：对比模式从剪贴板读取 Patch 应用到左侧文档（RFC 6902）。
 - 格式转换新增反向方向：YAML / XML / TOML / CSV → JSON（顶栏方向切换，反向输入 300ms 防抖自动重算）。
