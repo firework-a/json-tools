@@ -327,7 +327,7 @@ export default function GridView() {
           <BackIcon />
         </button>
         <span className="table-title">{table.title}</span>
-        <span className="table-meta">{table.rows.length} 行 × {table.columns.length} 列{sortKey ? ` · 按 ${sortKey} ${sortAsc ? '升序' : '降序'}` : ''}{filter ? ' · 已过滤' : ''}{table.rows.length > RENDER_LIMIT ? ' · 仅渲染前 2000 行' : ''}</span>
+        <span className="table-meta">{table.rows.length} 行 × {visibleColumns.length} 列{sortKey ? ` · 按 ${sortKey} ${sortAsc ? '升序' : '降序'}` : ''}{filter ? ' · 已过滤' : ''}{table.rows.length > RENDER_LIMIT ? ' · 仅渲染前 2000 行' : ''}</span>
         <div className="table-spacer" />
         <input
           className="table-filter"
