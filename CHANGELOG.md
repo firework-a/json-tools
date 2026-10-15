@@ -14,6 +14,7 @@
 - 状态栏新增光标位置（Ln/Col）显示；标签页支持中键关闭。
 - 表格视图支持导出 Markdown / CSV 表格（复制到剪贴板）。
 - 新增 JSON Patch 生成：对比模式一键生成 RFC 6902 JSON Patch 并复制（显示变更处数）。
+- 新增单元测试（vitest）：覆盖 JSON 修复/解析、NDJSON 互转、Mock 生成等核心工具（21 个用例），`pnpm test` 运行。
 - 树形视图查询结果可一键写入编辑器（替换当前内容）。
 - 新增内置示例 JSON（utils/sample.ts）。
 - 新增「修复」按钮与命令面板命令（json.repair）：自定义修复规则 + jsonrepair 库兜底，覆盖截断 payload、缺失引号、尾逗号等复杂情况，一键把非标准 JSON 修复为合法 JSON。

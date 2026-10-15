@@ -14,6 +14,7 @@
     "clean": "node scripts/clean.mjs",
     "icon": "node scripts/icon.mjs",
     "scripts:info": "node scripts/info.mjs",
+    "test": "vitest run",
     "tauri": "tauri"
   },
   "dependencies": {
@@ -53,6 +54,7 @@
     "@vitejs/plugin-react": "^4.2.1",
     "sass": "^1.69.5",
     "typescript": "^5.3.3",
-    "vite": "^5.0.8"
+    "vite": "^5.0.8",
+    "vitest": "^2.1.9"
   }
 }
