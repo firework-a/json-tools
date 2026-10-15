@@ -378,7 +378,12 @@ export default function GridView() {
       {showStats && (
         <div className="table-stats">
           {columnStats.map(s => (
-            <div key={s.col} className="table-stat-item">
+            <div
+              key={s.col}
+              className={`table-stat-item ${sortKey === s.col ? 'sorted' : ''}`}
+              title="点击按该列排序"
+              onClick={() => toggleSort(s.col)}
+            >
               <span className="table-stat-col">{s.col}</span>
               <span className="table-stat-val">{s.summary}</span>
             </div>
