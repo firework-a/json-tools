@@ -330,6 +330,22 @@ export default function GridView() {
         <button className="tool-back-flat" onClick={() => exportTable('csv')} title="复制为 CSV">
           <DownloadIcon size={13} /> CSV
         </button>
+        <button
+          className="tool-back-flat"
+          title="把当前表格保存为 CSV 文件"
+          onClick={async () => {
+            if (!table) return
+            const cols = visibleColumns.length ? visibleColumns : table.columns
+            const csvEscape = (s: string) => (/[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s)
+            const header = cols.map(c => csvEscape(c)).join(',')
+            const rows = sortedRows.map(({ row }) => cols.map(c => csvEscape(cellText(row[c]))).join(','))
+            const { saveTextFileAs } = await import('../utils/files')
+            const path = await saveTextFileAs([header, ...rows].join('\n'), 'table.csv')
+            if (path) showToast('CSV 已保存')
+          }}
+        >
+          保存
+        </button>
         <span className="table-hint">点击列头排序 · 点击行复制 · 双击单元格编辑</span>
         {hiddenCols.length > 0 && (
           <button
