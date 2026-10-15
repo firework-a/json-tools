@@ -115,8 +115,12 @@ function TreeView() {
   const parsed = useMemo(() => {
     const t = debouncedContent.trim()
     if (!t) return undefined
+    // 性能保护：超大 JSON 跳过解析渲染，避免卡死（表格/编辑器仍可用）
+    if (t.length > 1_000_000) return null
     try { return JSON.parse(t) } catch { return undefined }
   }, [debouncedContent])
+
+  const tooLarge = parsed === null
 
   const [query, setQuery] = useState('')
 
@@ -128,7 +132,7 @@ function TreeView() {
     error?: string
   }>(() => {
     const expr = query.trim()
-    if (!expr || parsed === undefined) return { active: false }
+    if (!expr || parsed === undefined || parsed === null) return { active: false }
     try {
       if (queryLang === 'jsonpath') {
         const r = JSONPath({ json: parsed as object, path: expr, wrap: false }) as unknown
@@ -248,6 +252,11 @@ function TreeView() {
             </svg>
             <div className="tree-empty-title">暂无 JSON 数据</div>
             <div className="tree-empty-tip">输入有效的 JSON 查看结构</div>
+          </div>
+        ) : tooLarge ? (
+          <div className="tree-empty">
+            <div className="tree-empty-title">内容过大，已跳过树形渲染</div>
+            <div className="tree-empty-tip">超过 1MB 的 JSON 不渲染树形视图以保持流畅，可用表格视图或编辑器浏览</div>
           </div>
         ) : queryResult.active && queryResult.error ? (
           <div className="tree-empty">
