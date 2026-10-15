@@ -73,6 +73,10 @@ interface AppState {
   jmesHistory: string[]
   addJmesHistory: (q: string) => void
 
+  // 最近打开文件（持久化，最多 10 条，仅记录有路径的）
+  recentFiles: { path: string; name: string; openedAt: number }[]
+  addRecentFile: (path: string, name: string) => void
+
   // 工具箱当前工具（供命令面板跳转选择）
   toolsTool: string | null
   setToolsTool: (t: string | null) => void
@@ -171,6 +175,13 @@ export const useAppStore = create<AppState>()(
         return { jmesHistory: next }
       }),
 
+      recentFiles: [],
+      addRecentFile: (path, name) => set((s) => {
+        if (!path) return s
+        const next = [{ path, name, openedAt: Date.now() }, ...s.recentFiles.filter(f => f.path !== path)].slice(0, 10)
+        return { recentFiles: next }
+      }),
+
       toolsTool: null,
       setToolsTool: (toolsTool) => set({ toolsTool }),
 
@@ -244,6 +255,10 @@ export const useAppStore = create<AppState>()(
               editorLanguage: existing.language,
               mode: 'edit',
               rightContent: '',
+              recentFiles: [
+                { path: file.path, name: file.name, openedAt: Date.now() },
+                ...s.recentFiles.filter(f => f.path !== file.path),
+              ].slice(0, 10),
             }
           }
         }
@@ -261,6 +276,9 @@ export const useAppStore = create<AppState>()(
           editorLanguage: tab.language,
           mode: 'edit',
           rightContent: '',
+          recentFiles: file.path
+            ? [{ path: file.path, name: file.name, openedAt: Date.now() }, ...s.recentFiles.filter(f => f.path !== file.path)].slice(0, 10)
+            : s.recentFiles,
         }
       }),
 
@@ -269,6 +287,10 @@ export const useAppStore = create<AppState>()(
         tabs: s.tabs.map(t => t.id === s.activeTabId
           ? { ...t, filePath, name, dirty: false }
           : t),
+        recentFiles: [
+          { path: filePath, name, openedAt: Date.now() },
+          ...s.recentFiles.filter(f => f.path !== filePath),
+        ].slice(0, 10),
       })),
 
       setContent: (content) => set((s) => ({

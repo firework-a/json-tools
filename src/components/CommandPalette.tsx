@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAppStore } from '../store'
-import { searchCommands, type AppCommand } from '../commands'
+import { searchCommands, buildRecentFileCommands, type AppCommand } from '../commands'
 
 const GROUP_COLOR: Record<string, string> = {
   文件: '#5a9cf0',
@@ -20,7 +20,7 @@ export default function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
 
-  const results = useMemo(() => searchCommands(query), [query])
+  const results = useMemo(() => searchCommands(query, [...buildRecentFileCommands(), ...searchCommands('')]), [query, open])
 
   useEffect(() => {
     if (!open) return

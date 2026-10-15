@@ -127,6 +127,27 @@ export const COMMANDS: AppCommand[] = [
   { id: 'app.update', label: '检查更新', group: '其他', keywords: 'update 更新 版本', run: () => { void useUpdateStore.getState().check({ notify: true }) } },
 ]
 
+/** 最近打开文件 → 动态命令（命令面板用） */
+export const buildRecentFileCommands = (): AppCommand[] => {
+  const recents = useAppStore.getState().recentFiles
+  return recents.map(f => ({
+    id: `file.recent.${f.path}`,
+    label: `打开: ${f.name}`,
+    group: '文件' as CommandGroup,
+    keywords: `recent recent-file 最近 ${f.name}`,
+    hint: f.path,
+    run: async () => {
+      const { readTextFileAt } = await import('./utils/files')
+      try {
+        const file = await readTextFileAt(f.path)
+        s().openLoadedFile(file)
+      } catch (e) {
+        s().showToast('打开失败: ' + (e instanceof Error ? e.message : String(e)))
+      }
+    },
+  }))
+}
+
 /** 命令模糊匹配：命中 label / keywords / group 任一子串即保留，按匹配强度排序 */
 export const searchCommands = (query: string, pool: AppCommand[] = COMMANDS): AppCommand[] => {
   const q = query.trim().toLowerCase()
