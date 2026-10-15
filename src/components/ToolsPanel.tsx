@@ -215,6 +215,14 @@ export default function ToolsPanel() {
             <button className="action-btn gen" onClick={() => setInput(content)} title="用编辑器当前内容填入">用编辑器内容</button>
           )}
           <div className="tb-spacer" />
+          <button
+            className="action-btn chk"
+            onClick={() => {
+              if (!result.result) { showToast('没有可写入的内容'); return }
+              useAppStore.getState().setContent(result.result)
+              useAppStore.getState().showToast('结果已写入编辑器')
+            }}
+          >写入编辑器</button>
           <button className="action-btn chk" onClick={copyOut}>复制结果</button>
         </div>
         <div className="tools-body">
