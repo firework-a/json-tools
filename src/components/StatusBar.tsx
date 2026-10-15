@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useAppStore } from '../store'
 import { getJsonStats } from '../utils/json'
 import { computeDiff } from '../utils/jsonDiffer'
+import { onEditorCursor } from '../editorRegistry'
 import UpdateButton from './UpdateButton'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
 
@@ -19,6 +20,13 @@ function StatusBar() {
 
   const leftStats = useMemo(() => getJsonStats(debouncedContent), [debouncedContent])
   const rightStats = useMemo(() => getJsonStats(debouncedRight), [debouncedRight])
+
+  // 主编辑器光标位置（行列），状态栏显示
+  const [cursor, setCursor] = useState<{ line: number; column: number } | null>(null)
+  useEffect(() => {
+    const off = onEditorCursor((line, column) => setCursor({ line, column }))
+    return off
+  }, [])
 
   // 对比模式：用行级 diff 统计真实变更行数（增+删）
   const diffCount = useMemo(() => {
@@ -41,6 +49,12 @@ function StatusBar() {
         <span>{formatSize(leftStats.size)}</span>
         <span className="status-sep">|</span>
         <span>{leftStats.lineCount} 行</span>
+        {cursor && (
+          <>
+            <span className="status-sep">|</span>
+            <span>Ln {cursor.line}, Col {cursor.column}</span>
+          </>
+        )}
         {!leftStats.valid && content.trim() && (
           <>
             <span className="status-sep">|</span>

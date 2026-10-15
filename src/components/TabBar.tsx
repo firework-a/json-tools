@@ -21,6 +21,7 @@ export default function TabBar() {
             key={t.id}
             className={`tab ${t.id === activeId ? 'active' : ''}`}
             onClick={() => setActiveTab(t.id)}
+            onMouseDown={(e) => { if (e.button === 1) { e.preventDefault(); requestClose(t.id, t.name, t.dirty) } }}
             title={t.name}
           >
             <span className="tab-name">{t.name}</span>

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useAppStore } from '../store'
-import { BackIcon } from './Icons'
+import { BackIcon, DownloadIcon } from './Icons'
 import { SAMPLE_JSON } from '../utils/sample'
+import { copyToClipboard } from '../utils/json'
 
 /**
  * 表格视图：把「对象数组」渲染成电子表格。
@@ -130,6 +131,27 @@ export default function GridView() {
     setEditValue(cellText(current))
   }
 
+  // 导出 Markdown / CSV 表格（复制到剪贴板）
+  const exportTable = async (fmt: 'markdown' | 'csv') => {
+    if (!table) return
+    const cols = table.columns
+    const mdEscape = (s: string) => s.replace(/\|/g, '\\|').replace(/\n/g, ' ')
+    const csvEscape = (s: string) => (/[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s)
+    let text = ''
+    if (fmt === 'markdown') {
+      const header = `| ${cols.map(mdEscape).join(' | ')} |`
+      const sep = `| ${cols.map(() => '---').join(' | ')} |`
+      const rows = sortedRows.map(({ row }) => `| ${cols.map(c => mdEscape(cellText(row[c]))).join(' | ')} |`)
+      text = [header, sep, ...rows].join('\n')
+    } else {
+      const header = cols.map(c => csvEscape(c)).join(',')
+      const rows = sortedRows.map(({ row }) => cols.map(c => csvEscape(cellText(row[c]))).join(','))
+      text = [header, ...rows].join('\n')
+    }
+    const ok = await copyToClipboard(text)
+    showToast(ok ? `已复制 ${fmt === 'markdown' ? 'Markdown' : 'CSV'} 表格` : '复制失败')
+  }
+
   const commitEdit = () => {
     if (!editing || !table) { setEditing(null); return }
     const { rowIndex, col } = editing
@@ -194,6 +216,12 @@ export default function GridView() {
         <span className="table-title">{table.title}</span>
         <span className="table-meta">{table.rows.length} 行 × {table.columns.length} 列{sortKey ? ` · 按 ${sortKey} ${sortAsc ? '升序' : '降序'}` : ''}</span>
         <div className="table-spacer" />
+        <button className="tool-back-flat" onClick={() => exportTable('markdown')} title="复制为 Markdown 表格">
+          <DownloadIcon size={13} /> MD
+        </button>
+        <button className="tool-back-flat" onClick={() => exportTable('csv')} title="复制为 CSV">
+          <DownloadIcon size={13} /> CSV
+        </button>
         <span className="table-hint">点击列头排序 · 点击行复制 · 双击单元格编辑</span>
       </div>
       <div className="table-scroll">

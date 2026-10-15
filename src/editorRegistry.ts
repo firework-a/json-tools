@@ -9,6 +9,7 @@ let unregisterMain: (() => void) | null = null
 
 const extraEditors = new Set<Monaco.editor.IStandaloneCodeEditor>()
 const scrollListeners = new Set<(ratio: number, scrollTop: number) => void>()
+const cursorListeners = new Set<(line: number, column: number) => void>()
 
 /** 注册主编辑器（编辑区当前标签的编辑器），返回注销函数 */
 export const registerMainEditor = (editor: Monaco.editor.IStandaloneCodeEditor) => {
@@ -22,8 +23,12 @@ export const registerMainEditor = (editor: Monaco.editor.IStandaloneCodeEditor) 
     const ratio = max > 0 ? e.scrollTop / max : 0
     scrollListeners.forEach(fn => fn(ratio, e.scrollTop))
   })
+  const cursorDisposable = editor.onDidChangeCursorPosition((e) => {
+    cursorListeners.forEach(fn => fn(e.position.lineNumber, e.position.column))
+  })
   unregisterMain = () => {
     disposable.dispose()
+    cursorDisposable.dispose()
     if (mainEditor === editor) mainEditor = null
     unregisterMain = null
   }
@@ -39,6 +44,12 @@ export const registerEditor = (editor: Monaco.editor.IStandaloneCodeEditor) => {
 export const onEditorScroll = (fn: (ratio: number, scrollTop: number) => void) => {
   scrollListeners.add(fn)
   return () => { scrollListeners.delete(fn) }
+}
+
+/** 订阅主编辑器光标位置（行列），用于状态栏显示 */
+export const onEditorCursor = (fn: (line: number, column: number) => void) => {
+  cursorListeners.add(fn)
+  return () => { cursorListeners.delete(fn) }
 }
 
 /** 折叠所有可折叠区域（当前所有编辑器） */
