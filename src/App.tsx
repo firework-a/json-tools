@@ -101,6 +101,30 @@ function App() {
     return () => window.removeEventListener('keydown', onKeyDown, true)
   }, [])
 
+  // 全局 Ctrl+V：焦点在编辑器/输入框外时，把剪贴板内容直接粘贴到当前编辑器
+  // （编辑器内的 Ctrl+V 走 Monaco 原生粘贴，不受影响）
+  useEffect(() => {
+    const onKeyDown = async (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return
+      if (e.key.toLowerCase() !== 'v') return
+      const st = useAppStore.getState()
+      if (st.mode !== 'edit' && st.mode !== 'table') return
+      const target = e.target as HTMLElement | null
+      if (target?.closest?.('.monaco-editor, input, textarea, [contenteditable]')) return
+      e.preventDefault()
+      try {
+        const text = await navigator.clipboard.readText()
+        if (!text.trim()) return
+        st.setContent(text)
+        st.showToast('已从剪贴板粘贴')
+      } catch {
+        /* 剪贴板不可读（浏览器权限） */
+      }
+    }
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [])
+
   // 浏览器预览环境的 HTML5 拖拽（同时阻止浏览器直接打开文件）
   useEffect(() => {
     if (isTauri()) return
