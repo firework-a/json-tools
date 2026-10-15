@@ -17,6 +17,7 @@ const CACHE_MAX = 24
  */
 export default function ShikiPreview({ code, lang = 'json' }: Props) {
   const theme = useAppStore(s => s.theme)
+  const fontSize = useAppStore(s => s.fontSize)
   const [html, setHtml] = useState('')
   const hostRef = useRef<HTMLDivElement>(null)
 
@@ -45,6 +46,7 @@ export default function ShikiPreview({ code, lang = 'json' }: Props) {
     <div className="shiki-wrap" ref={hostRef}>
       <div
         className="shiki-host"
+        style={{ fontSize: `${fontSize}px` }}
         // Shiki 产出的 HTML 是我们本地生成的可信代码高亮
         dangerouslySetInnerHTML={{ __html: html }}
       />
