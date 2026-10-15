@@ -432,6 +432,13 @@ export const useAppStore = create<AppState>()(
         if (state.pinned && isTauri()) {
           getCurrentWindow().setAlwaysOnTop(true).catch(() => {})
         }
+        // 工作区恢复：把活动标签内容镜像到 content/fileName
+        const tab = state.tabs?.find(t => t.id === state.activeTabId)
+        if (tab && tab.content) {
+          state.content = tab.content
+          state.fileName = tab.name
+          state.editorLanguage = tab.language
+        }
       },
     },
   ),
