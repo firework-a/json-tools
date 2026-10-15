@@ -15,9 +15,11 @@
     "icon": "node scripts/icon.mjs",
     "scripts:info": "node scripts/info.mjs",
     "test": "vitest run",
+    "mcp": "tsx mcp-server/index.ts",
     "tauri": "tauri"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@monaco-editor/react": "^4.7.0",
     "@tauri-apps/api": "^2.11.1",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.2",
@@ -41,6 +43,8 @@
     "react-dom": "^18.2.0",
     "shiki": "^4.4.3",
     "smol-toml": "^1.7.1",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.7",
     "zustand": "^4.4.7"
   },
   "devDependencies": {

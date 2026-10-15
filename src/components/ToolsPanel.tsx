@@ -8,10 +8,11 @@ import {
 } from '../utils/encoding'
 import { generateMock } from '../utils/mockData'
 import { convertNdjson } from '../utils/ndjson'
+import { analyzeJson, formatInsightsReport } from '../utils/insights'
 import { BackIcon, ChevronDown } from './Icons'
 import CustomSelect from './CustomSelect'
 
-type ToolId = 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase' | 'mock' | 'ndjson'
+type ToolId = 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase' | 'mock' | 'ndjson' | 'insights'
 
 interface ToolMeta { id: ToolId; label: string; group: string; json?: boolean }
 const TOOLS: ToolMeta[] = [
@@ -27,6 +28,7 @@ const TOOLS: ToolMeta[] = [
   { id: 'numbase', label: '进制转换', group: '其他' },
   { id: 'mock', label: 'Mock 数据', group: '其他', json: true },
   { id: 'ndjson', label: 'NDJSON', group: '其他', json: true },
+  { id: 'insights', label: '智能分析', group: '其他', json: true },
 ]
 
 export default function ToolsPanel() {
@@ -88,6 +90,11 @@ export default function ToolsPanel() {
       case 'numbase': return convertNumberBase(input, base)
       case 'ndjson': return convertNdjson(input, ndjsonMode === 'toJson')
       case 'mock': return generateMock(input, Number(mockCount) || 5)
+      case 'insights': {
+        const r = analyzeJson(input)
+        if (r.error) return { result: '', error: r.error }
+        return { result: formatInsightsReport(r.result), error: null }
+      }
       default: return { result: '', error: null }
     }
   }, [input, tool, decode, sortOrder, removeOnlyNull, base, hashOut, mockCount, ndjsonMode])
