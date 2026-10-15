@@ -41,6 +41,11 @@ function App() {
   useEffect(() => {
     const t = fileName && fileName !== 'Untitled-1' ? `${fileName} · JSON TOOLS` : 'JSON TOOLS'
     document.title = t
+    if (isTauri()) {
+      import('@tauri-apps/api/window').then(({ getCurrentWindow }) => {
+        getCurrentWindow().setTitle(t).catch(() => { /* ignore */ })
+      })
+    }
   }, [fileName])
 
   // 窗口初始 visible:false, 等 React 挂载完再显示, 避免出现透明空窗
