@@ -9,7 +9,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod'
 
 import { repairJsonDeep, formatJson, compressJson, tryParseJson, getJsonStats, detectFormat } from '../src/utils/json'
-import { sortJsonKeys, flattenJson, unflattenJson, removeEmptyValues } from '../src/utils/jsonTransform'
+import { sortJsonKeys, flattenJson, unflattenJson, removeEmptyValues, dedupJson } from '../src/utils/jsonTransform'
 import { jsonToYaml, yamlToJson } from '../src/utils/jsonYaml'
 import { jsonToXml, xmlToJson, jsonToToml, tomlToJson, jsonToCsv, csvToJson } from '../src/utils/jsonFormats'
 import { convertNdjson } from '../src/utils/ndjson'
@@ -28,10 +28,12 @@ const fail = (msg: string) => ({ content: [{ type: 'text' as const, text: `错�
 const server = new McpServer({ name: 'json-tools', version: '0.2.0' })
 
 // 1. 修复非标准 JSON
-server.tool(
+server.registerTool(
   'json_repair',
-  '修复非标准 JSON（注释/单引号/尾逗号/无引号键/截断 payload），返回合法 JSON',
-  { text: z.string().describe('待修复的 JSON 文本') },
+  {
+    description: '修复非标准 JSON（注释/单引号/尾逗号/无引号键/截断 payload），返回合法 JSON',
+    inputSchema: { text: z.string().describe('待修复的 JSON 文本') },
+  },
   async ({ text: input }) => {
     const r = repairJsonDeep(input)
     if (r.error) return fail(r.error)
@@ -40,13 +42,15 @@ server.tool(
 )
 
 // 2. 格式化 / 压缩
-server.tool(
+server.registerTool(
   'json_format',
-  '格式化（beautify）或压缩（minify）JSON',
   {
-    text: z.string().describe('JSON 文本'),
-    mode: z.enum(['beautify', 'minify']).default('beautify').describe('beautify=格式化, minify=压缩'),
-    indent: z.number().int().min(2).max(8).default(2).describe('格式化缩进空格数'),
+    description: '格式化（beautify）或压缩（minify）JSON',
+    inputSchema: {
+      text: z.string().describe('JSON 文本'),
+      mode: z.enum(['beautify', 'minify']).default('beautify').describe('beautify=格式化, minify=压缩'),
+      indent: z.number().int().min(2).max(8).default(2).describe('格式化缩进空格数'),
+    },
   },
   async ({ text: input, mode, indent }) => {
     const r = mode === 'minify' ? compressJson(input) : formatJson(input, indent)
@@ -56,12 +60,14 @@ server.tool(
 )
 
 // 3. 校验（语法 + 可选 Schema）
-server.tool(
+server.registerTool(
   'json_validate',
-  '校验 JSON 语法，可选按 JSON Schema 校验；返回 ok/errors 与基础统计',
   {
-    text: z.string().describe('JSON 文本'),
-    schema: z.string().optional().describe('JSON Schema（字符串形式，可选）'),
+    description: '校验 JSON 语法，可选按 JSON Schema 校验；返回 ok/errors 与基础统计',
+    inputSchema: {
+      text: z.string().describe('JSON 文本'),
+      schema: z.string().optional().describe('JSON Schema（字符串形式，可选）'),
+    },
   },
   async ({ text: input, schema }) => {
     if (schema) {
@@ -76,28 +82,27 @@ server.tool(
 )
 
 // 4. 格式互转
-server.tool(
+server.registerTool(
   'json_convert',
-  'JSON 与 YAML / XML / TOML / CSV / NDJSON 互转（自动识别方向）',
   {
-    text: z.string().describe('输入文本'),
-    to: z.enum(['yaml', 'xml', 'toml', 'csv', 'ndjson', 'json']).describe('目标格式'),
+    description: 'JSON 与 YAML / XML / TOML / CSV / NDJSON 互转（json 目标时按内容自动识别源格式）',
+    inputSchema: {
+      text: z.string().describe('输入文本'),
+      to: z.enum(['yaml', 'xml', 'toml', 'csv', 'ndjson', 'json']).describe('目标格式'),
+    },
   },
   async ({ text: input, to }) => {
     if (to === 'json') {
-      // 反向：YAML/XML/TOML/CSV → JSON（按内容自动识别）
-      const fmt = detectFormat(input)
-      const r = fmt === 'xml' ? xmlToJson(input)
-        : fmt === 'toml' ? tomlToJson(input)
-        : fmt === 'csv' ? csvToJson(input)
-        : yamlToJson(input)
-      if (r.error) return fail(r.error)
-      return text(r.result)
+      // 反向：YAML/XML/TOML/CSV → JSON（依次尝试解析，成功即用）
+      const attempts = [yamlToJson(input), xmlToJson(input), tomlToJson(input), csvToJson(input)]
+      const ok = attempts.find(r => !r.error && r.result.trim())
+      if (!ok) return fail('无法识别输入格式（支持 YAML / XML / TOML / CSV / NDJSON）')
+      return text(ok.result)
     }
     if (to === 'ndjson') {
-      const parsed = JSON.parse(input)
-      const items = Array.isArray(parsed) ? parsed : [parsed]
-      return text(items.map(i => JSON.stringify(i)).join('\n'))
+      const r = convertNdjson(input, false)
+      if (r.error) return fail(r.error)
+      return text(r.result)
     }
     const parsed = JSON.parse(input)
     const r = to === 'yaml' ? jsonToYaml(JSON.stringify(parsed))
@@ -109,13 +114,32 @@ server.tool(
   },
 )
 
-// 5. 结构变换
-server.tool(
-  'json_transform',
-  'JSON 结构变换：按键排序 / 扁平化 / 扁平还原 / 去 null / 去空值 / 数组去重',
+// 5. NDJSON（含反向 NDJSON → JSON）
+server.registerTool(
+  'json_ndjson',
   {
-    text: z.string().describe('JSON 文本'),
-    op: z.enum(['sortAsc', 'sortDesc', 'flatten', 'unflatten', 'removeNull', 'removeEmpty', 'dedup']).describe('变换操作'),
+    description: 'NDJSON 与 JSON 数组互转（to=json 解析 NDJSON；to=ndjson 把 JSON 数组转为 NDJSON）',
+    inputSchema: {
+      text: z.string().describe('输入文本'),
+      to: z.enum(['json', 'ndjson']).describe('目标格式'),
+    },
+  },
+  async ({ text: input, to }) => {
+    const r = convertNdjson(input, to === 'json')
+    if (r.error) return fail(r.error)
+    return text(r.result)
+  },
+)
+
+// 6. 结构变换
+server.registerTool(
+  'json_transform',
+  {
+    description: 'JSON 结构变换：按键排序 / 扁平化 / 扁平还原 / 去 null / 去空值 / 数组去重',
+    inputSchema: {
+      text: z.string().describe('JSON 文本'),
+      op: z.enum(['sortAsc', 'sortDesc', 'flatten', 'unflatten', 'removeNull', 'removeEmpty', 'dedup']).describe('变换操作'),
+    },
   },
   async ({ text: input, op }) => {
     const map: Record<string, (c: string) => { result: string; error: string | null }> = {
@@ -133,31 +157,35 @@ server.tool(
   },
 )
 
-// 6. Diff
-server.tool(
+// 7. Diff
+server.registerTool(
   'json_diff',
-  '对比两个 JSON，返回行级差异摘要（增/删行数与差异行）',
   {
-    left: z.string().describe('左侧 JSON'),
-    right: z.string().describe('右侧 JSON'),
+    description: '对比两个 JSON，返回行级差异摘要（变更行数与差异行号）',
+    inputSchema: {
+      left: z.string().describe('左侧 JSON'),
+      right: z.string().describe('右侧 JSON'),
+    },
   },
   async ({ left, right }) => {
     const d = computeDiff(left, right)
     return text({
-      changedLines: d.left.size + d.right.size,
+      changedLines: d.leftRemoved.size + d.rightAdded.size,
       removedOnLeft: [...d.leftRemoved].sort((a, b) => a - b),
       addedOnRight: [...d.rightAdded].sort((a, b) => a - b),
     })
   },
 )
 
-// 7. Mock 数据生成
-server.tool(
+// 8. Mock 数据生成
+server.registerTool(
   'json_mock',
-  '从样例 JSON 结构或 JSON Schema 生成仿真 Mock 数据',
   {
-    sample: z.string().describe('样例 JSON 或 JSON Schema'),
-    count: z.number().int().min(1).max(100).default(5).describe('生成条数'),
+    description: '从样例 JSON 结构或 JSON Schema 生成仿真 Mock 数据',
+    inputSchema: {
+      sample: z.string().describe('样例 JSON 或 JSON Schema'),
+      count: z.number().int().min(1).max(100).default(5).describe('生成条数'),
+    },
   },
   async ({ sample, count }) => {
     const r = generateMock(sample, count)
@@ -166,25 +194,29 @@ server.tool(
   },
 )
 
-// 8. 统计
-server.tool(
+// 9. 统计
+server.registerTool(
   'json_stats',
-  'JSON 统计：键数 / 嵌套深度 / 大小 / 行数 / 格式识别',
-  { text: z.string().describe('JSON 文本') },
+  {
+    description: 'JSON 统计：键数 / 嵌套深度 / 大小 / 行数 / 格式识别',
+    inputSchema: { text: z.string().describe('JSON 文本') },
+  },
   async ({ text: input }) => {
     const s = getJsonStats(input)
     return text({ keys: s.keyCount, depth: s.depth, sizeBytes: s.size, lines: s.lineCount, detectedFormat: detectFormat(input) })
   },
 )
 
-// 9. 查询
-server.tool(
+// 10. 查询
+server.registerTool(
   'json_query',
-  '用 JSONPath 或 JMESPath 查询 JSON',
   {
-    text: z.string().describe('JSON 文本'),
-    path: z.string().describe('查询表达式（JSONPath 如 $.a[*].b，或 JMESPath）'),
-    lang: z.enum(['jsonpath', 'jmespath']).default('jsonpath').describe('查询语言'),
+    description: '用 JSONPath 或 JMESPath 查询 JSON',
+    inputSchema: {
+      text: z.string().describe('JSON 文本'),
+      path: z.string().describe('查询表达式（JSONPath 如 $.a[*].b，或 JMESPath）'),
+      lang: z.enum(['jsonpath', 'jmespath']).default('jsonpath').describe('查询语言'),
+    },
   },
   async ({ text: input, path, lang }) => {
     const { parsed, error } = tryParseJson(input)
@@ -199,15 +231,20 @@ server.tool(
   },
 )
 
-// 10. 表格提取
-server.tool(
+// 11. 表格提取
+server.registerTool(
   'json_table_extract',
-  '把 JSON 中的对象数组提取为表格行/列（自动下钻根下数组字段）',
   {
-    text: z.string().describe('JSON 文本，需包含对象数组'),
+    description: '把 JSON 中的对象数组提取为表格行/列（自动下钻根下数组字段）',
+    inputSchema: { text: z.string().describe('JSON 文本，需包含对象数组') },
   },
   async ({ text: input }) => {
-    const t = buildTable(JSON.parse(input))
+    let t
+    try {
+      t = buildTable(JSON.parse(input))
+    } catch (e) {
+      return fail('输入不是合法 JSON')
+    }
     if (!t) return fail('未找到对象数组（需要根数组或根下的对象数组字段）')
     return text({
       title: t.title,
@@ -218,11 +255,13 @@ server.tool(
   },
 )
 
-// 11. Schema 生成
-server.tool(
+// 12. Schema 生成
+server.registerTool(
   'json_to_schema',
-  '从 JSON 样本推断 JSON Schema (draft-07)',
-  { text: z.string().describe('JSON 样本') },
+  {
+    description: '从 JSON 样本推断 JSON Schema (draft-07)',
+    inputSchema: { text: z.string().describe('JSON 样本') },
+  },
   async ({ text: input }) => {
     const r = jsonToSchema(input)
     if (r.error) return fail(r.error)
@@ -230,11 +269,13 @@ server.tool(
   },
 )
 
-// 12. 智能分析
-server.tool(
+// 13. 智能分析
+server.registerTool(
   'json_insights',
-  '智能分析 JSON：结构摘要、字段类型统计、数据质量问题与优化建议（本地规则引擎）',
-  { text: z.string().describe('JSON 文本') },
+  {
+    description: '智能分析 JSON：结构摘要、字段类型统计、数据质量问题与优化建议（本地规则引擎）',
+    inputSchema: { text: z.string().describe('JSON 文本') },
+  },
   async ({ text: input }) => {
     const r = analyzeJson(input)
     if (r.error) return fail(r.error)

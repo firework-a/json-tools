@@ -180,12 +180,14 @@ const MCP_TOOLS: { name: string; desc: string }[] = [
   { name: 'json_insights', desc: '智能分析：结构摘要 / 质量评分 / 建议' },
 ]
 
+const MCP_REPO_URL = 'https://github.com/firework-a/json-tools'
+
 const MCP_CONFIG_EXAMPLE = JSON.stringify({
   mcpServers: {
     'json-tools': {
       command: 'npx',
       args: ['tsx', 'mcp-server/index.ts'],
-      cwd: '<本应用仓库绝对路径>',
+      cwd: '<克隆仓库的绝对路径>',
     },
   },
 }, null, 2)
@@ -222,7 +224,9 @@ function McpSection() {
         </div>
         <pre className="mcp-code">{MCP_CONFIG_EXAMPLE}</pre>
         <div className="mcp-tip">
-          把 <code>cwd</code> 改为本应用仓库的绝对路径。开发调试也可以直接运行{' '}
+          前提：已克隆本仓库（{' '}
+          <code>git clone {MCP_REPO_URL}.git</code>）并安装依赖（<code>pnpm install</code>）。
+          把 <code>cwd</code> 改为克隆目录的绝对路径。开发调试也可以直接运行{' '}
           <code>pnpm mcp</code>。
         </div>
       </div>
