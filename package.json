@@ -4,6 +4,9 @@
   "version": "0.2.0",
   "packageManager": "pnpm@11.25.0",
   "type": "module",
+  "bin": {
+    "json-tools-mcp": "mcp-server/dist/index.js"
+  },
   "scripts": {
     "dev": "vite",
     "tauri:dev": "tauri dev",
@@ -16,6 +19,7 @@
     "scripts:info": "node scripts/info.mjs",
     "test": "vitest run",
     "mcp": "tsx mcp-server/index.ts",
+    "build:mcp": "esbuild mcp-server/index.ts --bundle --platform=node --format=esm --outfile=mcp-server/dist/index.js",
     "tauri": "tauri"
   },
   "dependencies": {
@@ -56,6 +60,7 @@
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
+    "esbuild": "^0.28.2",
     "sass": "^1.69.5",
     "typescript": "^5.3.3",
     "vite": "^5.0.8",

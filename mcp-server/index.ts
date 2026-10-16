@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // JSON Tools MCP Server
 // 把 JSON Tools 的核心 JSON 能力暴露为 MCP (Model Context Protocol) 工具，
 // 供 AI 助手（Claude Desktop / Codex / Cursor 等）通过 stdio 调用。

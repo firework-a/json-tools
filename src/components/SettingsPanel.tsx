@@ -183,7 +183,20 @@ const MCP_TOOLS: { name: string; desc: string }[] = [
 
 const MCP_REPO_URL = 'https://github.com/firework-a/json-tools'
 
-const MCP_CONFIG_EXAMPLE = JSON.stringify({
+/** 方式一（推荐）：全局安装后即配即用，无需路径 */
+const MCP_CONFIG_GLOBAL = JSON.stringify({
+  mcpServers: {
+    'json-tools': {
+      command: 'json-tools-mcp',
+    },
+  },
+}, null, 2)
+
+/** 方式二：直接从 GitHub 全局安装（需本机 Node.js） */
+const MCP_INSTALL_CMD = 'npm install -g github:firework-a/json-tools'
+
+/** 方式三（备用）：从源码运行，需克隆仓库并填 cwd */
+const MCP_CONFIG_SOURCE = JSON.stringify({
   mcpServers: {
     'json-tools': {
       command: 'npx',
@@ -196,12 +209,15 @@ const MCP_CONFIG_EXAMPLE = JSON.stringify({
 function McpSection() {
   const showToast = useAppStore(s => s.showToast)
   const [copied, setCopied] = useState(false)
+  const [tab, setTab] = useState<'global' | 'source'>('global')
+
+  const configText = tab === 'global' ? MCP_CONFIG_GLOBAL : MCP_CONFIG_SOURCE
 
   const copyConfig = async () => {
     try {
-      await navigator.clipboard.writeText(MCP_CONFIG_EXAMPLE)
+      await navigator.clipboard.writeText(tab === 'global' ? `${MCP_INSTALL_CMD}\n\n${configText}` : configText)
       setCopied(true)
-      showToast('配置已复制到剪贴板')
+      showToast('已复制到剪贴板')
       setTimeout(() => setCopied(false), 1500)
     } catch {
       showToast('复制失败，请手动选择复制')
@@ -213,24 +229,66 @@ function McpSection() {
       <div className="set-section-title">MCP Server（AI 助手集成）</div>
       <p className="mcp-desc">
         MCP（Model Context Protocol）让 Claude Desktop、Codex、Cursor 等 AI
-        助手直接调用 JSON Tools 的 12 个工具。<b>无需手动启动</b>——配置完成后，AI
-        客户端会按下面的配置自动拉起本服务的独立进程（stdio 通信），与本应用是否运行无关。
+        助手直接调用 JSON Tools 的 13 个工具。<b>无需手动启动</b>——配置完成后，AI
+        客户端会按配置自动拉起本服务的独立进程（stdio 通信），与本应用是否运行无关。
       </p>
-      <div className="mcp-block">
-        <div className="mcp-block-title">
-          客户端配置
-          <button className="mcp-copy" onClick={copyConfig}>
-            {copied ? '已复制 ✓' : '复制配置'}
-          </button>
-        </div>
-        <pre className="mcp-code">{MCP_CONFIG_EXAMPLE}</pre>
-        <div className="mcp-tip">
-          前提：已克隆本仓库（{' '}
-          <code>git clone {MCP_REPO_URL}.git</code>）并安装依赖（<code>pnpm install</code>）。
-          把 <code>cwd</code> 改为克隆目录的绝对路径。开发调试也可以直接运行{' '}
-          <code>pnpm mcp</code>。
-        </div>
+      <div className="mcp-tabs">
+        <button
+          className={`mcp-tab ${tab === 'global' ? 'active' : ''}`}
+          onClick={() => setTab('global')}
+        >方式一：全局安装（推荐）</button>
+        <button
+          className={`mcp-tab ${tab === 'source' ? 'active' : ''}`}
+          onClick={() => setTab('source')}
+        >方式二：从源码运行</button>
       </div>
+      {tab === 'global' ? (
+        <div className="mcp-block">
+          <div className="mcp-block-title">
+            第 1 步 · 全局安装（复制到终端执行一次）
+            <button
+              className="mcp-copy"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(MCP_INSTALL_CMD)
+                  showToast('安装命令已复制')
+                } catch {
+                  showToast('复制失败，请手动选择复制')
+                }
+              }}
+            >复制命令</button>
+          </div>
+          <pre className="mcp-code">{MCP_INSTALL_CMD}</pre>
+          <div className="mcp-block-title" style={{ marginTop: 12 }}>
+            第 2 步 · 客户端配置
+            <button className="mcp-copy" onClick={copyConfig}>
+              {copied ? '已复制 ✓' : '复制配置'}
+            </button>
+          </div>
+          <pre className="mcp-code">{MCP_CONFIG_GLOBAL}</pre>
+          <div className="mcp-tip">
+            全局安装后 <code>json-tools-mcp</code> 命令全局可用，配置里无需任何路径。
+            需要本机已安装 <b>Node.js</b>。配置后重启 AI 客户端即可使用，
+            例如：「用 json_repair 修复这段 JSON」。
+          </div>
+        </div>
+      ) : (
+        <div className="mcp-block">
+          <div className="mcp-block-title">
+            客户端配置（从源码运行）
+            <button className="mcp-copy" onClick={copyConfig}>
+              {copied ? '已复制 ✓' : '复制配置'}
+            </button>
+          </div>
+          <pre className="mcp-code">{MCP_CONFIG_SOURCE}</pre>
+          <div className="mcp-tip">
+            前提：已克隆本仓库（{' '}
+            <code>git clone {MCP_REPO_URL}.git</code>）并安装依赖（<code>pnpm install</code>）。
+            把 <code>cwd</code> 改为克隆目录的绝对路径。开发调试也可以直接运行{' '}
+            <code>pnpm mcp</code>。
+          </div>
+        </div>
+      )}
       <div className="mcp-block">
         <div className="mcp-block-title">可用工具（{MCP_TOOLS.length} 个）</div>
         <div className="mcp-tools">
@@ -240,13 +298,6 @@ function McpSection() {
               <span className="mcp-tool-desc">{t.desc}</span>
             </div>
           ))}
-        </div>
-      </div>
-      <div className="mcp-block">
-        <div className="mcp-block-title">前置要求</div>
-        <div className="mcp-tip">
-          需要本机已安装 <b>Node.js</b>（AI 客户端会用 npx 拉起 tsx 运行本服务）。
-          配置后重启 AI 客户端即可在对话中使用，例如：「用 json_repair 修复这段 JSON」。
         </div>
       </div>
     </div>

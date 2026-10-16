@@ -3184,6 +3184,34 @@ select {
   }
 }
 
+.mcp-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.mcp-tab {
+  padding: 5px 14px;
+  font-size: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: $text-secondary;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid $border;
+  transition: all 0.14s $ease-out;
+
+  &:hover {
+    color: $text-primary;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &.active {
+    color: $blue;
+    background: rgba($blue, 0.14);
+    border-color: rgba($blue, 0.4);
+  }
+}
+
 .mcp-block {
   margin-bottom: 14px;
 }
@@ -3284,6 +3312,9 @@ select {
 [data-theme='light'] .mcp-tool-row:hover { background: #f1f5f9; }
 [data-theme='light'] .mcp-tool-name { color: #2563eb; }
 [data-theme='light'] .mcp-tool-desc { color: #475569; }
+[data-theme='light'] .mcp-tab { color: #64748b; background: #f1f5f9; border-color: #d9dee7; }
+[data-theme='light'] .mcp-tab:hover { color: #1f2937; background: #e8edf3; }
+[data-theme='light'] .mcp-tab.active { color: #2563eb; background: rgba(37, 99, 235, 0.1); border-color: rgba(37, 99, 235, 0.4); }
 
 /* =================== 工具箱（tools 模式） =================== */
 .tools-shell {
