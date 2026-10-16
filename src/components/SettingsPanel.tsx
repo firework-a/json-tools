@@ -187,7 +187,7 @@ const MCP_CONFIG_NPX = JSON.stringify({
   mcpServers: {
     'json-tools': {
       command: 'npx',
-      args: ['json-tools-mcp'],
+      args: ['@firework-a/json-tools-mcp'],
     },
   },
 }, null, 2)
@@ -211,7 +211,7 @@ function McpSection() {
     <div className="set-section">
       <div className="set-section-title">MCP Server（AI 助手集成）</div>
       <p className="mcp-desc">
-        与 chrome-devtools-mcp 同样的使用方式：配置一行 <code>npx json-tools-mcp</code>，
+        与 chrome-devtools-mcp 同样的使用方式：配置一行 <code>npx @firework-a/json-tools-mcp</code>，
         AI 助手即可调用 JSON Tools 的 13 个工具。<b>无需手动启动</b>——配置完成后，AI
         客户端会在需要时自动拉起本服务（stdio 通信），首次使用 npx 会自动下载。
       </p>
@@ -231,7 +231,7 @@ function McpSection() {
       <div className="mcp-block">
         <div className="mcp-block-title">发布说明</div>
         <div className="mcp-tip">
-          <code>json-tools-mcp</code> 需要先发布到 npm 才能被 npx 拉取（发布命令：{' '}
+          <code>@firework-a/json-tools-mcp</code> 需要先发布到 npm 才能被 npx 拉取（发布命令：{' '}
           <code>{MCP_PUBLISH_CMD}</code>，需 npm 账号）。发布前的本地调试可以直接运行{' '}
           <code>pnpm mcp</code>，或参考仓库 README 中的源码配置方式。
         </div>
