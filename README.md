@@ -62,25 +62,22 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 
 `json_repair` · `json_format` · `json_validate` · `json_convert` · `json_ndjson` · `json_transform` · `json_diff` · `json_mock` · `json_stats` · `json_query`（JSONPath/JMESPath） · `json_table_extract` · `json_to_schema` · `json_insights`（智能分析）
 
-### 方式一：全局安装（推荐，即配即用）
-
-```bash
-npm install -g github:firework-a/json-tools
-```
-
-安装后 `json-tools-mcp` 命令全局可用，客户端配置里无需任何路径：
+### 配置（与 chrome-devtools-mcp 同款，一行即可）
 
 ```json
 {
   "mcpServers": {
     "json-tools": {
-      "command": "json-tools-mcp"
+      "command": "npx",
+      "args": ["json-tools-mcp"]
     }
   }
 }
 ```
 
-### 方式二：从源码运行（开发调试）
+首次使用 npx 会自动从 npm 下载（需 npm 包已发布：`cd mcp-server && npm publish`）。
+
+### 从源码运行（开发调试）
 
 ```bash
 git clone https://github.com/firework-a/json-tools.git
@@ -102,7 +99,7 @@ pnpm mcp        # 等价于 tsx mcp-server/index.ts，stdio transport
 }
 ```
 
-MCP Server 复用 `src/utils/` 下的纯函数模块，与桌面端逻辑完全一致。`pnpm build:mcp` 用 esbuild 把服务打包为自包含单文件（`mcp-server/dist/index.js`，即 bin 入口）；`mcp-server/smoke*.mjs` 为 stdio 冒烟测试脚本。配置后重启 AI 客户端即可在对话中使用，例如：「用 json_repair 修复这段 JSON」。
+MCP Server 复用 `src/utils/` 下的纯函数模块，与桌面端逻辑完全一致。`pnpm build:mcp` 用 esbuild 把服务打包为自包含单文件（`mcp-server/dist/index.js`，即 bin 入口）；`mcp-server/smoke*.mjs` 为 stdio 冒烟测试脚本。配置后重启 AI 客户端即可在对话中使用，例如：「用 json_repair 修复这段 JSON」。应用内「设置 → MCP」页也提供配置说明与一键复制。
 
 ## 安装与更新
 
