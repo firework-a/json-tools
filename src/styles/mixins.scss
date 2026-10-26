@@ -4,13 +4,44 @@
 @mixin flex-between { display: flex; align-items: center; justify-content: space-between; }
 
 @mixin scroll {
-  &::-webkit-scrollbar { width: 10px; height: 10px; }
+  &::-webkit-scrollbar { width: 11px; height: 11px; }
   &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.08);
-    border-radius: 5px;
-    border: 2px solid transparent;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    border: 3px solid transparent;
     background-clip: padding-box;
-    &:hover { background: rgba(255,255,255,0.18); background-clip: padding-box; }
+    transition: background 0.18s $ease-out;
   }
+  // macOS overlay 风格：悬停容器时滑块才明显
+  &:hover::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); background-clip: padding-box; }
+  &::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.32); background-clip: padding-box; }
+  &::-webkit-scrollbar-corner { background: transparent; }
+}
+
+/// 0.5px 视觉的 hairline 描边（不占布局）
+@mixin hairline($color: $hairline) {
+  box-shadow: inset 0 0 0 0.5px $color;
+}
+
+/// macOS 按压反馈：轻微缩放 + 缓动统一
+@mixin press {
+  transition: background 0.14s $ease-out, color 0.14s $ease-out, transform 0.12s $ease-out, box-shadow 0.14s $ease-out;
+
+  &:active { transform: scale(0.965); }
+}
+
+/// 弹层入场：位移 + 微缩放 + 淡入
+@mixin sheet-in {
+  animation: sheet-in 0.24s $ease-spring both;
+}
+
+@keyframes sheet-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

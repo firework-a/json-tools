@@ -48,6 +48,21 @@ describe('redactJson', () => {
     expect(parse(redactJson('{"nick":"abc123"}', { extraKeyPattern: '(' })).nick).toBe('abc123')
   })
 
+  it('按词匹配键名：驼峰命中、形近词不误伤', () => {
+    const parsed = parse(redactJson(JSON.stringify({
+      userPassword: 'hunter2!!',
+      accessToken: 'abc123def456',
+      authors: ['firework-a'],
+      tokenizer: 'gpt2',
+      passenger: '张三',
+    })))
+    expect(parsed.userPassword).toBe('*'.repeat('hunter2!!'.length))
+    expect(parsed.accessToken).toBe('*'.repeat('abc123def456'.length))
+    expect(parsed.authors).toEqual(['firework-a'])
+    expect(parsed.tokenizer).toBe('gpt2')
+    expect(parsed.passenger).toBe('张三')
+  })
+
   it('非法 JSON 报错', () => {
     expect(redactJson('{a').error).toBeTruthy()
   })

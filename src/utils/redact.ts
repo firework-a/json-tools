@@ -1,5 +1,6 @@
 // 敏感字段脱敏：按键名特征与值格式识别，递归打码并给出命中清单
 import { tryParseJson } from './json'
+import { splitWords } from './keyCase'
 
 export interface RedactHit {
   path: string
@@ -15,7 +16,25 @@ export interface RedactResult {
 const isPlainObject = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === 'object' && !Array.isArray(v)
 
-const KEY_SENSITIVE = /(pass(word|wd|wd)?|pwd|secret|token|api[-_]?key|apikey|access[-_]?key|private[-_]?key|client[-_]?secret|auth(orization)?|credential|cookie|session[-_]?id|signature|otp|cvv|ssn|id[-_]?card)/i
+// 键名按「词」匹配：先拆词（camel/snake/kebab/Pascal 通用），再比对敏感词与敏感词组，
+// 这样 userPassword 能命中，authors / tokenizer / passenger 不会误伤。
+const SENSITIVE_WORDS = new Set([
+  'password', 'passwd', 'pwd', 'secret', 'token', 'auth', 'authorization', 'credential',
+  'credentials', 'cookie', 'session', 'signature', 'otp', 'cvv', 'ssn',
+])
+
+const SENSITIVE_PAIRS = new Set([
+  'apikey', 'accesskey', 'privatekey', 'clientsecret', 'sessionid', 'idcard', 'phonenumber',
+])
+
+const isSensitiveKey = (key: string) => {
+  const words = splitWords(key).map(w => w.toLowerCase())
+  if (words.some(w => SENSITIVE_WORDS.has(w))) return true
+  for (let i = 0; i < words.length - 1; i++) {
+    if (SENSITIVE_PAIRS.has(words[i] + words[i + 1])) return true
+  }
+  return false
+}
 
 interface ValueRule {
   rule: string
@@ -76,7 +95,7 @@ export const redactJson = (
       const out: Record<string, unknown> = {}
       for (const [k, v] of Object.entries(value)) {
         const childPath = path ? `${path}.${k}` : k
-        const byKey = KEY_SENSITIVE.test(k) || (!!extraKey && extraKey.test(k))
+        const byKey = isSensitiveKey(k) || (!!extraKey && extraKey.test(k))
         if (byKey) {
           hits.push({ path: childPath, rule: '键名命中' })
           out[k] = maskDeep(v)

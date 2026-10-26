@@ -31,5 +31,25 @@ $ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
 $shadow-panel: 0 8px 24px rgba(0, 0, 0, 0.22), 0 1px 2px rgba(0, 0, 0, 0.18);
 $shadow-float: 0 16px 48px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
 
+// 间距刻度（4px 基准，工具栏/面板统一取用）
+$sp-1: 4px;
+$sp-2: 6px;
+$sp-3: 8px;
+$sp-4: 12px;
+$sp-5: 16px;
+$sp-6: 24px;
+
+// 材质分层：hairline、分段控件轨道与选中段、弹层阴影
+$hairline: rgba(255, 255, 255, 0.07);
+$hairline-strong: rgba(255, 255, 255, 0.13);
+$track: rgba(0, 0, 0, 0.26);
+$seg-selected: rgba(255, 255, 255, 0.15);
+$seg-selected-text: #f2f4f8;
+$elev-1: 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+$shadow-sheet: 0 30px 80px rgba(0, 0, 0, 0.55), 0 8px 22px rgba(0, 0, 0, 0.4), 0 0 0 0.5px rgba(255, 255, 255, 0.09);
+
+// macOS 弹性缓动（弹层/面板入场）
+$ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+
 $font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 $font-mono: 'SF Mono', 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', 'Menlo', 'Courier New', monospace;
