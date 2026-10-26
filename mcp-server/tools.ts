@@ -18,6 +18,7 @@ import { redactJson } from '../src/utils/redact'
 import { humanizeTimestamps, toEpochTimestamps, type TimestampFormat } from '../src/utils/timestamps'
 import { exportTable } from '../src/utils/tableExport'
 import { collectPaths } from '../src/utils/paths'
+import { filterPaths, type PickMode } from '../src/utils/pickPaths'
 import { JSONPath } from 'jsonpath-plus'
 import { search as jmesSearch } from 'jmespath'
 
@@ -308,6 +309,20 @@ export const TOOLS: ToolDef[] = [
     run: ({ text: input }) => {
       const r = collectPaths(input)
       return r.error ? fail(r.error) : ok({ total: r.stats.length, paths: r.stats })
+    },
+  }),
+  tool({
+    name: 'json_pick_paths',
+    description: '按路径剔除或只保留字段（与 json_paths 同一套路径记法，数组写 [*]）；简写如 __typename 匹配任意层级同名键',
+    schema: {
+      text: z.string().describe('JSON 文本'),
+      patterns: z.string().describe('路径列表，逗号或换行分隔，如 "__typename, items[*].secret"'),
+      mode: z.enum(['omit', 'keep']).default('omit').describe('omit=剔除，keep=只保留'),
+    },
+    run: ({ text: input, patterns, mode }) => {
+      const r = filterPaths(input, patterns, mode as PickMode)
+      if (r.error) return fail(r.error)
+      return ok({ result: JSON.parse(r.result), hits: r.hits })
     },
   }),
 ]

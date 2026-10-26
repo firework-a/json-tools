@@ -13,16 +13,20 @@ import { convertKeys, type KeyCase } from '../utils/keyCase'
 import { mergeJson, type MergeArrayStrategy } from '../utils/merge'
 import { redactJson } from '../utils/redact'
 import { humanizeTimestamps, toEpochTimestamps, type TimestampFormat } from '../utils/timestamps'
-import { exportTable } from '../utils/tableExport'
+import { exportTable, type TableExportFormat } from '../utils/tableExport'
 import { collectPaths } from '../utils/paths'
+import { filterPaths, type PickMode } from '../utils/pickPaths'
 import { BackIcon, ChevronDown } from './Icons'
 import CustomSelect from './CustomSelect'
 
-type ToolOutcome = { result: string; error: string | null; hits?: { path: string }[] }
+type ToolOutcome = { result: string; error: string | null; hits?: number | { path: string }[] }
+
+/** 逗号/空格/分号分隔的列表输入 */
+const splitList = (value: string) => value.split(/[\s,;、，；]+/).map(v => v.trim()).filter(Boolean)
 
 type ToolId =
   | 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'dedup'
-  | 'keyCase' | 'merge' | 'redact' | 'ts' | 'tableExport' | 'paths'
+  | 'keyCase' | 'merge' | 'redact' | 'ts' | 'tableExport' | 'paths' | 'pick'
   | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase' | 'mock' | 'ndjson' | 'insights'
 
 interface ToolMeta { id: ToolId; label: string; group: string; json?: boolean }
@@ -38,6 +42,7 @@ const TOOLS: ToolMeta[] = [
   { id: 'ts', label: '时间戳互转', group: '数据处理', json: true },
   { id: 'tableExport', label: '表格导出', group: '数据处理', json: true },
   { id: 'paths', label: '字段路径', group: '数据处理', json: true },
+  { id: 'pick', label: '字段剔除', group: '数据处理', json: true },
   { id: 'base64', label: 'Base64', group: '编解码' },
   { id: 'url', label: 'URL 编码', group: '编解码' },
   { id: 'jwt', label: 'JWT 解析', group: '编解码' },
@@ -52,6 +57,16 @@ const TOOLS: ToolMeta[] = [
 export default function ToolsPanel() {
   const content = useAppStore(s => s.content)
   const showToast = useAppStore(s => s.showToast)
+
+  // 工具箱默认值来自设置页；设置变化时同步刷新当前选项
+  const defKeyCase = useAppStore(s => s.toolKeyCase)
+  const defRedactEdges = useAppStore(s => s.toolRedactKeepEdges)
+  const defRedactKeys = useAppStore(s => s.toolRedactExtraKeys)
+  const defTsFormat = useAppStore(s => s.toolTsFormat)
+  const defTableFormat = useAppStore(s => s.toolTableFormat)
+  const defPickMode = useAppStore(s => s.toolPickMode)
+  const defPickPatterns = useAppStore(s => s.toolPickPatterns)
+
   const [tool, setTool] = useState<ToolId>('sort')
   const [input, setInput] = useState('')
   const [decode, setDecode] = useState(false)
@@ -61,18 +76,28 @@ export default function ToolsPanel() {
   const [base, setBase] = useState(10)
   const [mockCount, setMockCount] = useState('5')
   const [ndjsonMode, setNdjsonMode] = useState('toJson')
-  const [keyCaseStyle, setKeyCaseStyle] = useState<KeyCase>('camel')
+  const [keyCaseStyle, setKeyCaseStyle] = useState<KeyCase>(defKeyCase)
   const [mergeStrategy, setMergeStrategy] = useState<MergeArrayStrategy>('replace')
   const [mergePrefer, setMergePrefer] = useState<'left' | 'right'>('right')
-  const [redactEdges, setRedactEdges] = useState('keep')
-  const [redactPattern, setRedactPattern] = useState('')
+  const [redactEdges, setRedactEdges] = useState(defRedactEdges ? 'keep' : 'full')
+  const [redactKeys, setRedactKeys] = useState(defRedactKeys)
   const [tsMode, setTsMode] = useState<'toHuman' | 'toEpoch'>('toHuman')
-  const [tsFormat, setTsFormat] = useState<TimestampFormat>('iso')
-  const [tableFormat, setTableFormat] = useState<'markdown' | 'html'>('markdown')
+  const [tsFormat, setTsFormat] = useState<TimestampFormat>(defTsFormat)
+  const [tableFormat, setTableFormat] = useState<TableExportFormat>(defTableFormat)
+  const [pickMode, setPickMode] = useState<PickMode>(defPickMode)
+  const [pickPatterns, setPickPatterns] = useState(defPickPatterns)
   const [hashOut, setHashOut] = useState<{ result: string; error: string | null }>({ result: '', error: null })
   const [groupOpen, setGroupOpen] = useState(true)
   const toolsTool = useAppStore(s => s.toolsTool)
   const setToolsTool = useAppStore(s => s.setToolsTool)
+
+  useEffect(() => { setKeyCaseStyle(defKeyCase) }, [defKeyCase])
+  useEffect(() => { setRedactEdges(defRedactEdges ? 'keep' : 'full') }, [defRedactEdges])
+  useEffect(() => { setRedactKeys(defRedactKeys) }, [defRedactKeys])
+  useEffect(() => { setTsFormat(defTsFormat) }, [defTsFormat])
+  useEffect(() => { setTableFormat(defTableFormat) }, [defTableFormat])
+  useEffect(() => { setPickMode(defPickMode) }, [defPickMode])
+  useEffect(() => { setPickPatterns(defPickPatterns) }, [defPickPatterns])
 
   // 命令面板/外部跳转：把选中的工具同步进来
   useEffect(() => {
@@ -112,10 +137,11 @@ export default function ToolsPanel() {
       case 'dedup': return dedupJson(input)
       case 'keyCase': return convertKeys(input, keyCaseStyle)
       case 'merge': return mergeJson(content, input, { arrayStrategy: mergeStrategy, prefer: mergePrefer })
-      case 'redact': return redactJson(input, { keepEdges: redactEdges === 'keep', extraKeyPattern: redactPattern.trim() || undefined })
+      case 'redact': return redactJson(input, { keepEdges: redactEdges === 'keep', extraKeys: splitList(redactKeys) })
       case 'ts': return tsMode === 'toHuman' ? humanizeTimestamps(input, { format: tsFormat }) : toEpochTimestamps(input)
       case 'tableExport': return exportTable(input, tableFormat)
       case 'paths': return collectPaths(input)
+      case 'pick': return filterPaths(input, pickPatterns, pickMode)
       case 'base64': return decode ? base64Decode(input) : base64Encode(input)
       case 'url': return decode ? urlDecode(input) : urlEncode(input)
       case 'jwt': return decodeJwt(input)
@@ -131,9 +157,10 @@ export default function ToolsPanel() {
       default: return { result: '', error: null }
     }
   }, [input, tool, decode, sortOrder, removeOnlyNull, base, hashOut, mockCount, ndjsonMode,
-    keyCaseStyle, content, mergeStrategy, mergePrefer, redactEdges, redactPattern, tsMode, tsFormat, tableFormat])
+    keyCaseStyle, content, mergeStrategy, mergePrefer, redactEdges, redactKeys, tsMode, tsFormat, tableFormat,
+    pickMode, pickPatterns])
 
-  const hitCount = result.hits?.length ?? 0
+  const hitCount = Array.isArray(result.hits) ? result.hits.length : result.hits ?? 0
 
   // 哈希异步
   useEffect(() => {
@@ -149,7 +176,7 @@ export default function ToolsPanel() {
   const activeMeta = TOOLS.find(t => t.id === tool)!
   const hasOptions =
     tool === 'sort' || tool === 'removeEmpty' || tool === 'base64' || tool === 'url' || tool === 'hash' || tool === 'numbase' || tool === 'mock' || tool === 'ndjson'
-    || tool === 'keyCase' || tool === 'merge' || tool === 'redact' || tool === 'ts' || tool === 'tableExport'
+    || tool === 'keyCase' || tool === 'merge' || tool === 'redact' || tool === 'ts' || tool === 'tableExport' || tool === 'pick'
 
   const copyOut = async () => {
     if (!result.result) { showToast('没有可复制的内容'); return }
@@ -302,10 +329,10 @@ export default function ToolsPanel() {
                   />
                   <input
                     className="tools-opt-input"
-                    placeholder="附加键名正则，如 uid|uuid"
-                    value={redactPattern}
+                    placeholder="附加敏感键名，逗号分隔，如 openid, unionid"
+                    value={redactKeys}
                     spellCheck={false}
-                    onChange={e => setRedactPattern(e.target.value)}
+                    onChange={e => setRedactKeys(e.target.value)}
                   />
                 </>
               )}
@@ -343,6 +370,26 @@ export default function ToolsPanel() {
                     { value: 'html', label: 'HTML 表' },
                   ]}
                 />
+              )}
+              {tool === 'pick' && (
+                <>
+                  <CustomSelect
+                    value={pickMode}
+                    onChange={v => setPickMode(v as PickMode)}
+                    minWidth={110}
+                    options={[
+                      { value: 'omit', label: '剔除这些路径' },
+                      { value: 'keep', label: '只保留这些路径' },
+                    ]}
+                  />
+                  <input
+                    className="tools-opt-input wide"
+                    placeholder="路径，逗号或换行分隔，如 __typename, items[*].secret"
+                    value={pickPatterns}
+                    spellCheck={false}
+                    onChange={e => setPickPatterns(e.target.value)}
+                  />
+                </>
               )}
             </div>
           )}

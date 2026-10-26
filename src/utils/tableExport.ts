@@ -34,7 +34,9 @@ export const tableToHtml = (columns: string[], rows: Record<string, unknown>[], 
 }
 
 /** 从 JSON 文本提取对象数组并导出为 Markdown / HTML 表格 */
-export const exportTable = (input: string, format: 'markdown' | 'html'): TransformResult => {
+export type TableExportFormat = 'markdown' | 'html'
+
+export const exportTable = (input: string, format: TableExportFormat): TransformResult => {
   const { parsed, error } = tryParseJson(input)
   if (error) return { result: '', error }
   if (!isPlainObject(parsed) && !Array.isArray(parsed)) return { result: '', error: '输入不是 JSON 对象或数组' }

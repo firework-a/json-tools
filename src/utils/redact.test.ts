@@ -63,6 +63,13 @@ describe('redactJson', () => {
     expect(parsed.passenger).toBe('张三')
   })
 
+  it('extraKeys 按词与整词命中，不受分隔写法影响', () => {
+    const parsed = parse(redactJson(JSON.stringify({ openId: 'ox_123', union_id: 'u_9', nickname: 'kate' }), { extraKeys: ['openid', 'union_id'] }))
+    expect(parsed.openId).toBe('******')
+    expect(parsed.unionId ?? parsed.union_id).toBe('***')
+    expect(parsed.nickname).toBe('kate')
+  })
+
   it('非法 JSON 报错', () => {
     expect(redactJson('{a').error).toBeTruthy()
   })

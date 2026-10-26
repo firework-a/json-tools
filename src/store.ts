@@ -3,6 +3,10 @@ import { createJSONStorage, persist } from 'zustand/middleware'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { isTauri } from '@tauri-apps/api/core'
 import type { CodeLang } from './utils/codeGen'
+import type { KeyCase } from './utils/keyCase'
+import type { TimestampFormat } from './utils/timestamps'
+import type { TableExportFormat } from './utils/tableExport'
+import type { PickMode } from './utils/pickPaths'
 
 export type ViewMode = 'edit' | 'diff' | 'convert' | 'ts' | 'schema' | 'tools'
 export type ConvertFormat = 'yaml' | 'xml' | 'toml' | 'csv'
@@ -130,6 +134,21 @@ interface AppState {
   setExportScale: (v: number) => void
   exportLineNumbers: boolean
   setExportLineNumbers: (v: boolean) => void
+  // 工具箱默认值
+  toolKeyCase: KeyCase
+  setToolKeyCase: (v: KeyCase) => void
+  toolRedactKeepEdges: boolean
+  setToolRedactKeepEdges: (v: boolean) => void
+  toolRedactExtraKeys: string
+  setToolRedactExtraKeys: (v: string) => void
+  toolTsFormat: TimestampFormat
+  setToolTsFormat: (v: TimestampFormat) => void
+  toolTableFormat: TableExportFormat
+  setToolTableFormat: (v: TableExportFormat) => void
+  toolPickMode: PickMode
+  setToolPickMode: (v: PickMode) => void
+  toolPickPatterns: string
+  setToolPickPatterns: (v: string) => void
   // 更新设置
   autoCheckUpdates: boolean
   setAutoCheckUpdates: (v: boolean) => void
@@ -403,6 +422,21 @@ export const useAppStore = create<AppState>()(
       setExportScale: (exportScale) => set({ exportScale }),
       exportLineNumbers: true,
       setExportLineNumbers: (exportLineNumbers) => set({ exportLineNumbers }),
+      // 工具箱默认值
+      toolKeyCase: 'camel' as KeyCase,
+      setToolKeyCase: (toolKeyCase) => set({ toolKeyCase }),
+      toolRedactKeepEdges: true,
+      setToolRedactKeepEdges: (toolRedactKeepEdges) => set({ toolRedactKeepEdges }),
+      toolRedactExtraKeys: '',
+      setToolRedactExtraKeys: (toolRedactExtraKeys) => set({ toolRedactExtraKeys }),
+      toolTsFormat: 'iso' as TimestampFormat,
+      setToolTsFormat: (toolTsFormat) => set({ toolTsFormat }),
+      toolTableFormat: 'markdown' as TableExportFormat,
+      setToolTableFormat: (toolTableFormat) => set({ toolTableFormat }),
+      toolPickMode: 'omit' as PickMode,
+      setToolPickMode: (toolPickMode) => set({ toolPickMode }),
+      toolPickPatterns: '',
+      setToolPickPatterns: (toolPickPatterns) => set({ toolPickPatterns }),
       // 更新设置
       autoCheckUpdates: true,
       setAutoCheckUpdates: (autoCheckUpdates) => set({ autoCheckUpdates }),
@@ -444,6 +478,13 @@ export const useAppStore = create<AppState>()(
         minimap: s.minimap,
         exportScale: s.exportScale,
         exportLineNumbers: s.exportLineNumbers,
+        toolKeyCase: s.toolKeyCase,
+        toolRedactKeepEdges: s.toolRedactKeepEdges,
+        toolRedactExtraKeys: s.toolRedactExtraKeys,
+        toolTsFormat: s.toolTsFormat,
+        toolTableFormat: s.toolTableFormat,
+        toolPickMode: s.toolPickMode,
+        toolPickPatterns: s.toolPickPatterns,
         autoCheckUpdates: s.autoCheckUpdates,
         autoDownloadUpdates: s.autoDownloadUpdates,
         lastUpdateCheckAt: s.lastUpdateCheckAt,

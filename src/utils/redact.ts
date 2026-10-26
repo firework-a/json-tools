@@ -66,13 +66,14 @@ const maskDeep = (value: unknown): unknown => {
 
 /**
  * 递归脱敏。keepEdges=false 时整值替换为等长星号（默认保留首尾便于核对）。
- * extraKeyPattern 追加自定义键名正则（非法正则会被忽略而不是抛错）。
+ * extraKeys：追加的敏感键名列表（按词匹配，供设置页/工具箱使用）。
+ * extraKeyPattern：追加的键名正则（供 MCP/CLI 使用，非法正则会被忽略而不是抛错）。
  */
 export const redactJson = (
   input: string,
-  options: { keepEdges?: boolean; extraKeyPattern?: string } = {},
+  options: { keepEdges?: boolean; extraKeyPattern?: string; extraKeys?: string[] } = {},
 ): RedactResult => {
-  const { keepEdges = true, extraKeyPattern } = options
+  const { keepEdges = true, extraKeyPattern, extraKeys } = options
   const { parsed, error } = tryParseJson(input)
   if (error) return { result: '', error, hits: [] }
   if (!isPlainObject(parsed) && !Array.isArray(parsed)) {
@@ -87,6 +88,19 @@ export const redactJson = (
       extraKey = null
     }
   }
+  // 用户写法（openid / open_id / OPENID）与被匹配键名都归一为「词」与「连写」两种形式
+  const extraSet = new Set<string>()
+  for (const raw of extraKeys ?? []) {
+    const key = raw.trim().toLowerCase()
+    if (!key) continue
+    extraSet.add(key)
+    extraSet.add(splitWords(key).map(w => w.toLowerCase()).join(''))
+  }
+  const hitExtraKey = (key: string) => {
+    if (!extraSet.size) return false
+    const words = splitWords(key).map(w => w.toLowerCase())
+    return words.some(w => extraSet.has(w)) || extraSet.has(words.join(''))
+  }
 
   const hits: RedactHit[] = []
   const walk = (value: unknown, path: string): unknown => {
@@ -95,7 +109,7 @@ export const redactJson = (
       const out: Record<string, unknown> = {}
       for (const [k, v] of Object.entries(value)) {
         const childPath = path ? `${path}.${k}` : k
-        const byKey = isSensitiveKey(k) || (!!extraKey && extraKey.test(k))
+        const byKey = isSensitiveKey(k) || hitExtraKey(k) || (!!extraKey && extraKey.test(k))
         if (byKey) {
           hits.push({ path: childPath, rule: '键名命中' })
           out[k] = maskDeep(v)

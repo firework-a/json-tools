@@ -6,13 +6,18 @@ import appLogo from '../../src-tauri/icons/icon.png'
 import { getAppVersion } from '../utils/updater'
 import { useUpdateStore } from '../updateStore'
 import { CloseIcon } from './Icons'
+import type { KeyCase } from '../utils/keyCase'
+import type { TimestampFormat } from '../utils/timestamps'
+import type { TableExportFormat } from '../utils/tableExport'
+import type { PickMode } from '../utils/pickPaths'
 
-type SectionId = 'appearance' | 'editor' | 'export' | 'mcp' | 'updates' | 'about'
+type SectionId = 'appearance' | 'editor' | 'export' | 'tools' | 'mcp' | 'updates' | 'about'
 
 const SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'appearance', label: '外观' },
   { id: 'editor', label: '编辑器' },
   { id: 'export', label: '导出图片' },
+  { id: 'tools', label: '工具箱' },
   { id: 'mcp', label: 'MCP' },
   { id: 'updates', label: '更新' },
   { id: 'about', label: '关于' },
@@ -166,6 +171,90 @@ function ExportSection() {
   )
 }
 
+/** 文本输入项（列表/键名等短文本） */
+function TextRow({ label, desc, value, placeholder, onChange }: {
+  label: string
+  desc?: string
+  value: string
+  placeholder?: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div className="set-row">
+      <div className="set-row-text">
+        <div className="set-row-label">{label}</div>
+        {desc && <div className="set-row-desc">{desc}</div>}
+      </div>
+      <input
+        className="set-input"
+        value={value}
+        placeholder={placeholder}
+        spellCheck={false}
+        onChange={e => onChange(e.target.value)}
+      />
+    </div>
+  )
+}
+
+/** 工具箱默认值：决定进入各工具时的初始选项 */
+function ToolsSection() {
+  const s = useAppStore()
+  return (
+    <div className="set-section">
+      <div className="set-section-title">工具箱默认值</div>
+      <SegRow<KeyCase>
+        label="键名风格转换目标"
+        value={s.toolKeyCase}
+        options={[
+          { value: 'camel', label: 'camelCase' },
+          { value: 'snake', label: 'snake_case' },
+          { value: 'kebab', label: 'kebab-case' },
+          { value: 'pascal', label: 'PascalCase' },
+        ]}
+        onChange={s.setToolKeyCase}
+      />
+      <ToggleRow
+        label="脱敏保留首尾 2 位"
+        desc="关闭后整值替换为等长星号，适合对外发布"
+        value={s.toolRedactKeepEdges}
+        onChange={s.setToolRedactKeepEdges}
+      />
+      <TextRow
+        label="附加敏感键名"
+        desc="逗号分隔，按词匹配（如 openid, unionid）"
+        value={s.toolRedactExtraKeys}
+        placeholder="openid, unionid"
+        onChange={s.setToolRedactExtraKeys}
+      />
+      <SegRow<TimestampFormat>
+        label="时间戳默认格式"
+        value={s.toolTsFormat}
+        options={[{ value: 'iso', label: 'ISO 8601' }, { value: 'local', label: '本地可读' }]}
+        onChange={s.setToolTsFormat}
+      />
+      <SegRow<TableExportFormat>
+        label="表格导出默认格式"
+        value={s.toolTableFormat}
+        options={[{ value: 'markdown', label: 'Markdown' }, { value: 'html', label: 'HTML' }]}
+        onChange={s.setToolTableFormat}
+      />
+      <SegRow<PickMode>
+        label="字段处理默认方式"
+        value={s.toolPickMode}
+        options={[{ value: 'omit', label: '剔除' }, { value: 'keep', label: '只保留' }]}
+        onChange={s.setToolPickMode}
+      />
+      <TextRow
+        label="常用字段路径"
+        desc="进入「字段剔除」时预填，逗号或换行分隔；简写匹配任意层级同名键"
+        value={s.toolPickPatterns}
+        placeholder="__typename, items[*].secret"
+        onChange={s.setToolPickPatterns}
+      />
+    </div>
+  )
+}
+
 const MCP_TOOLS: { name: string; desc: string }[] = [
   { name: 'json_repair', desc: '修复非标准 JSON（注释/单引号/尾逗号/截断）' },
   { name: 'json_format', desc: '格式化或压缩 JSON' },
@@ -186,6 +275,7 @@ const MCP_TOOLS: { name: string; desc: string }[] = [
   { name: 'json_timestamps', desc: '递归时间戳 ↔ 日期互转' },
   { name: 'json_table_export', desc: '对象数组导出 Markdown / HTML 表格' },
   { name: 'json_paths', desc: '字段路径覆盖率 / 类型分布 / null 率' },
+  { name: 'json_pick_paths', desc: '按路径剔除或只保留字段' },
 ]
 
 const MCP_EXE_PLACEHOLDER = '<安装目录>\\binaries\\json-tools-mcp.exe'
@@ -447,6 +537,7 @@ export default function SettingsPanel() {
             {active === 'appearance' && <AppearanceSection />}
             {active === 'editor' && <EditorSection />}
             {active === 'export' && <ExportSection />}
+            {active === 'tools' && <ToolsSection />}
             {active === 'mcp' && <McpSection />}
             {active === 'updates' && <UpdatesSection />}
             {active === 'about' && <AboutSection />}

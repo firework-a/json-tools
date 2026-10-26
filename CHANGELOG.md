@@ -55,6 +55,10 @@
 - **移除应用内「表格」视图**（GridView、工具栏按钮、命令面板项、状态栏模式与相关样式）；`src/utils/table.ts` 与 `json_table_extract` 工具保留给 MCP/CLI 使用，智能分析对对象数组的建议改为导出 CSV / JSONPath 取值。
 - **界面质感向 macOS 再推一步**：标题栏 + 工具栏 + 标签栏并为统一 chrome；标签改 Safari 式抬起文档页签（去掉蓝色下划线）；工具栏/分段选择统一为「中性抬起选中段」而非彩色底；工具箱与设置侧栏选中项改强调色圆角块；下拉菜单、设置面板、命令面板统一 vibrancy + sheet 入场动效与分层阴影；滚动条改 macOS overlay 风格（静止近乎隐形、悬停浮现，深浅主题各自适配）；开关改绿色 macOS 轨道、滑块改白色圆钮；焦点环统一 3px；新增间距/圆角/阴影/缓动 token（`variables.scss`）与 `press` / `sheet-in` / `hairline` mixin（`mixins.scss`）。
 - **修复敏感脱敏误伤**：键名规则改按「词」匹配（复用 `splitWords`），`authors` / `tokenizer` / `passenger` 不再被打码，同时 `userPassword` / `accessToken` 这类驼峰键可正确命中；补防误伤与驼峰命中用例。
+- **字段剔除 / 保留**（`pickPaths.ts`）：按路径批量删字段或只留白名单，与「字段路径统计」共用同一套路径记法（数组写 `[*]`、`*` 通配单层键名），`__typename` 这类不含点号的简写匹配任意层级同名键；同步为 MCP/CLI 工具 `json_pick_paths`，工具箱新增「字段剔除」，MCP 工具数 19 → 20。
+- **设置 → 工具箱**：新增一组默认值设置（键名风格目标、脱敏是否保留首尾、附加敏感键名列表、时间戳默认格式、表格导出默认格式、字段处理默认方式、常用字段路径），进入对应工具时作为初始选项预填，改动即时同步。
+- **脱敏支持键名列表**：`redactJson` 增加 `extraKeys`（按词与连写双归一，`openid` / `open_id` / `OPENID` 等价），工具箱与设置页用它输入，MCP 仍保留 `extraKeyPattern` 正则给高级用法。
+- **修复浅色主题开关开启态不可见**：`[data-theme='light'] .set-switch` 覆盖了 `.on` 的绿色轨道，补 `.set-switch.on` 规则（macOS 绿）。
 - **质感第二遍覆盖剩余控件**：树形面板搜索框/查询语言徽标/图标按钮统一内凹轨道 + 聚焦光环；JMESPath 速查浮层与设置面板、命令面板共用同一套 vibrancy + sheet 入场；pill 与动作按钮统一按压反馈（scale + 缓动曲线）。
 
 ### Notes
