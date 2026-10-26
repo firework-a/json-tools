@@ -46,7 +46,7 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 - 深色 / 浅色主题（macOS 风格材质），字体、缩进、自动换行等编辑器设置持久化
 - 命令面板（`Ctrl+K`）覆盖全部操作，状态栏含键数 / 深度 / 大小 / 行数 / 光标位置
 - 智能分析：本地规则引擎对 JSON 做结构摘要、字段类型统计、数据质量检查与优化建议（工具箱「智能分析」）
-- 内置 MCP Server：21 个 JSON 工具可通过 Model Context Protocol 暴露给 AI 助手（见下方配置）
+- 内置 MCP Server：22 个 JSON 工具可通过 Model Context Protocol 暴露给 AI 助手（见下方配置）
 - 窗口置顶、窗口原生拖拽与无边框标题栏
 - GitHub Releases 内置更新检查
 
@@ -65,9 +65,9 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 
 ## MCP Server（AI 助手集成）
 
-仓库内置一个 MCP (Model Context Protocol) Server（`mcp-server/`），把 21 个核心 JSON 工具暴露给 AI 助手：
+仓库内置一个 MCP (Model Context Protocol) Server（`mcp-server/`），把 22 个核心 JSON 工具暴露给 AI 助手：
 
-`json_repair` · `json_format` · `json_validate` · `json_convert` · `json_ndjson` · `json_transform` · `json_diff` · `json_mock` · `json_stats` · `json_query`（JSONPath/JMESPath） · `json_table_extract` · `json_to_schema` · `json_insights`（智能分析） · `json_keys_case`（键名风格） · `json_merge`（深度合并） · `json_redact`（脱敏） · `json_timestamps`（时间戳互转） · `json_table_export`（表格导出） · `json_to_sql`（SQL 导出） · `json_paths`（字段路径统计） · `json_pick_paths`（字段剔除/保留）
+`json_repair` · `json_format` · `json_validate` · `json_convert` · `json_ndjson` · `json_transform` · `json_diff` · `json_mock` · `json_stats` · `json_query`（JSONPath/JMESPath） · `json_table_extract` · `json_to_schema` · `json_insights`（智能分析） · `json_keys_case`（键名风格） · `json_merge`（深度合并） · `json_redact`（脱敏） · `json_timestamps`（时间戳互转） · `json_table_export`（表格导出） · `json_to_sql`（SQL 导出） · `json_sort_by`（数组排序） · `json_paths`（字段路径统计） · `json_pick_paths`（字段剔除/保留）
 
 它同时是一个命令行程序，随安装包分发为单文件 `json-tools-mcp.exe`，**不发布到 npm**：用户不需要 Node.js，也不需要打开应用。
 
@@ -90,7 +90,7 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 ### 命令行用法
 
 ```bash
-json-tools-mcp.exe list                                 # 列出 21 个工具
+json-tools-mcp.exe list                                 # 列出 22 个工具
 json-tools-mcp.exe run json_repair --text broken.json  # 值传文件路径自动读取内容
 echo '{a:1,}' | json-tools-mcp.exe run json_repair      # 管道灌入主字段
 json-tools-mcp.exe run json_query --help                # 查看参数

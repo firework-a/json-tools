@@ -1,6 +1,6 @@
 # json-tools-mcp
 
-JSON Tools 的 MCP Server + CLI 入口 —— 修复/格式化/校验/转换/变换/diff/Mock/统计/查询/表格提取/Schema 生成/智能分析/键名风格/深度合并/脱敏/时间戳互转/表格导出/SQL 导出等 21 个 JSON 工具，通过 [Model Context Protocol](https://modelcontextprotocol.io) 暴露给 AI 助手（Claude Desktop / Codex / Cursor 等）。
+JSON Tools 的 MCP Server + CLI 入口 —— 修复/格式化/校验/转换/变换/diff/Mock/统计/查询/表格提取/Schema 生成/智能分析/键名风格/深度合并/脱敏/时间戳互转/表格导出/SQL 导出/数组排序等 22 个 JSON 工具，通过 [Model Context Protocol](https://modelcontextprotocol.io) 暴露给 AI 助手（Claude Desktop / Codex / Cursor 等）。
 
 > 不发布到 npm：随桌面安装包以单文件 `json-tools-mcp.exe` 分发，用户无需 Node.js、无需打开应用。
 
@@ -25,7 +25,7 @@ JSON Tools 的 MCP Server + CLI 入口 —— 修复/格式化/校验/转换/变
 同一个 exe 也是普通 CLI：
 
 ```bash
-json-tools-mcp.exe list                              # 列出 21 个工具
+json-tools-mcp.exe list                              # 列出 22 个工具
 json-tools-mcp.exe run json_repair --text broken.json # 值传文件路径自动读内容
 json-tools-mcp.exe run json_format --text data.json --indent 4
 json-tools-mcp.exe run json_diff --left a.json --right b.json
@@ -35,7 +35,7 @@ json-tools-mcp.exe run json_query --help              # 查看某工具的参数
 
 参数校验与 MCP 走同一套 zod schema（同一份默认值），退出码 0 成功 / 1 工具报错 / 2 用法错误。
 
-## 工具（21 个）
+## 工具（22 个）
 
 | 工具 | 说明 |
 | --- | --- |
@@ -58,6 +58,7 @@ json-tools-mcp.exe run json_query --help              # 查看某工具的参数
 | `json_timestamps` | 递归时间戳 ↔ 日期互转 |
 | `json_table_export` | 对象数组导出 Markdown / HTML 表格 |
 | `json_to_sql` | 对象数组生成 CREATE TABLE + 批量 INSERT（postgres/mysql/sqlite） |
+| `json_sort_by` | 对象数组按字段排序（点号路径 / 稳定 / null 置尾） |
 | `json_paths` | 字段路径次数 / 覆盖率 / 类型分布 / null 率 |
 | `json_pick_paths` | 按路径剔除或只保留字段 |
 
@@ -71,5 +72,5 @@ pnpm build:mcp:exe  # bun --compile → src-tauri/binaries/json-tools-mcp.exe（
 node mcp-server/smoke.mjs   # stdio 冒烟测试
 ```
 
-- `tools.ts` 是 21 个工具的唯一实现源，MCP 注册与 CLI 子命令都从这里遍历。
+- `tools.ts` 是 22 个工具的唯一实现源，MCP 注册与 CLI 子命令都从这里遍历。
 - 逻辑复用仓库 `src/utils/` 下的纯函数模块，与 [JSON Tools 桌面应用](https://github.com/firework-a/json-tools)完全一致。

@@ -37,6 +37,7 @@ src/
 │   ├── timestamps.ts           # 递归时间戳 ↔ 日期互转
 │   ├── tableExport.ts          # 对象数组导出 Markdown / HTML
 │   ├── sqlExport.ts            # 对象数组生成 CREATE TABLE + INSERT（三种方言）
+│   ├── sortByField.ts          # 对象数组按字段排序（点号路径 / 稳定排序）
 │   ├── paths.ts                # 字段路径统计（次数/覆盖率/类型/null 率）
 │   ├── pickPaths.ts            # 按路径剔除 / 保留字段
 │   ├── jsonDiffer.ts           # 行级 diff

@@ -20,6 +20,7 @@ import { exportTable } from '../src/utils/tableExport'
 import { collectPaths } from '../src/utils/paths'
 import { filterPaths, type PickMode } from '../src/utils/pickPaths'
 import { exportSql, type SqlDialect } from '../src/utils/sqlExport'
+import { sortByField, type SortDirection, type MissingPlacement } from '../src/utils/sortByField'
 import { JSONPath } from 'jsonpath-plus'
 import { search as jmesSearch } from 'jmespath'
 
@@ -316,6 +317,21 @@ export const TOOLS: ToolDef[] = [
     run: ({ text: input, dialect, table, includeCreate, batchSize }) => {
       const r = exportSql(input, { dialect: dialect as SqlDialect, table, includeCreate, batchSize })
       return r.error ? fail(r.error) : ok(r.result)
+    },
+  }),
+  tool({
+    name: 'json_sort_by',
+    description: '对象数组按字段排序（支持点号路径如 user.name、数组下标如 tags.0）；数值/日期/自然序感知，null 与缺失值固定排末尾，稳定排序；保持外层文档结构',
+    schema: {
+      text: z.string().describe('JSON 文本，根数组或对象下的数组字段'),
+      field: z.string().describe('排序字段，支持点号路径；根为标量数组时传空字符串'),
+      order: z.enum(['asc', 'desc']).default('asc').describe('排序方向'),
+      missing: z.enum(['last', 'first']).default('last').describe('null/缺失值位置，默认末尾'),
+    },
+    run: ({ text: input, field, order, missing }) => {
+      const r = sortByField(input, field, { order: order as SortDirection, missing: missing as MissingPlacement })
+      if (r.error) return fail(r.error)
+      return ok({ result: JSON.parse(r.result), sorted: r.hits })
     },
   }),
   tool({

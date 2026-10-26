@@ -15,6 +15,7 @@ import { redactJson } from '../utils/redact'
 import { humanizeTimestamps, toEpochTimestamps, type TimestampFormat } from '../utils/timestamps'
 import { exportTable, type TableExportFormat } from '../utils/tableExport'
 import { exportSql, type SqlDialect } from '../utils/sqlExport'
+import { sortByField, type SortDirection } from '../utils/sortByField'
 import { collectPaths } from '../utils/paths'
 import { filterPaths, type PickMode } from '../utils/pickPaths'
 import { BackIcon, ChevronDown } from './Icons'
@@ -27,7 +28,7 @@ const splitList = (value: string) => value.split(/[\s,;、，；]+/).map(v => v.
 
 type ToolId =
   | 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'dedup'
-  | 'keyCase' | 'merge' | 'redact' | 'ts' | 'tableExport' | 'sql' | 'paths' | 'pick'
+  | 'keyCase' | 'merge' | 'redact' | 'ts' | 'tableExport' | 'sql' | 'paths' | 'pick' | 'sortByField'
   | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase' | 'mock' | 'ndjson' | 'insights'
 
 interface ToolMeta { id: ToolId; label: string; group: string; json?: boolean }
@@ -45,6 +46,7 @@ const TOOLS: ToolMeta[] = [
   { id: 'sql', label: 'SQL 导出', group: '数据处理', json: true },
   { id: 'paths', label: '字段路径', group: '数据处理', json: true },
   { id: 'pick', label: '字段剔除', group: '数据处理', json: true },
+  { id: 'sortByField', label: '数组排序', group: '数据处理', json: true },
   { id: 'base64', label: 'Base64', group: '编解码' },
   { id: 'url', label: 'URL 编码', group: '编解码' },
   { id: 'jwt', label: 'JWT 解析', group: '编解码' },
@@ -67,6 +69,7 @@ export default function ToolsPanel() {
   const defTsFormat = useAppStore(s => s.toolTsFormat)
   const defTableFormat = useAppStore(s => s.toolTableFormat)
   const defSqlDialect = useAppStore(s => s.toolSqlDialect)
+  const defSortField = useAppStore(s => s.toolSortField)
   const defPickMode = useAppStore(s => s.toolPickMode)
   const defPickPatterns = useAppStore(s => s.toolPickPatterns)
 
@@ -89,6 +92,8 @@ export default function ToolsPanel() {
   const [tableFormat, setTableFormat] = useState<TableExportFormat>(defTableFormat)
   const [sqlDialect, setSqlDialect] = useState<SqlDialect>(defSqlDialect)
   const [sqlTable, setSqlTable] = useState('')
+  const [sortField, setSortField] = useState(defSortField)
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [pickMode, setPickMode] = useState<PickMode>(defPickMode)
   const [pickPatterns, setPickPatterns] = useState(defPickPatterns)
   const [hashOut, setHashOut] = useState<{ result: string; error: string | null }>({ result: '', error: null })
@@ -102,6 +107,7 @@ export default function ToolsPanel() {
   useEffect(() => { setTsFormat(defTsFormat) }, [defTsFormat])
   useEffect(() => { setTableFormat(defTableFormat) }, [defTableFormat])
   useEffect(() => { setSqlDialect(defSqlDialect) }, [defSqlDialect])
+  useEffect(() => { setSortField(defSortField) }, [defSortField])
   useEffect(() => { setPickMode(defPickMode) }, [defPickMode])
   useEffect(() => { setPickPatterns(defPickPatterns) }, [defPickPatterns])
 
@@ -147,6 +153,7 @@ export default function ToolsPanel() {
       case 'ts': return tsMode === 'toHuman' ? humanizeTimestamps(input, { format: tsFormat }) : toEpochTimestamps(input)
       case 'tableExport': return exportTable(input, tableFormat)
       case 'sql': return exportSql(input, { dialect: sqlDialect, table: sqlTable })
+      case 'sortByField': return sortByField(input, sortField, { order: sortDirection })
       case 'paths': return collectPaths(input)
       case 'pick': return filterPaths(input, pickPatterns, pickMode)
       case 'base64': return decode ? base64Decode(input) : base64Encode(input)
@@ -165,7 +172,7 @@ export default function ToolsPanel() {
     }
   }, [input, tool, decode, sortOrder, removeOnlyNull, base, hashOut, mockCount, ndjsonMode,
     keyCaseStyle, content, mergeStrategy, mergePrefer, redactEdges, redactKeys, tsMode, tsFormat, tableFormat,
-    sqlDialect, sqlTable, pickMode, pickPatterns])
+    sqlDialect, sqlTable, sortField, sortDirection, pickMode, pickPatterns])
 
   const hitCount = Array.isArray(result.hits) ? result.hits.length : result.hits ?? 0
 
@@ -183,7 +190,7 @@ export default function ToolsPanel() {
   const activeMeta = TOOLS.find(t => t.id === tool)!
   const hasOptions =
     tool === 'sort' || tool === 'removeEmpty' || tool === 'base64' || tool === 'url' || tool === 'hash' || tool === 'numbase' || tool === 'mock' || tool === 'ndjson'
-    || tool === 'keyCase' || tool === 'merge' || tool === 'redact' || tool === 'ts' || tool === 'tableExport' || tool === 'sql' || tool === 'pick'
+    || tool === 'keyCase' || tool === 'merge' || tool === 'redact' || tool === 'ts' || tool === 'tableExport' || tool === 'sql' || tool === 'pick' || tool === 'sortByField'
 
   const copyOut = async () => {
     if (!result.result) { showToast('没有可复制的内容'); return }
@@ -396,6 +403,26 @@ export default function ToolsPanel() {
                     value={sqlTable}
                     spellCheck={false}
                     onChange={e => setSqlTable(e.target.value)}
+                  />
+                </>
+              )}
+              {tool === 'sortByField' && (
+                <>
+                  <input
+                    className="tools-opt-input"
+                    placeholder="排序字段，支持点号路径，如 score / user.name"
+                    value={sortField}
+                    spellCheck={false}
+                    onChange={e => setSortField(e.target.value)}
+                  />
+                  <CustomSelect
+                    value={sortDirection}
+                    onChange={v => setSortDirection(v as SortDirection)}
+                    minWidth={90}
+                    options={[
+                      { value: 'asc', label: '升序' },
+                      { value: 'desc', label: '降序' },
+                    ]}
                   />
                 </>
               )}

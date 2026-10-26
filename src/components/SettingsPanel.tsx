@@ -248,6 +248,13 @@ function ToolsSection() {
         options={[{ value: 'postgres', label: 'PostgreSQL' }, { value: 'mysql', label: 'MySQL' }, { value: 'sqlite', label: 'SQLite' }]}
         onChange={s.setToolSqlDialect}
       />
+      <TextRow
+        label="数组排序默认字段"
+        desc="进入「数组排序」时预填，支持点号路径（如 user.name）；留空则需手填"
+        value={s.toolSortField}
+        placeholder="score"
+        onChange={s.setToolSortField}
+      />
       <SegRow<PickMode>
         label="字段处理默认方式"
         value={s.toolPickMode}
@@ -285,6 +292,7 @@ const MCP_TOOLS: { name: string; desc: string }[] = [
   { name: 'json_timestamps', desc: '递归时间戳 ↔ 日期互转' },
   { name: 'json_table_export', desc: '对象数组导出 Markdown / HTML 表格' },
   { name: 'json_to_sql', desc: '对象数组生成 CREATE TABLE + 批量 INSERT' },
+  { name: 'json_sort_by', desc: '对象数组按字段排序（点号路径 / 稳定 / null 置尾）' },
   { name: 'json_paths', desc: '字段路径覆盖率 / 类型分布 / null 率' },
   { name: 'json_pick_paths', desc: '按路径剔除或只保留字段' },
 ]

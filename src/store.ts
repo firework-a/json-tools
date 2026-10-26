@@ -148,6 +148,8 @@ interface AppState {
   setToolTableFormat: (v: TableExportFormat) => void
   toolSqlDialect: SqlDialect
   setToolSqlDialect: (v: SqlDialect) => void
+  toolSortField: string
+  setToolSortField: (v: string) => void
   toolPickMode: PickMode
   setToolPickMode: (v: PickMode) => void
   toolPickPatterns: string
@@ -438,6 +440,8 @@ export const useAppStore = create<AppState>()(
       setToolTableFormat: (toolTableFormat) => set({ toolTableFormat }),
       toolSqlDialect: 'postgres' as SqlDialect,
       setToolSqlDialect: (toolSqlDialect) => set({ toolSqlDialect }),
+      toolSortField: '',
+      setToolSortField: (toolSortField) => set({ toolSortField }),
       toolPickMode: 'omit' as PickMode,
       setToolPickMode: (toolPickMode) => set({ toolPickMode }),
       toolPickPatterns: '',
@@ -489,6 +493,7 @@ export const useAppStore = create<AppState>()(
         toolTsFormat: s.toolTsFormat,
         toolTableFormat: s.toolTableFormat,
         toolSqlDialect: s.toolSqlDialect,
+        toolSortField: s.toolSortField,
         toolPickMode: s.toolPickMode,
         toolPickPatterns: s.toolPickPatterns,
         autoCheckUpdates: s.autoCheckUpdates,
