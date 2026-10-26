@@ -29,7 +29,7 @@ await waitFor(2)
 
 const tools = responses[1].result.tools.map(t => t.name)
 console.log(`tools: ${tools.length}`)
-const expected = ['json_keys_case', 'json_merge', 'json_redact', 'json_timestamps', 'json_table_export', 'json_paths', 'json_pick_paths']
+const expected = ['json_keys_case', 'json_merge', 'json_redact', 'json_timestamps', 'json_table_export', 'json_to_sql', 'json_paths', 'json_pick_paths']
 const missing = expected.filter(t => !tools.includes(t))
 console.log(missing.length ? `MISSING: ${missing.join(', ')}` : 'new tools present: ok')
 
@@ -40,6 +40,7 @@ const calls = [
   ['json_redact', { text: DOC, keepEdges: true }],
   ['json_timestamps', { text: '{"t":1700000000}', mode: 'toHuman', format: 'iso' }],
   ['json_table_export', { text: '[{"id":1,"name":"a"}]', format: 'markdown' }],
+  ['json_to_sql', { text: '[{"id":1,"name":"a"}]', dialect: 'postgres', table: 'demo' }],
   ['json_paths', { text: DOC }],
   ['json_pick_paths', { text: DOC, patterns: '__typename, items[*].secret', mode: 'omit' }],
 ]

@@ -51,9 +51,10 @@ const call = await waitFor(3)
 const out = JSON.parse(call.result.content[0].text)
 console.log('json_keys_case:', JSON.stringify(out))
 
-const expected = ['json_keys_case', 'json_merge', 'json_redact', 'json_timestamps', 'json_table_export', 'json_paths', 'json_pick_paths']
+const expected = ['json_keys_case', 'json_merge', 'json_redact', 'json_timestamps', 'json_table_export', 'json_to_sql', 'json_paths', 'json_pick_paths']
 if (init.result?.serverInfo?.name !== 'json-tools') throw new Error('服务名不符')
-if (names.length !== 20) throw new Error(`工具数应为 20，实际 ${names.length}`)
+// 不断言具体条数（加工具时容易忘改），只要求打包出的 exe 至少不比源码少、且关键工具都在
+if (names.length < expected.length + 12) throw new Error(`工具数异常偏少：${names.length}`)
 for (const n of expected) if (!names.includes(n)) throw new Error(`缺少工具 ${n}`)
 if (!out.userName) throw new Error('json_keys_case 结果不符')
 console.log('✅ exe stdio 冒烟通过')

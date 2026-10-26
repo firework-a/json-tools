@@ -19,6 +19,7 @@ import { humanizeTimestamps, toEpochTimestamps, type TimestampFormat } from '../
 import { exportTable } from '../src/utils/tableExport'
 import { collectPaths } from '../src/utils/paths'
 import { filterPaths, type PickMode } from '../src/utils/pickPaths'
+import { exportSql, type SqlDialect } from '../src/utils/sqlExport'
 import { JSONPath } from 'jsonpath-plus'
 import { search as jmesSearch } from 'jmespath'
 
@@ -299,6 +300,21 @@ export const TOOLS: ToolDef[] = [
     },
     run: ({ text: input, format }) => {
       const r = exportTable(input, format as 'markdown' | 'html')
+      return r.error ? fail(r.error) : ok(r.result)
+    },
+  }),
+  tool({
+    name: 'json_to_sql',
+    description: '把 JSON 里的对象数组导出为 SQL：CREATE TABLE（按值推断列类型）+ 批量 INSERT，支持 PostgreSQL / MySQL / SQLite 方言',
+    schema: {
+      text: z.string().describe('JSON 文本，需包含对象数组'),
+      dialect: z.enum(['postgres', 'mysql', 'sqlite']).default('postgres').describe('SQL 方言'),
+      table: z.string().default('').describe('表名，留空则取数组所在字段名（根数组用 data_rows）'),
+      includeCreate: z.boolean().default(true).describe('是否输出 CREATE TABLE'),
+      batchSize: z.number().int().min(1).default(200).describe('每条 INSERT 合并的行数'),
+    },
+    run: ({ text: input, dialect, table, includeCreate, batchSize }) => {
+      const r = exportSql(input, { dialect: dialect as SqlDialect, table, includeCreate, batchSize })
       return r.error ? fail(r.error) : ok(r.result)
     },
   }),

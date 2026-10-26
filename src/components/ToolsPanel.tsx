@@ -14,6 +14,7 @@ import { mergeJson, type MergeArrayStrategy } from '../utils/merge'
 import { redactJson } from '../utils/redact'
 import { humanizeTimestamps, toEpochTimestamps, type TimestampFormat } from '../utils/timestamps'
 import { exportTable, type TableExportFormat } from '../utils/tableExport'
+import { exportSql, type SqlDialect } from '../utils/sqlExport'
 import { collectPaths } from '../utils/paths'
 import { filterPaths, type PickMode } from '../utils/pickPaths'
 import { BackIcon, ChevronDown } from './Icons'
@@ -26,7 +27,7 @@ const splitList = (value: string) => value.split(/[\s,;、，；]+/).map(v => v.
 
 type ToolId =
   | 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'dedup'
-  | 'keyCase' | 'merge' | 'redact' | 'ts' | 'tableExport' | 'paths' | 'pick'
+  | 'keyCase' | 'merge' | 'redact' | 'ts' | 'tableExport' | 'sql' | 'paths' | 'pick'
   | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase' | 'mock' | 'ndjson' | 'insights'
 
 interface ToolMeta { id: ToolId; label: string; group: string; json?: boolean }
@@ -41,6 +42,7 @@ const TOOLS: ToolMeta[] = [
   { id: 'redact', label: '敏感脱敏', group: '数据处理', json: true },
   { id: 'ts', label: '时间戳互转', group: '数据处理', json: true },
   { id: 'tableExport', label: '表格导出', group: '数据处理', json: true },
+  { id: 'sql', label: 'SQL 导出', group: '数据处理', json: true },
   { id: 'paths', label: '字段路径', group: '数据处理', json: true },
   { id: 'pick', label: '字段剔除', group: '数据处理', json: true },
   { id: 'base64', label: 'Base64', group: '编解码' },
@@ -64,6 +66,7 @@ export default function ToolsPanel() {
   const defRedactKeys = useAppStore(s => s.toolRedactExtraKeys)
   const defTsFormat = useAppStore(s => s.toolTsFormat)
   const defTableFormat = useAppStore(s => s.toolTableFormat)
+  const defSqlDialect = useAppStore(s => s.toolSqlDialect)
   const defPickMode = useAppStore(s => s.toolPickMode)
   const defPickPatterns = useAppStore(s => s.toolPickPatterns)
 
@@ -84,6 +87,8 @@ export default function ToolsPanel() {
   const [tsMode, setTsMode] = useState<'toHuman' | 'toEpoch'>('toHuman')
   const [tsFormat, setTsFormat] = useState<TimestampFormat>(defTsFormat)
   const [tableFormat, setTableFormat] = useState<TableExportFormat>(defTableFormat)
+  const [sqlDialect, setSqlDialect] = useState<SqlDialect>(defSqlDialect)
+  const [sqlTable, setSqlTable] = useState('')
   const [pickMode, setPickMode] = useState<PickMode>(defPickMode)
   const [pickPatterns, setPickPatterns] = useState(defPickPatterns)
   const [hashOut, setHashOut] = useState<{ result: string; error: string | null }>({ result: '', error: null })
@@ -96,6 +101,7 @@ export default function ToolsPanel() {
   useEffect(() => { setRedactKeys(defRedactKeys) }, [defRedactKeys])
   useEffect(() => { setTsFormat(defTsFormat) }, [defTsFormat])
   useEffect(() => { setTableFormat(defTableFormat) }, [defTableFormat])
+  useEffect(() => { setSqlDialect(defSqlDialect) }, [defSqlDialect])
   useEffect(() => { setPickMode(defPickMode) }, [defPickMode])
   useEffect(() => { setPickPatterns(defPickPatterns) }, [defPickPatterns])
 
@@ -140,6 +146,7 @@ export default function ToolsPanel() {
       case 'redact': return redactJson(input, { keepEdges: redactEdges === 'keep', extraKeys: splitList(redactKeys) })
       case 'ts': return tsMode === 'toHuman' ? humanizeTimestamps(input, { format: tsFormat }) : toEpochTimestamps(input)
       case 'tableExport': return exportTable(input, tableFormat)
+      case 'sql': return exportSql(input, { dialect: sqlDialect, table: sqlTable })
       case 'paths': return collectPaths(input)
       case 'pick': return filterPaths(input, pickPatterns, pickMode)
       case 'base64': return decode ? base64Decode(input) : base64Encode(input)
@@ -158,7 +165,7 @@ export default function ToolsPanel() {
     }
   }, [input, tool, decode, sortOrder, removeOnlyNull, base, hashOut, mockCount, ndjsonMode,
     keyCaseStyle, content, mergeStrategy, mergePrefer, redactEdges, redactKeys, tsMode, tsFormat, tableFormat,
-    pickMode, pickPatterns])
+    sqlDialect, sqlTable, pickMode, pickPatterns])
 
   const hitCount = Array.isArray(result.hits) ? result.hits.length : result.hits ?? 0
 
@@ -176,7 +183,7 @@ export default function ToolsPanel() {
   const activeMeta = TOOLS.find(t => t.id === tool)!
   const hasOptions =
     tool === 'sort' || tool === 'removeEmpty' || tool === 'base64' || tool === 'url' || tool === 'hash' || tool === 'numbase' || tool === 'mock' || tool === 'ndjson'
-    || tool === 'keyCase' || tool === 'merge' || tool === 'redact' || tool === 'ts' || tool === 'tableExport' || tool === 'pick'
+    || tool === 'keyCase' || tool === 'merge' || tool === 'redact' || tool === 'ts' || tool === 'tableExport' || tool === 'sql' || tool === 'pick'
 
   const copyOut = async () => {
     if (!result.result) { showToast('没有可复制的内容'); return }
@@ -370,6 +377,27 @@ export default function ToolsPanel() {
                     { value: 'html', label: 'HTML 表' },
                   ]}
                 />
+              )}
+              {tool === 'sql' && (
+                <>
+                  <CustomSelect
+                    value={sqlDialect}
+                    onChange={v => setSqlDialect(v as SqlDialect)}
+                    minWidth={120}
+                    options={[
+                      { value: 'postgres', label: 'PostgreSQL' },
+                      { value: 'mysql', label: 'MySQL' },
+                      { value: 'sqlite', label: 'SQLite' },
+                    ]}
+                  />
+                  <input
+                    className="tools-opt-input"
+                    placeholder="表名（留空取数组字段名）"
+                    value={sqlTable}
+                    spellCheck={false}
+                    onChange={e => setSqlTable(e.target.value)}
+                  />
+                </>
               )}
               {tool === 'pick' && (
                 <>

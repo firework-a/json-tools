@@ -9,6 +9,7 @@ import { CloseIcon } from './Icons'
 import type { KeyCase } from '../utils/keyCase'
 import type { TimestampFormat } from '../utils/timestamps'
 import type { TableExportFormat } from '../utils/tableExport'
+import type { SqlDialect } from '../utils/sqlExport'
 import type { PickMode } from '../utils/pickPaths'
 
 type SectionId = 'appearance' | 'editor' | 'export' | 'tools' | 'mcp' | 'updates' | 'about'
@@ -240,6 +241,12 @@ function ToolsSection() {
         options={[{ value: 'markdown', label: 'Markdown' }, { value: 'html', label: 'HTML' }]}
         onChange={s.setToolTableFormat}
       />
+      <SegRow<SqlDialect>
+        label="SQL 导出默认方言"
+        value={s.toolSqlDialect}
+        options={[{ value: 'postgres', label: 'PostgreSQL' }, { value: 'mysql', label: 'MySQL' }, { value: 'sqlite', label: 'SQLite' }]}
+        onChange={s.setToolSqlDialect}
+      />
       <SegRow<PickMode>
         label="字段处理默认方式"
         value={s.toolPickMode}
@@ -276,6 +283,7 @@ const MCP_TOOLS: { name: string; desc: string }[] = [
   { name: 'json_redact', desc: '敏感字段脱敏 + 命中清单' },
   { name: 'json_timestamps', desc: '递归时间戳 ↔ 日期互转' },
   { name: 'json_table_export', desc: '对象数组导出 Markdown / HTML 表格' },
+  { name: 'json_to_sql', desc: '对象数组生成 CREATE TABLE + 批量 INSERT' },
   { name: 'json_paths', desc: '字段路径覆盖率 / 类型分布 / null 率' },
   { name: 'json_pick_paths', desc: '按路径剔除或只保留字段' },
 ]

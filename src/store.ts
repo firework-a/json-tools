@@ -7,6 +7,7 @@ import type { KeyCase } from './utils/keyCase'
 import type { TimestampFormat } from './utils/timestamps'
 import type { TableExportFormat } from './utils/tableExport'
 import type { PickMode } from './utils/pickPaths'
+import type { SqlDialect } from './utils/sqlExport'
 
 export type ViewMode = 'edit' | 'diff' | 'convert' | 'ts' | 'schema' | 'tools'
 export type ConvertFormat = 'yaml' | 'xml' | 'toml' | 'csv'
@@ -145,6 +146,8 @@ interface AppState {
   setToolTsFormat: (v: TimestampFormat) => void
   toolTableFormat: TableExportFormat
   setToolTableFormat: (v: TableExportFormat) => void
+  toolSqlDialect: SqlDialect
+  setToolSqlDialect: (v: SqlDialect) => void
   toolPickMode: PickMode
   setToolPickMode: (v: PickMode) => void
   toolPickPatterns: string
@@ -433,6 +436,8 @@ export const useAppStore = create<AppState>()(
       setToolTsFormat: (toolTsFormat) => set({ toolTsFormat }),
       toolTableFormat: 'markdown' as TableExportFormat,
       setToolTableFormat: (toolTableFormat) => set({ toolTableFormat }),
+      toolSqlDialect: 'postgres' as SqlDialect,
+      setToolSqlDialect: (toolSqlDialect) => set({ toolSqlDialect }),
       toolPickMode: 'omit' as PickMode,
       setToolPickMode: (toolPickMode) => set({ toolPickMode }),
       toolPickPatterns: '',
@@ -483,6 +488,7 @@ export const useAppStore = create<AppState>()(
         toolRedactExtraKeys: s.toolRedactExtraKeys,
         toolTsFormat: s.toolTsFormat,
         toolTableFormat: s.toolTableFormat,
+        toolSqlDialect: s.toolSqlDialect,
         toolPickMode: s.toolPickMode,
         toolPickPatterns: s.toolPickPatterns,
         autoCheckUpdates: s.autoCheckUpdates,

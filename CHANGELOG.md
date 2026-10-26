@@ -27,7 +27,7 @@
 - 工具箱结果一键写入编辑器；查询历史支持清空；树形视图 URL 值可点击打开。
 - 生成代码新增 Kotlin 语言。
 - 新增单元测试（vitest）：覆盖 JSON 修复/解析、NDJSON 互转、Mock 生成、表格构建、命令搜索等核心工具（31 个用例），`pnpm test` 运行；CI 新增测试步骤。
-- **新增验证脚本**：`pnpm a11y`（`scripts/a11y.mjs`，无头 Chrome + CDP 逐屏跑 WCAG AA 对比度与可访问名检查，覆盖全部视图 × 深浅主题，不达标即退出码 1，可用 `--url` / `--stops` 收窄范围，需先 `pnpm preview` 或 `pnpm dev`）；`pnpm smoke` / `pnpm smoke:dist`（串联 `mcp-server/smoke*.mjs`：stdio 握手、20 工具清单断言、dist 产物与 7 个数据处理工具逐个实调；`smoke:dist` 只依赖 esbuild 产物，供 CI 使用）；`pnpm smoke:exe`（`mcp-server/smoke-exe.mjs`，对随安装包分发的 `src-tauri/binaries/json-tools-mcp.exe` 做同样的 stdio 握手 + 工具清单 + `json_keys_case` 实调，exe 不存在时自动跳过）。CI 已接入：前端 job 跑 `smoke:dist`，windows Tauri job 在 `build:mcp:exe` 之后跑 `smoke:exe`。
+- **新增验证脚本**：`pnpm a11y`（`scripts/a11y.mjs`，无头 Chrome + CDP 逐屏跑 WCAG AA 对比度与可访问名检查，覆盖全部视图 × 深浅主题，不达标即退出码 1，可用 `--url` / `--stops` 收窄范围，需先 `pnpm preview` 或 `pnpm dev`）；`pnpm smoke` / `pnpm smoke:dist`（串联 `mcp-server/smoke*.mjs`：stdio 握手、工具清单断言、dist 产物与 7 个数据处理工具逐个实调；`smoke:dist` 只依赖 esbuild 产物，供 CI 使用）；`pnpm smoke:exe`（`mcp-server/smoke-exe.mjs`，对随安装包分发的 `src-tauri/binaries/json-tools-mcp.exe` 做同样的 stdio 握手 + 工具清单 + `json_keys_case` 实调，exe 不存在时自动跳过）。CI 已接入：前端 job 跑 `smoke:dist`，windows Tauri job 在 `build:mcp:exe` 之后跑 `smoke:exe`。
 - 树形视图查询新增 JSONPath 支持：查询语言徽标可点击切换 JMESPath / JSONPath，输入框占位与速查表随语言联动。
 - 新增根目录 README，补充产品介绍、开发命令、发布流程和 GitHub Releases 更新说明。
 - 设置的关于页新增真实版本显示和应用内检查更新入口。
@@ -57,7 +57,8 @@
 - **界面质感向 macOS 再推一步**：标题栏 + 工具栏 + 标签栏并为统一 chrome；标签改 Safari 式抬起文档页签（去掉蓝色下划线）；工具栏/分段选择统一为「中性抬起选中段」而非彩色底；工具箱与设置侧栏选中项改强调色圆角块；下拉菜单、设置面板、命令面板统一 vibrancy + sheet 入场动效与分层阴影；滚动条改 macOS overlay 风格（静止近乎隐形、悬停浮现，深浅主题各自适配）；开关改绿色 macOS 轨道、滑块改白色圆钮；焦点环统一 3px；新增间距/圆角/阴影/缓动 token（`variables.scss`）与 `press` / `sheet-in` / `hairline` mixin（`mixins.scss`）。
 - **修复敏感脱敏误伤**：键名规则改按「词」匹配（复用 `splitWords`），`authors` / `tokenizer` / `passenger` 不再被打码，同时 `userPassword` / `accessToken` 这类驼峰键可正确命中；补防误伤与驼峰命中用例。
 - **字段剔除 / 保留**（`pickPaths.ts`）：按路径批量删字段或只留白名单，与「字段路径统计」共用同一套路径记法（数组写 `[*]`、`*` 通配单层键名），`__typename` 这类不含点号的简写匹配任意层级同名键；同步为 MCP/CLI 工具 `json_pick_paths`，工具箱新增「字段剔除」，MCP 工具数 19 → 20。
-- **设置 → 工具箱**：新增一组默认值设置（键名风格目标、脱敏是否保留首尾、附加敏感键名列表、时间戳默认格式、表格导出默认格式、字段处理默认方式、常用字段路径），进入对应工具时作为初始选项预填，改动即时同步。
+- **SQL 导出**（`sqlExport.ts`）：对象数组 → `CREATE TABLE` + 批量 `INSERT`。列类型按实际值推断（整数 BIGINT / 浮点 DOUBLE / 布尔 / 日期时间 / 文本按最长值给 `VARCHAR(n)`，超 255 用 TEXT / 对象数组用 JSON），跨类型自动宽化（布尔混数值一律退回文本），全 null 的列跳过、缺失字段让列可空，字符串与内嵌 JSON 按 SQL 规则双写单引号转义；PostgreSQL / MySQL / SQLite 三种方言各自给标识符引号与类型名，表名缺省取数组所在字段名并过滤不安全字符。同步为 MCP/CLI 工具 `json_to_sql`，工具箱「数据处理」新增「SQL 导出」（方言 + 表名可选），MCP 工具数 20 → 21。
+- **设置 → 工具箱**：新增一组默认值设置（键名风格目标、脱敏是否保留首尾、附加敏感键名列表、时间戳默认格式、表格导出默认格式、字段处理默认方式、常用字段路径、SQL 导出默认方言），进入对应工具时作为初始选项预填，改动即时同步。
 - **脱敏支持键名列表**：`redactJson` 增加 `extraKeys`（按词与连写双归一，`openid` / `open_id` / `OPENID` 等价），工具箱与设置页用它输入，MCP 仍保留 `extraKeyPattern` 正则给高级用法。
 - **修复浅色主题开关开启态不可见**：`[data-theme='light'] .set-switch` 覆盖了 `.on` 的绿色轨道，补 `.set-switch.on` 规则（macOS 绿）。
 - **无障碍与对比度整改（脚本化审计驱动）**：新增 `pnpm a11y`（`scripts/a11y.mjs`，无头 Chrome + CDP）逐屏扫描——编辑/树、格式转换、生成代码、Schema、对比、工具箱 26 个工具逐个点开、下拉菜单展开态、设置面板、命令面板 × 深浅主题，按 WCAG AA（大字号 3:1 / 正文 4.5:1，半透明背景逐层合成后计算）报告不达标文本，并检查交互元素缺少可访问名；任一不达标即退出码 1。文字色改为主题级 CSS 变量 `--text-secondary` / `--text-muted` / `--accent-fill`（深浅各一套取值，Sass 单值变量做不到随主题切换）；修复浅色状态栏文字（原 1.4~3.0）、侧栏标签与占位符、Monaco 行号/占位符/括号高亮（占位符主题键此前写成 `editorPlaceholder.foreground`，实际注册名是 `editor.placeholder.foreground`，一直没生效）、树形视图 json-view 辅助符号（库的 `--w-rjv-*` 变量此前设在 DOM 中不存在的 `.w-json-view-theme` 上，一直没生效）等不达 WCAG AA 的取色；所有「强调色实心 + 白字」的控件（pill 组选中段、下拉菜单悬停项、更新横幅主按钮、安装确认按钮）统一改用 `--accent-fill`（原 `$blue` #4ea1f2 配白字仅 2.7:1）；下拉菜单选中勾号改 `color: inherit` 跟随所在行文字色，避免高亮行上 1.3:1；命令面板分组标题在深色下提到 5.2:1；开关与滑块补 `aria-label`，工具栏四个纯图标按钮（树形/主题/设置/置顶）补显式可访问名。全量扫描结果：深浅主题各 30+ 屏均 0 项不达标，且无缺少可访问名的交互元素。
