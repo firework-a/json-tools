@@ -101,7 +101,7 @@ export const analyzeJson = (input: string): { result: InsightsResult; error: str
   // 建议
   const root = parsed
   if (Array.isArray(root) && root.length > 0 && root.every(i => typeof i === 'object' && i !== null && !Array.isArray(i))) {
-    suggestions.push('根是对象数组：可用「表格视图」浏览/编辑，或导出 Markdown / CSV')
+    suggestions.push('根是对象数组：可用「格式转换」导出 CSV，或用 JSONPath $.[*].字段 按列取值')
   }
   if (detectFormatSafe(trimmed) === 'minified') suggestions.push('内容是单行压缩 JSON：可「美化」后再浏览')
   // 数组重复对象检测

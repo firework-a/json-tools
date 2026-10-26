@@ -38,7 +38,7 @@ function StatusBar() {
     return total > 0 ? total : null
   }, [mode, debouncedContent, debouncedRight])
 
-  // 格式错误提示仅在编辑模式有意义（转换/表格等模式下左侧可能是 YAML/CSV 等非 JSON）
+  // 格式错误提示仅在编辑模式有意义（转换等模式下左侧可能是 YAML/CSV 等非 JSON）
   const showFixEntry = mode === 'edit' && !leftStats.valid && content.trim()
 
   return (
@@ -48,7 +48,7 @@ function StatusBar() {
         {mode !== 'edit' && (
           <>
             <span className="status-sep">|</span>
-            <span className="status-mode">{mode === 'diff' ? '对比模式' : mode === 'convert' ? '格式转换' : mode === 'ts' ? '生成代码' : mode === 'schema' ? 'Schema' : mode === 'table' ? '表格视图' : '工具箱'}</span>
+            <span className="status-mode">{mode === 'diff' ? '对比模式' : mode === 'convert' ? '格式转换' : mode === 'ts' ? '生成代码' : mode === 'schema' ? 'Schema' : '工具箱'}</span>
           </>
         )}
         <span className="status-sep">|</span>

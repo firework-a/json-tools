@@ -131,7 +131,7 @@ function TreeView() {
   const parsed = useMemo(() => {
     const t = debouncedContent.trim()
     if (!t) return undefined
-    // 性能保护：超大 JSON 跳过解析渲染，避免卡死（表格/编辑器仍可用）
+    // 性能保护：超大 JSON 跳过解析渲染，避免卡死（编辑器仍可正常浏览）
     if (t.length > 1_000_000) return null
     try { return JSON.parse(t) } catch { return undefined }
   }, [debouncedContent])
@@ -280,7 +280,7 @@ function TreeView() {
         ) : tooLarge ? (
           <div className="tree-empty">
             <div className="tree-empty-title">内容过大，已跳过树形渲染</div>
-            <div className="tree-empty-tip">超过 1MB 的 JSON 不渲染树形视图以保持流畅，可用表格视图或编辑器浏览</div>
+            <div className="tree-empty-tip">超过 1MB 的 JSON 不渲染树形视图以保持流畅，可直接在编辑器中浏览</div>
           </div>
         ) : queryResult.active && queryResult.error ? (
           <div className="tree-empty">

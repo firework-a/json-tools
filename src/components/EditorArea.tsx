@@ -9,7 +9,6 @@ import { generateCode, CODE_LANGS, type CodeLang } from '../utils/codeGen'
 import CodeEditor from './CodeEditor'
 import ShikiPreview from './ShikiPreview'
 import DiffEditor from './DiffEditor'
-import GridView from './GridView'
 import ToolsPanel from './ToolsPanel'
 import { BackIcon, SchemaIcon, ChevronDown, WandIcon, ShieldCheckIcon } from './Icons'
 import CopyButton from './CopyButton'
@@ -193,10 +192,6 @@ function EditorArea() {
 
   if (mode === 'tools') {
     return <ToolsPanel />
-  }
-
-  if (mode === 'table') {
-    return <GridView />
   }
 
   if (mode === 'convert') {

@@ -124,7 +124,6 @@ export const COMMANDS: AppCommand[] = [
   { id: 'mode.code', label: '生成代码', group: '模式', keywords: 'code typescript go java rust 生成代码', run: () => switchMode('ts') },
   { id: 'mode.schema', label: 'JSON Schema', group: '模式', keywords: 'schema 校验', run: () => switchMode('schema') },
   { id: 'mode.tools', label: '工具箱', group: '模式', keywords: 'tools toolbox 工具箱', run: () => switchMode('tools') },
-  { id: 'mode.table', label: '表格视图', group: '模式', keywords: 'table grid 表格 表格视图', run: () => switchMode('table') },
 
   // 工具箱直达
   { id: 'tool.base64', label: 'Base64 编解码', group: '工具箱', keywords: 'base64 b64', run: () => openTool('base64') },

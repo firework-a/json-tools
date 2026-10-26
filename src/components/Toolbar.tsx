@@ -9,7 +9,7 @@ import {
   NewFileIcon, OpenIcon, SaveIcon, ExportIcon,
   BeautifyIcon, CompressIcon, EscapeIcon, UnescapeIcon, FoldIcon, UnfoldIcon,
   DiffIcon, ConvertIcon, CodeIcon, SchemaIcon, ToolboxIcon, CommandIcon,
-  TreeIcon, ThemeIcon, SettingsIcon, PinIcon, PinOffIcon, RepairIcon, TableIcon,
+  TreeIcon, ThemeIcon, SettingsIcon, PinIcon, PinOffIcon, RepairIcon,
 } from './Icons'
 import { foldAllEditors, unfoldAllEditors } from '../editorRegistry'
 import ExportCanvas from './ExportCanvas'
@@ -270,7 +270,6 @@ function Toolbar() {
         <TB icon={<CodeIcon size={14} color="#b578f0" />} label="生成代码" active={mode === 'ts'} onClick={() => switchMode('ts')} />
         <TB icon={<SchemaIcon size={14} color="#f0b840" />} label="Schema" active={mode === 'schema'} onClick={() => switchMode('schema')} />
         <TB icon={<ToolboxIcon size={14} color="#5ac8c8" />} label="工具箱" active={mode === 'tools'} onClick={() => switchMode('tools')} />
-        <TB icon={<TableIcon size={14} color="#5ac8c8" />} label="表格" active={mode === 'table'} onClick={() => switchMode('table')} />
       </div>
 
       <div className="tb-spacer" />

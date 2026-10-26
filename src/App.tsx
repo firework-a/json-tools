@@ -141,7 +141,7 @@ function App() {
       if (!(e.ctrlKey || e.metaKey) || e.altKey) return
       if (e.key.toLowerCase() !== 'v') return
       const st = useAppStore.getState()
-      if (st.mode !== 'edit' && st.mode !== 'table') return
+      if (st.mode !== 'edit') return
       const target = e.target as HTMLElement | null
       if (target?.closest?.('.monaco-editor, input, textarea, [contenteditable]')) return
       e.preventDefault()

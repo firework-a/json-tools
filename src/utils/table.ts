@@ -1,4 +1,4 @@
-// 表格视图数据构建：从 JSON 解析结果提取「对象数组 + 列并集 + 文档内路径」
+// 表格数据构建：从 JSON 解析结果提取「对象数组 + 列并集 + 文档内路径」（MCP/CLI 的 json_table_extract 使用）
 
 export interface TableData {
   rows: Record<string, unknown>[]

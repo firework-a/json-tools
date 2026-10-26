@@ -30,9 +30,9 @@ describe('analyzeJson', () => {
     expect(result.suggestions.some(s => s.includes('扁平化'))).toBe(true)
   })
 
-  it('根数组建议表格视图', () => {
+  it('根数组建议按行处理', () => {
     const { result } = analyzeJson('[{"a":1},{"a":2}]')
-    expect(result.suggestions.some(s => s.includes('表格视图'))).toBe(true)
+    expect(result.suggestions.some(s => s.includes('导出 CSV'))).toBe(true)
   })
 
   it('非法输入返回错误', () => {

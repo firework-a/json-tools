@@ -17,8 +17,8 @@ describe('searchCommands', () => {
   })
 
   it('子序列匹配（宽松）', () => {
-    const results = searchCommands('tbl')
-    expect(results.some(c => c.id === 'mode.table')).toBe(true)
+    const results = searchCommands('tls')
+    expect(results.some(c => c.id === 'mode.tools')).toBe(true)
   })
 
   it('未命中返回空', () => {

@@ -5,7 +5,6 @@
 ## Unreleased
 
 ### Added
-- **表格视图**：对象数组渲染为电子表格——自动下钻根下数组字段、列头排序、行过滤、双击单元格编辑（写回编辑器）、添加/删除行、列宽拖拽、拖拽重排列、右键隐藏列与恢复、列统计（类型/null 分布与数字求和/平均）、导出 Markdown / CSV（复制与保存文件）、粘性表头与斑马纹、渲染上限保护。
 - **JSON 修复**：工具栏「修复」按钮 + 命令面板 + 状态栏格式错误一键修复入口，自定义规则 + jsonrepair 库兜底。
 - **JSONPath 查询**：树形视图 JMESPath / JSONPath 双语言切换（持久化）、速查表联动、历史记录与清空、查询结果一键写回编辑器。
 - **Mock 数据生成器**：从样例 JSON 或 JSON Schema 生成仿真数据（人名/邮箱/URL/日期/UUID/角色/状态等语义），可选条数。
@@ -18,13 +17,13 @@
 - **工作区状态恢复**：标签页内容跨启动持久化（超大内容跳过，恢复后保留未保存标记）。
 - **新增 MCP Server + CLI**（`mcp-server/`）：13 个核心 JSON 工具（修复/格式化/校验/转换/变换/diff/Mock/统计/查询/表格提取/Schema 生成/智能分析）通过 Model Context Protocol 暴露给 AI 助手，同一个程序也是命令行工具（`list` / `run <tool> --text data.json` / `--help`）；参数校验与默认值共用 `tools.ts` 一份定义，逻辑复用 src/utils 纯函数与桌面端一致。
 - **新增智能分析功能**（工具箱「智能分析」）：本地规则引擎对 JSON 做结构摘要、字段类型统计、数据质量检查（类型混杂/null 占比/深嵌套/空数组对象）与优化建议，输出可读分析报告，离线无需 API key。
-- **大文件打开提示**；表格渲染上限 2000 行保护。
-- **无障碍**：图标按钮 aria-label 补齐、全局 :focus-visible 焦点环、空状态下一步动作（表格视图）。
+- **大文件打开提示**。
+- **无障碍**：图标按钮 aria-label 补齐、全局 :focus-visible 焦点环。
 - **ErrorBoundary**：组件崩溃显示错误详情与重新加载按钮，不再白屏。
 - 状态栏新增光标位置（Ln/Col）；标题栏/窗口标题显示当前文件名（Tauri 原生同步）。
 - 标签页支持中键关闭、双击重命名、拖拽重排；Ctrl+Tab / Ctrl+1-9 标签切换快捷键；设置页新增树形默认展开层级与「粘贴自动修复」选项；设置页关于区新增快捷键列表。
 - diff 编辑器与结果预览的字号/行号/自动换行跟随设置联动；编辑器空态 placeholder 提示。
-- 工具箱结果一键写入编辑器；查询历史支持清空；表格 URL 值与树形视图 URL 值可点击打开。
+- 工具箱结果一键写入编辑器；查询历史支持清空；树形视图 URL 值可点击打开。
 - 生成代码新增 Kotlin 语言。
 - 新增单元测试（vitest）：覆盖 JSON 修复/解析、NDJSON 互转、Mock 生成、表格构建、命令搜索等核心工具（31 个用例），`pnpm test` 运行；CI 新增测试步骤。
 - 树形视图查询新增 JSONPath 支持：查询语言徽标可点击切换 JMESPath / JSONPath，输入框占位与速查表随语言联动。
@@ -52,6 +51,7 @@
 - 前端包名从 `dev-tools` 统一为 `json-tools`。
 - 关于页版本号不再写死为静态文本。
 - MCP 分发方式改为随安装包走单文件 exe（`bun --compile` → 安装目录 `binaries/json-tools-mcp.exe`），用户无需 Node.js 也无需打开应用；移除 npm 发布 workflow 与 `@firework-a/json-tools-mcp` 包配置。「设置 → MCP」改为自动读取本机安装路径生成客户端配置，并补充 CLI 用法。构建链路新增 bun 依赖（`pnpm build:mcp:exe`，`tauri:dev`/`build:app`/CI 已串好）。安装包体积相应增大（实测 debug 包 ~38MB，含 83MB 未压缩 exe）。
+- **移除应用内「表格」视图**（GridView、工具栏按钮、命令面板项、状态栏模式与相关样式）；`src/utils/table.ts` 与 `json_table_extract` 工具保留给 MCP/CLI 使用，智能分析对对象数组的建议改为导出 CSV / JSONPath 取值；持久化设置版本升到 v2，旧版残留的 table 模式自动回落编辑器。
 
 ### Notes
 - 更新签名公钥已替换为真实密钥，GitHub Releases 签名更新链路就绪。

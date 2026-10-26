@@ -4,7 +4,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { isTauri } from '@tauri-apps/api/core'
 import type { CodeLang } from './utils/codeGen'
 
-export type ViewMode = 'edit' | 'diff' | 'convert' | 'ts' | 'schema' | 'tools' | 'table'
+export type ViewMode = 'edit' | 'diff' | 'convert' | 'ts' | 'schema' | 'tools'
 export type ConvertFormat = 'yaml' | 'xml' | 'toml' | 'csv'
 export type ThemeMode = 'dark' | 'light'
 export type EditorLanguage = 'json' | 'plaintext'
@@ -415,7 +415,13 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'json-tools-settings',
-      version: 1,
+      version: 2,
+      // v1 可能持久化了已移除的表格模式，落到编辑器
+      migrate: (persisted) => {
+        const state = persisted as AppState
+        if ((state.mode as string) === 'table') state.mode = 'edit'
+        return state
+      },
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({
         mode: s.mode,

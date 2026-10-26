@@ -8,10 +8,9 @@ src/
 │   ├── TitleBar.tsx            # 无边框标题栏（macOS 交通灯）
 │   ├── Toolbar.tsx             # 主工具栏（文件/JSON 变换/模式分组）
 │   ├── TabBar.tsx              # 多标签页（双击重命名/拖拽重排/中键关闭）
-│   ├── EditorArea.tsx          # 编辑区路由（edit/diff/convert/ts/schema/table/tools）
+│   ├── EditorArea.tsx          # 编辑区路由（edit/diff/convert/ts/schema/tools）
 │   ├── CodeEditor.tsx          # Monaco 编辑器封装（粘贴自动格式化/回顶恢复）
 │   ├── DiffEditor.tsx          # Monaco DiffEditor 封装
-│   ├── GridView.tsx            # 表格视图（排序/过滤/编辑/列重排/列统计/导出）
 │   ├── TreeView.tsx            # 树形视图（JMESPath / JSONPath 双查询）
 │   ├── ToolsPanel.tsx          # 工具箱（编解码/哈希/时间戳/Mock/NDJSON 等）
 │   ├── SettingsPanel.tsx       # 设置浮层（外观/编辑器/导出/更新/关于）
@@ -36,7 +35,7 @@ src/
 │   ├── codeGen.ts / jsonToTs.ts # 多语言类型生成（quicktype）
 │   ├── mockData.ts             # Mock 数据生成
 │   ├── ndjson.ts               # NDJSON 互转
-│   ├── table.ts                # 表格数据构建
+│   ├── table.ts                # 表格数据构建（MCP/CLI 的 json_table_extract 使用）
 │   ├── sample.ts               # 内置示例 JSON
 │   ├── encoding.ts             # Base64/URL/JWT/哈希/时间戳/进制
 │   ├── shiki.ts / exportImage.ts # 高亮与图片导出

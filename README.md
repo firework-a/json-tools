@@ -20,7 +20,7 @@
 
 ---
 
-JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、React 18 与 Monaco Editor 构建。它把常见的 JSON 处理流程整合在一个离线本地应用里，适合日常格式化、压缩、转义、修复、格式转换、表格浏览编辑、Mock 数据、智能分析、Schema 校验、多语言类型生成、对比与代码图片导出。
+JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、React 18 与 Monaco Editor 构建。它把常见的 JSON 处理流程整合在一个离线本地应用里，适合日常格式化、压缩、转义、修复、格式转换、Mock 数据、智能分析、Schema 校验、多语言类型生成、对比与代码图片导出。
 
 ## 核心能力
 
@@ -30,7 +30,6 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 - 文件拖拽打开（`.json` / `.txt` / `.yaml` / `.yml`），编辑器外 `Ctrl+V` 直接粘贴剪贴板内容
 - JSON 树形结构查看，支持 JMESPath / JSONPath 双查询语言（速查表、历史记录、结果写回编辑器）
 - JSON Diff 对比，行级差异高亮，一键生成/应用 RFC 6902 JSON Patch
-- 表格视图：对象数组渲染为电子表格（自动下钻、排序、过滤、单元格编辑、增删行、列宽拖拽/隐藏、列统计、导出 Markdown/CSV）
 - Mock 数据生成：从样例结构或 JSON Schema 生成仿真数据
 - JSON Schema 应用到编辑器实时校验（Monaco diagnostics）
 - YAML / XML / TOML / CSV 格式转换（支持反向：YAML/XML/TOML/CSV → JSON），NDJSON ↔ JSON 互转
@@ -201,15 +200,14 @@ json-tools/
 ## 已知限制
 
 - XML / CSV / TOML 等格式转换可能存在结构信息损失，不保证可逆。
-- 超大 JSON（百万级节点）：树形视图超过 1MB 跳过渲染、表格超过 5000 行仅渲染前 5000 行，图片导出仍需注意体积。
+- 超大 JSON（百万级节点）：树形视图超过 1MB 跳过渲染，图片导出仍需注意体积。
 - 更新分发完全基于 GitHub Releases，无独立更新服务器。
 - 从 URL 导入受浏览器 CORS 限制（Tauri 桌面端同样受 WebView2 CORS 策略约束）。
 - Windows 代码签名、macOS 签名与 notarization 尚未配置，正式商业分发前需补齐。
 
 ## 后续路线
 
-- 大文件流式处理与性能保护（树形/表格已有渲染上限保护）
+- 大文件流式处理与性能保护（树形视图已有渲染上限保护）
 - 安装包代码签名与多平台（macOS / Linux）构建
-- 表格视图虚拟滚动（超过 5000 行时按需渲染）
 - JSON Patch 应用（把生成的 Patch 应用回文档）
 - 多语言界面（当前仅中文）
