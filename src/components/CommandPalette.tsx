@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAppStore } from '../store'
 import { searchCommands, buildRecentFileCommands, type AppCommand } from '../commands'
+import { useFocusTrap } from '../hooks/useFocusTrap'
 
 const GROUP_COLOR: Record<string, string> = {
   文件: '#5a9cf0',
@@ -19,6 +20,8 @@ export default function CommandPalette() {
   const [active, setActive] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(panelRef, open)
 
   const results = useMemo(() => searchCommands(query, [...buildRecentFileCommands(), ...searchCommands('')]), [query, open])
 
@@ -57,7 +60,7 @@ export default function CommandPalette() {
 
   return createPortal(
     <div className="cmdk-overlay" onMouseDown={() => setOpen(false)}>
-      <div className="cmdk-panel" onMouseDown={e => e.stopPropagation()}>
+      <div className="cmdk-panel" ref={panelRef} role="dialog" aria-modal="true" aria-label="命令面板" onKeyDown={onKeyDown} onMouseDown={e => e.stopPropagation()}>
         <div className="cmdk-inputrow">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
           <input
@@ -65,19 +68,27 @@ export default function CommandPalette() {
             className="cmdk-input"
             placeholder="搜索命令…（↑↓ 选择 · Enter 执行 · Esc 关闭）"
             value={query}
+            role="combobox"
+            aria-expanded="true"
+            aria-autocomplete="list"
+            aria-controls="cmdk-list"
+            aria-activedescendant={results[active] ? `cmdk-item-${active}` : undefined}
             onChange={e => setQuery(e.target.value)}
-            onKeyDown={onKeyDown}
             spellCheck={false}
           />
           <kbd className="cmdk-esc">Esc</kbd>
         </div>
-        <div className="cmdk-list" ref={listRef}>
+        <div className="cmdk-list" id="cmdk-list" ref={listRef} role="listbox" aria-label="命令列表">
           {results.length === 0 ? (
             <div className="cmdk-empty">没有匹配的命令</div>
           ) : results.map((cmd, i) => (
             <button
               key={cmd.id}
+              id={`cmdk-item-${i}`}
               data-idx={i}
+              role="option"
+              aria-selected={i === active}
+              tabIndex={-1}
               className={`cmdk-item ${i === active ? 'active' : ''}`}
               onMouseEnter={() => setActive(i)}
               onClick={() => run(cmd)}

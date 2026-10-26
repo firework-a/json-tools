@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { isTauri, invoke } from '@tauri-apps/api/core'
 import { useAppStore, type ThemeMode } from '../store'
@@ -6,6 +6,7 @@ import appLogo from '../../src-tauri/icons/icon.png'
 import { getAppVersion } from '../utils/updater'
 import { useUpdateStore } from '../updateStore'
 import { CloseIcon } from './Icons'
+import { useFocusTrap } from '../hooks/useFocusTrap'
 import type { KeyCase } from '../utils/keyCase'
 import type { TimestampFormat } from '../utils/timestamps'
 import type { TableExportFormat } from '../utils/tableExport'
@@ -509,6 +510,8 @@ export default function SettingsPanel() {
   const open = useAppStore(s => s.settingsOpen)
   const setOpen = useAppStore(s => s.setSettingsOpen)
   const [active, setActive] = useState<SectionId>('editor')
+  const panelRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(panelRef, open)
 
   useEffect(() => {
     if (!open) return
@@ -521,7 +524,7 @@ export default function SettingsPanel() {
 
   return createPortal(
     <div className="settings-overlay" onClick={() => setOpen(false)}>
-      <div className="settings-panel" onClick={(e) => e.stopPropagation()}>
+      <div className="settings-panel" ref={panelRef} role="dialog" aria-modal="true" aria-label="设置" onClick={(e) => e.stopPropagation()}>
         <div className="settings-side">
           <div className="settings-side-header">设置</div>
           <div className="settings-nav">

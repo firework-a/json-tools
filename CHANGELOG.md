@@ -62,6 +62,8 @@
 - **脱敏支持键名列表**：`redactJson` 增加 `extraKeys`（按词与连写双归一，`openid` / `open_id` / `OPENID` 等价），工具箱与设置页用它输入，MCP 仍保留 `extraKeyPattern` 正则给高级用法。
 - **修复浅色主题开关开启态不可见**：`[data-theme='light'] .set-switch` 覆盖了 `.on` 的绿色轨道，补 `.set-switch.on` 规则（macOS 绿）。
 - **无障碍与对比度整改（脚本化审计驱动）**：新增 `pnpm a11y`（`scripts/a11y.mjs`，无头 Chrome + CDP）逐屏扫描——编辑/树、格式转换、生成代码、Schema、对比、工具箱 26 个工具逐个点开、下拉菜单展开态、设置面板、命令面板 × 深浅主题，按 WCAG AA（大字号 3:1 / 正文 4.5:1，半透明背景逐层合成后计算）报告不达标文本，并检查交互元素缺少可访问名；任一不达标即退出码 1。文字色改为主题级 CSS 变量 `--text-secondary` / `--text-muted` / `--accent-fill`（深浅各一套取值，Sass 单值变量做不到随主题切换）；修复浅色状态栏文字（原 1.4~3.0）、侧栏标签与占位符、Monaco 行号/占位符/括号高亮（占位符主题键此前写成 `editorPlaceholder.foreground`，实际注册名是 `editor.placeholder.foreground`，一直没生效）、树形视图 json-view 辅助符号（库的 `--w-rjv-*` 变量此前设在 DOM 中不存在的 `.w-json-view-theme` 上，一直没生效）等不达 WCAG AA 的取色；所有「强调色实心 + 白字」的控件（pill 组选中段、下拉菜单悬停项、更新横幅主按钮、安装确认按钮）统一改用 `--accent-fill`（原 `$blue` #4ea1f2 配白字仅 2.7:1）；下拉菜单选中勾号改 `color: inherit` 跟随所在行文字色，避免高亮行上 1.3:1；命令面板分组标题在深色下提到 5.2:1；开关与滑块补 `aria-label`，工具栏四个纯图标按钮（树形/主题/设置/置顶）补显式可访问名。全量扫描结果：深浅主题各 30+ 屏均 0 项不达标，且无缺少可访问名的交互元素。
+- **弹层键盘可达性（焦点陷阱 + 组合框语义）**：新增 `src/hooks/useFocusTrap.ts`，命令面板与设置面板打开时焦点自动移入、Tab/Shift+Tab 在弹层内循环、关闭后归还给触发元素；两个弹层补 `role="dialog"` + `aria-modal` + 可访问名。命令面板改标准组合框模式：列表项 `tabindex="-1"` + `role="option"`/`aria-selected`，输入框 `role="combobox"` + `aria-activedescendant` 指向高亮项，键盘处理从输入框上提到面板容器。审计脚本发现的两处真实缺陷随之修掉：① 焦点一旦 Tab 到列表项，Esc 就失效（原来只在输入框上监听）；② 焦点陷阱的可聚焦选择器把 `tabindex="-1"` 的按钮也算进序列，导致 Tab 直接跳出弹层。
+- **`pnpm a11y` 增加键盘阶段**：改用 CDP `Input.dispatchKeyEvent` 发真实按键（合成 KeyboardEvent 不会移动焦点），逐主题验证「焦点进入输入框 → 方向键移动高亮 → 连按 10 次 Tab 不逃出面板 → Esc 关闭并把焦点还给触发按钮」与设置面板同样的三条，共 16 项检查。
 - **质感第二遍覆盖剩余控件**：树形面板搜索框/查询语言徽标/图标按钮统一内凹轨道 + 聚焦光环；JMESPath 速查浮层与设置面板、命令面板共用同一套 vibrancy + sheet 入场；pill 与动作按钮统一按压反馈（scale + 缓动曲线）。
 
 ### Notes

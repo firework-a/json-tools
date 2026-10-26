@@ -233,6 +233,61 @@ const boot = async theme => {
   await sleep(3000)
 }
 
+/** 用 CDP 真实按键验证焦点行为（合成 KeyboardEvent 不会移动焦点，必须走 Input.dispatchKeyEvent） */
+const CTRL = 2
+const press = async (key, code, vk, modifiers = 0) => {
+  const base = { key, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, modifiers }
+  await send('Input.dispatchKeyEvent', { type: 'keyDown', ...base })
+  await send('Input.dispatchKeyEvent', { type: 'keyUp', ...base })
+}
+const focusInside = sel => `(() => { const a = document.activeElement, p = document.querySelector(${JSON.stringify(sel)}); return !!(a && p && p.contains(a)) })()`
+const activeDesc = `(() => { const a = document.activeElement; if (!a) return 'null'; const c = typeof a.className === 'string' ? a.className.trim().split(/\\s+/)[0] : ''; return a.tagName.toLowerCase() + '.' + c })()`
+
+const keyboardAudit = async theme => {
+  let issues = 0
+  const check = (name, pass, extra = '') => {
+    console.log(`  【键盘】${name}：${pass ? '通过' : '✗ 失败 ' + extra}`)
+    if (!pass) issues++
+  }
+  await boot(theme)
+
+  // 命令面板：焦点进入输入框 → 方向键移动高亮 → Tab 不逃出面板 → Esc 关闭并归还焦点
+  const before = await evaluate(activeDesc)
+  await evaluate(clickByLabel('命令面板'))
+  await sleep(500)
+  check('面板焦点在输入框', await evaluate(focusInside('.cmdk-input')))
+  await press('ArrowDown', 'ArrowDown', 40)
+  await press('ArrowDown', 'ArrowDown', 40)
+  const idx = await evaluate(`document.querySelector('.cmdk-item.active')?.dataset.idx ?? -1`)
+  check('方向键移动高亮', Number(idx) === 2, `高亮索引 ${idx}`)
+  let trapped = true
+  for (let i = 0; i < 10; i++) {
+    await press('Tab', 'Tab', 9)
+    if (!(await evaluate(focusInside('.cmdk-panel')))) { trapped = false; break }
+  }
+  check('Tab 焦点困在面板内', trapped, trapped ? '' : await evaluate(activeDesc))
+  await press('Escape', 'Escape', 27)
+  await sleep(300)
+  const closed = !(await evaluate(`!!document.querySelector('.cmdk-panel')`))
+  check('Esc 关闭面板', closed)
+  check('关闭后焦点归还触发按钮', closed && (await evaluate(activeDesc)) === before, `${before} → ${await evaluate(activeDesc)}`)
+
+  // 设置面板：焦点进入 → Tab 不逃出 → Esc 关闭
+  await evaluate(clickByLabel('设置'))
+  await sleep(500)
+  check('设置面板焦点困在面板内', await evaluate(focusInside('.settings-panel')), await evaluate(activeDesc))
+  let setTrapped = true
+  for (let i = 0; i < 12; i++) {
+    await press('Tab', 'Tab', 9)
+    if (!(await evaluate(focusInside('.settings-panel')))) { setTrapped = false; break }
+  }
+  check('设置面板 Tab 循环', setTrapped, setTrapped ? '' : await evaluate(activeDesc))
+  await press('Escape', 'Escape', 27)
+  await sleep(300)
+  check('Esc 关闭设置', !(await evaluate(`!!document.querySelector('.settings-panel')`)))
+  return issues
+}
+
 let total = 0
 for (const theme of ['dark', 'light']) {
   console.log(`\n########## ${theme} 主题 ##########`)
@@ -286,6 +341,7 @@ for (const theme of ['dark', 'light']) {
     }
     total += await verify(stop, stop.key === 'settings' ? 800 : 900)
   }
+  if (!ONLY.length || ONLY.includes('kbd')) total += await keyboardAudit(theme)
 }
 
 ws.close()
