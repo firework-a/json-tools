@@ -1,7 +1,7 @@
 {
   "name": "json-tools-mcp",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.1.7",
   "description": "JSON Tools 的 MCP Server + CLI 入口（随桌面安装包以单文件 exe 分发，不发布到 npm）",
   "type": "module",
   "scripts": {

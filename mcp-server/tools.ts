@@ -16,7 +16,7 @@ import { JSONPath } from 'jsonpath-plus'
 import { search as jmesSearch } from 'jmespath'
 
 export const SERVER_NAME = 'json-tools'
-export const SERVER_VERSION = '0.2.0'
+export const SERVER_VERSION = '0.1.7'
 
 export type ToolOutput = { content: { type: 'text'; text: string }[]; isError?: boolean }
 
@@ -102,8 +102,8 @@ export const TOOLS: ToolDef[] = [
       const payload = JSON.stringify(parsed)
       const r = to === 'yaml' ? jsonToYaml(payload)
         : to === 'xml' ? jsonToXml(payload)
-        : to === 'toml' ? jsonToToml(payload)
-        : jsonToCsv(payload)
+          : to === 'toml' ? jsonToToml(payload)
+            : jsonToCsv(payload)
       return r.error ? fail(r.error) : ok(r.result)
     },
   }),
