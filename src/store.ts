@@ -415,13 +415,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'json-tools-settings',
-      version: 2,
-      // v1 可能持久化了已移除的表格模式，落到编辑器
-      migrate: (persisted) => {
-        const state = persisted as AppState
-        if ((state.mode as string) === 'table') state.mode = 'edit'
-        return state
-      },
+      version: 1,
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({
         mode: s.mode,

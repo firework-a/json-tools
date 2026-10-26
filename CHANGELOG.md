@@ -51,7 +51,7 @@
 - 前端包名从 `dev-tools` 统一为 `json-tools`。
 - 关于页版本号不再写死为静态文本。
 - MCP 分发方式改为随安装包走单文件 exe（`bun --compile` → 安装目录 `binaries/json-tools-mcp.exe`），用户无需 Node.js 也无需打开应用；移除 npm 发布 workflow 与 `@firework-a/json-tools-mcp` 包配置。「设置 → MCP」改为自动读取本机安装路径生成客户端配置，并补充 CLI 用法。构建链路新增 bun 依赖（`pnpm build:mcp:exe`，`tauri:dev`/`build:app`/CI 已串好）。安装包体积相应增大（实测 debug 包 ~38MB，含 83MB 未压缩 exe）。
-- **移除应用内「表格」视图**（GridView、工具栏按钮、命令面板项、状态栏模式与相关样式）；`src/utils/table.ts` 与 `json_table_extract` 工具保留给 MCP/CLI 使用，智能分析对对象数组的建议改为导出 CSV / JSONPath 取值；持久化设置版本升到 v2，旧版残留的 table 模式自动回落编辑器。
+- **移除应用内「表格」视图**（GridView、工具栏按钮、命令面板项、状态栏模式与相关样式）；`src/utils/table.ts` 与 `json_table_extract` 工具保留给 MCP/CLI 使用，智能分析对对象数组的建议改为导出 CSV / JSONPath 取值。
 
 ### Notes
 - 更新签名公钥已替换为真实密钥，GitHub Releases 签名更新链路就绪。
