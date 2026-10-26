@@ -26,6 +26,13 @@ describe('searchCommands', () => {
     expect(searchCommands('zzzz不存在')).toHaveLength(0)
   })
 
+  it('中文关键词能同时命中同类工具', () => {
+    const ids = searchCommands('排序').map(c => c.id)
+    expect(ids).toContain('tool.sort')
+    expect(ids).toContain('tool.sortByField')
+    expect(searchCommands('sql').map(c => c.id)).toContain('tool.sql')
+  })
+
   it('命令 id 唯一', () => {
     const ids = COMMANDS.map(c => c.id)
     expect(new Set(ids).size).toBe(ids.length)
