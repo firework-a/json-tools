@@ -162,7 +162,7 @@ pnpm test           # 单元测试（vitest）
 pnpm smoke          # MCP/CLI stdio 冒烟（tsx 源文件 + dist 产物 + 工具清单 + 新工具实调）
 pnpm smoke:dist     # 同上但只跑 esbuild dist 产物（CI 用，无需 tsx）
 pnpm smoke:exe      # 对随安装包打包的单文件 exe 做同样的 stdio 冒烟（需先 pnpm build:mcp:exe）
-pnpm a11y           # 逐屏 WCAG AA 对比度 + 可访问名 + 弹层键盘行为审计（需先 pnpm dev 或 pnpm preview）
+pnpm a11y           # 逐屏 WCAG AA 对比度 + 可访问名 + 弹层键盘行为审计（自带 vite preview，需先 pnpm build；--url 可指向 dev 地址）
 pnpm build          # 前端构建
 pnpm build:app      # 打包当前平台安装包（release）
 pnpm build:app debug  # 打 debug 包（快速、体积大）

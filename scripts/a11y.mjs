@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// 界面可访问性审计：无头 Chrome + CDP 逐屏扫描所有可见文本的 WCAG 对比度，并检查交互元素的可访问名。
+// 界面可访问性审计：无头 Chrome + CDP 逐屏扫描所有可见文本的 WCAG 对比度、交互元素可访问名，并验证弹层键盘行为。
 //
-//   pnpm build && pnpm preview --port 4173   # 需要先有静态站点在跑（或 pnpm dev）
-//   pnpm a11y                                 # 默认审计 http://localhost:4173 的全部视图
-//   pnpm a11y --url http://localhost:1420 --stops tools,settings
+//   pnpm a11y                                 # 自动拉起 vite preview（:4173，需先 pnpm build）并审计全部视图
+//   pnpm a11y --url http://localhost:1420     # 审计指定地址（如在跑的 pnpm dev），不自带服务器
+//   pnpm a11y --stops tools,settings,kbd      # 只跑部分站点
 //
-// 覆盖：编辑/树、格式转换、生成代码、Schema、对比、工具箱（逐个工具）、设置、命令面板 × 暗亮双主题。
+// 覆盖：编辑/树、格式转换、生成代码、Schema、对比、工具箱（逐个工具 + 下拉展开）、设置、命令面板、键盘焦点 × 深浅主题。
 // 退出码：0 全部达标；1 存在不达标项或审计失败。
 import { spawn } from 'node:child_process'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -16,6 +16,7 @@ const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`)
   return i > -1 ? process.argv[i + 1] : fallback
 }
+const SELF_HOSTED = !process.argv.includes('url')
 const APP = arg('url', 'http://localhost:4173/')
 const CDP_PORT = Number(arg('cdp', 9334))
 const ONLY = (arg('stops', '') || '').split(',').map(s => s.trim()).filter(Boolean)
@@ -26,6 +27,21 @@ const sleep = ms => new Promise(r => setTimeout(r, ms))
 const findChrome = () => process.platform !== 'win32'
   ? arg('chrome', process.env.CHROME_PATH || '/usr/bin/google-chrome')
   : CHROME
+
+/** 未指定 --url 时自带 vite preview，省掉「先手动起服务器」这一步（dist 需已构建） */
+let server = null
+if (SELF_HOSTED) {
+  const port = new URL(APP).port || '4173'
+  server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--port', port, '--strictPort'], { stdio: 'ignore' })
+  let up = false
+  for (let i = 0; i < 40 && !up; i++) {
+    try { up = (await fetch(APP, { method: 'HEAD' })).ok } catch { await sleep(250) }
+  }
+  if (!up) {
+    console.error(`❌ 起不了预览服务器 ${APP}（先跑 pnpm build，或用 --url 指向在跑的 dev 地址）`)
+    process.exit(1)
+  }
+}
 
 /** 审计用的样本数据：覆盖数组、时间戳、敏感键、null、长文本等渲染分支 */
 const SAMPLE = JSON.stringify({
@@ -71,6 +87,7 @@ const chrome = spawn(findChrome(), [
 
 const cleanup = () => {
   try { chrome.kill() } catch { /* 已退出 */ }
+  try { server?.kill() } catch { /* 预览服务器已退出 */ }
   try { rmSync(profile, { recursive: true, force: true }) } catch { /* 临时目录清理失败不影响结论 */ }
 }
 process.on('exit', cleanup)
