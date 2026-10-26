@@ -31,6 +31,11 @@ src/
 │   ├── jsonSchema.ts           # JSON Schema 生成
 │   ├── schemaValidator.ts      # Schema 校验
 │   ├── jsonTransform.ts        # 键排序/扁平化/去空值
+│   ├── keyCase.ts              # 键名风格批量互转（camel/snake/kebab/pascal）
+│   ├── merge.ts                # 两份 JSON 深度合并
+│   ├── redact.ts               # 敏感字段脱敏（键名 + 值格式双识别）
+│   ├── timestamps.ts           # 递归时间戳 ↔ 日期互转
+│   ├── tableExport.ts          # 对象数组导出 Markdown / HTML
 │   ├── jsonDiffer.ts           # 行级 diff
 │   ├── codeGen.ts / jsonToTs.ts # 多语言类型生成（quicktype）
 │   ├── mockData.ts             # Mock 数据生成

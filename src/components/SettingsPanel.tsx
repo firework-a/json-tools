@@ -180,6 +180,11 @@ const MCP_TOOLS: { name: string; desc: string }[] = [
   { name: 'json_table_extract', desc: '提取对象数组为表格行列' },
   { name: 'json_to_schema', desc: '从样例推断 JSON Schema' },
   { name: 'json_insights', desc: '智能分析：结构摘要 / 质量评分 / 建议' },
+  { name: 'json_keys_case', desc: '键名风格批量互转（camel/snake/kebab/Pascal）' },
+  { name: 'json_merge', desc: '两份 JSON 深度合并（数组与冲突策略可选）' },
+  { name: 'json_redact', desc: '敏感字段脱敏 + 命中清单' },
+  { name: 'json_timestamps', desc: '递归时间戳 ↔ 日期互转' },
+  { name: 'json_table_export', desc: '对象数组导出 Markdown / HTML 表格' },
 ]
 
 const MCP_EXE_PLACEHOLDER = '<安装目录>\\binaries\\json-tools-mcp.exe'

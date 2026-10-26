@@ -15,6 +15,7 @@
 - **全局 Ctrl+V**：编辑器外直接粘贴剪贴板内容到当前编辑器。
 - **最近打开文件**：命令面板直达（Tauri 原生路径，持久化最近 10 条）。
 - **工作区状态恢复**：标签页内容跨启动持久化（超大内容跳过，恢复后保留未保存标记）。
+- **数据处理工具箱扩充 5 项**：键名风格批量转换（`keyCase.ts`，camel/snake/kebab/Pascal 互转、撞名报错保护）、JSON 深度合并（`merge.ts`，数组替换/拼接/并集 + 标量冲突取侧）、敏感字段脱敏（`redact.ts`，键名 + 值格式双识别并输出命中清单）、时间戳批量互转（`timestamps.ts`，epoch ↔ 日期，ISO/本地）、表格导出（`tableExport.ts`，Markdown / HTML）。每项含 vitest 用例，并同步为 MCP/CLI 工具（`json_keys_case` / `json_merge` / `json_redact` / `json_timestamps` / `json_table_export`），MCP 工具数 13 → 18。
 - **新增 MCP Server + CLI**（`mcp-server/`）：13 个核心 JSON 工具（修复/格式化/校验/转换/变换/diff/Mock/统计/查询/表格提取/Schema 生成/智能分析）通过 Model Context Protocol 暴露给 AI 助手，同一个程序也是命令行工具（`list` / `run <tool> --text data.json` / `--help`）；参数校验与默认值共用 `tools.ts` 一份定义，逻辑复用 src/utils 纯函数与桌面端一致。
 - **新增智能分析功能**（工具箱「智能分析」）：本地规则引擎对 JSON 做结构摘要、字段类型统计、数据质量检查（类型混杂/null 占比/深嵌套/空数组对象）与优化建议，输出可读分析报告，离线无需 API key。
 - **大文件打开提示**。

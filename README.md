@@ -31,6 +31,11 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 - JSON 树形结构查看，支持 JMESPath / JSONPath 双查询语言（速查表、历史记录、结果写回编辑器）
 - JSON Diff 对比，行级差异高亮，一键生成/应用 RFC 6902 JSON Patch
 - Mock 数据生成：从样例结构或 JSON Schema 生成仿真数据
+- 键名风格批量转换：递归在 camelCase / snake_case / kebab-case / PascalCase 间互转，撞名时报错不丢数据
+- JSON 深度合并：以编辑器内容为基准、粘贴内容为增量，数组支持整体替换/拼接/并集去重，标量冲突可指定取舍侧
+- 敏感字段脱敏：按键名与值格式（手机号 / 身份证 / 邮箱 / JWT / IP / 卡号 / 长随机串）递归打码，附命中清单，便于贴日志到工单前处理
+- 时间戳批量互转：递归识别秒/毫秒 epoch 转日期（ISO 或本地可读），或把日期字符串转回时间戳
+- 表格导出：对象数组一键导出 Markdown / HTML 表格文本
 - JSON Schema 应用到编辑器实时校验（Monaco diagnostics）
 - YAML / XML / TOML / CSV 格式转换（支持反向：YAML/XML/TOML/CSV → JSON），NDJSON ↔ JSON 互转
 - TypeScript / Python / Go / Java / C# / Rust / Kotlin 多语言类型生成
@@ -57,9 +62,9 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 
 ## MCP Server（AI 助手集成）
 
-仓库内置一个 MCP (Model Context Protocol) Server（`mcp-server/`），把 13 个核心 JSON 工具暴露给 AI 助手：
+仓库内置一个 MCP (Model Context Protocol) Server（`mcp-server/`），把 18 个核心 JSON 工具暴露给 AI 助手：
 
-`json_repair` · `json_format` · `json_validate` · `json_convert` · `json_ndjson` · `json_transform` · `json_diff` · `json_mock` · `json_stats` · `json_query`（JSONPath/JMESPath） · `json_table_extract` · `json_to_schema` · `json_insights`（智能分析）
+`json_repair` · `json_format` · `json_validate` · `json_convert` · `json_ndjson` · `json_transform` · `json_diff` · `json_mock` · `json_stats` · `json_query`（JSONPath/JMESPath） · `json_table_extract` · `json_to_schema` · `json_insights`（智能分析） · `json_keys_case`（键名风格） · `json_merge`（深度合并） · `json_redact`（脱敏） · `json_timestamps`（时间戳互转） · `json_table_export`（表格导出）
 
 它同时是一个命令行程序，随安装包分发为单文件 `json-tools-mcp.exe`，**不发布到 npm**：用户不需要 Node.js，也不需要打开应用。
 
@@ -82,7 +87,7 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 ### 命令行用法
 
 ```bash
-json-tools-mcp.exe list                                 # 列出 13 个工具
+json-tools-mcp.exe list                                 # 列出 18 个工具
 json-tools-mcp.exe run json_repair --text broken.json  # 值传文件路径自动读取内容
 echo '{a:1,}' | json-tools-mcp.exe run json_repair      # 管道灌入主字段
 json-tools-mcp.exe run json_query --help                # 查看参数

@@ -135,6 +135,11 @@ export const COMMANDS: AppCommand[] = [
   { id: 'tool.mock', label: 'Mock 数据生成', group: '工具箱', keywords: 'mock fake 数据 生成 样例', run: () => openTool('mock') },
   { id: 'tool.ndjson', label: 'NDJSON 转换', group: '工具箱', keywords: 'ndjson jsonl newline 流', run: () => openTool('ndjson') },
   { id: 'tool.insights', label: '智能分析', group: '工具箱', keywords: 'insights ai 智能 分析 质量 洞察', run: () => openTool('insights') },
+  { id: 'tool.keyCase', label: '键名风格转换', group: '工具箱', keywords: 'case camel snake kebab pascal 键名 命名 驼峰', run: () => openTool('keyCase') },
+  { id: 'tool.merge', label: 'JSON 深度合并', group: '工具箱', keywords: 'merge 合并 深度 叠加 配置', run: () => openTool('merge') },
+  { id: 'tool.redact', label: '敏感字段脱敏', group: '工具箱', keywords: 'redact mask 脱敏 打码 隐私 手机号 身份证', run: () => openTool('redact') },
+  { id: 'tool.ts', label: '时间戳批量互转', group: '工具箱', keywords: 'epoch timestamp 时间戳 日期 批量 互转', run: () => openTool('ts') },
+  { id: 'tool.tableExport', label: '表格导出', group: '工具箱', keywords: 'markdown html table 表格 导出', run: () => openTool('tableExport') },
 
   // 其他
   { id: 'app.settings', label: '打开设置', group: '其他', keywords: 'settings 设置 偏好', run: () => s().setSettingsOpen(true) },

@@ -12,6 +12,11 @@ import { jsonToSchema } from '../src/utils/jsonSchema'
 import { validateJsonSchema } from '../src/utils/schemaValidator'
 import { computeDiff } from '../src/utils/jsonDiffer'
 import { buildTable } from '../src/utils/table'
+import { convertKeys, type KeyCase } from '../src/utils/keyCase'
+import { mergeJson, type MergeArrayStrategy, type MergePrefer } from '../src/utils/merge'
+import { redactJson } from '../src/utils/redact'
+import { humanizeTimestamps, toEpochTimestamps, type TimestampFormat } from '../src/utils/timestamps'
+import { exportTable } from '../src/utils/tableExport'
 import { JSONPath } from 'jsonpath-plus'
 import { search as jmesSearch } from 'jmespath'
 
@@ -226,6 +231,72 @@ export const TOOLS: ToolDef[] = [
     schema: { text: z.string().describe('JSON 文本') },
     run: ({ text: input }) => {
       const r = analyzeJson(input)
+      return r.error ? fail(r.error) : ok(r.result)
+    },
+  }),
+  tool({
+    name: 'json_keys_case',
+    description: '递归批量转换键名风格（camelCase / snake_case / kebab-case / PascalCase）；撞名时报错避免丢数据',
+    schema: {
+      text: z.string().describe('JSON 文本'),
+      style: z.enum(['camel', 'snake', 'kebab', 'pascal']).default('camel').describe('目标键名风格'),
+    },
+    run: ({ text: input, style }) => {
+      const r = convertKeys(input, style as KeyCase)
+      return r.error ? fail(r.error) : ok(r.result)
+    },
+  }),
+  tool({
+    name: 'json_merge',
+    description: '两份 JSON 深度合并（对象递归；数组支持整体替换/拼接/并集去重；标量冲突可指定取哪一侧）',
+    schema: {
+      left: z.string().describe('基准 JSON'),
+      right: z.string().describe('增量 JSON'),
+      arrayStrategy: z.enum(['replace', 'concat', 'union']).default('replace').describe('数组处理方式'),
+      prefer: z.enum(['left', 'right']).default('right').describe('标量冲突时取哪一侧'),
+    },
+    run: ({ left, right, arrayStrategy, prefer }) => {
+      const r = mergeJson(left, right, { arrayStrategy: arrayStrategy as MergeArrayStrategy, prefer: prefer as MergePrefer })
+      return r.error ? fail(r.error) : ok(r.result)
+    },
+  }),
+  tool({
+    name: 'json_redact',
+    description: '敏感字段脱敏：按键名（password/token/secret…）与值格式（手机号/身份证/邮箱/JWT/IP/卡号）递归打码，返回脱敏结果与命中清单',
+    schema: {
+      text: z.string().describe('JSON 文本'),
+      keepEdges: z.boolean().default(true).describe('是否保留首尾 2 个字符便于核对'),
+      extraKeyPattern: z.string().optional().describe('追加的键名正则（可选）'),
+    },
+    run: ({ text: input, keepEdges, extraKeyPattern }) => {
+      const r = redactJson(input, { keepEdges, extraKeyPattern })
+      if (r.error) return fail(r.error)
+      return ok({ result: JSON.parse(r.result), hits: r.hits })
+    },
+  }),
+  tool({
+    name: 'json_timestamps',
+    description: '递归时间戳互转：toHuman 把秒/毫秒 epoch 转成日期，toEpoch 把日期字符串转回毫秒；返回结果与命中路径',
+    schema: {
+      text: z.string().describe('JSON 文本'),
+      mode: z.enum(['toHuman', 'toEpoch']).default('toHuman').describe('转换方向'),
+      format: z.enum(['iso', 'local']).default('iso').describe('toHuman 的日期格式'),
+    },
+    run: ({ text: input, mode, format }) => {
+      const r = mode === 'toEpoch' ? toEpochTimestamps(input) : humanizeTimestamps(input, { format: format as TimestampFormat })
+      if (r.error) return fail(r.error)
+      return ok({ result: JSON.parse(r.result), hits: r.hits })
+    },
+  }),
+  tool({
+    name: 'json_table_export',
+    description: '把 JSON 里的对象数组导出为 Markdown 或 HTML 表格文本（自动下钻根下数组字段）',
+    schema: {
+      text: z.string().describe('JSON 文本，需包含对象数组'),
+      format: z.enum(['markdown', 'html']).default('markdown').describe('输出格式'),
+    },
+    run: ({ text: input, format }) => {
+      const r = exportTable(input, format as 'markdown' | 'html')
       return r.error ? fail(r.error) : ok(r.result)
     },
   }),

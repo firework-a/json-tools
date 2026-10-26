@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAppStore } from '../store'
 import { detectFormat } from '../utils/json'
-import { sortJsonKeys, flattenJson, unflattenJson, removeEmptyValues, dedupJson, type TransformResult } from '../utils/jsonTransform'
+import { sortJsonKeys, flattenJson, unflattenJson, removeEmptyValues, dedupJson } from '../utils/jsonTransform'
 import {
   base64Encode, base64Decode, urlEncode, urlDecode, decodeJwt,
   hashText, convertTimestamp, convertNumberBase, HASH_ALGOS, type HashAlgo,
@@ -9,10 +9,20 @@ import {
 import { generateMock } from '../utils/mockData'
 import { convertNdjson } from '../utils/ndjson'
 import { analyzeJson, formatInsightsReport } from '../utils/insights'
+import { convertKeys, type KeyCase } from '../utils/keyCase'
+import { mergeJson, type MergeArrayStrategy } from '../utils/merge'
+import { redactJson } from '../utils/redact'
+import { humanizeTimestamps, toEpochTimestamps, type TimestampFormat } from '../utils/timestamps'
+import { exportTable } from '../utils/tableExport'
 import { BackIcon, ChevronDown } from './Icons'
 import CustomSelect from './CustomSelect'
 
-type ToolId = 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'dedup' | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase' | 'mock' | 'ndjson' | 'insights'
+type ToolOutcome = { result: string; error: string | null; hits?: { path: string }[] }
+
+type ToolId =
+  | 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'dedup'
+  | 'keyCase' | 'merge' | 'redact' | 'ts' | 'tableExport'
+  | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase' | 'mock' | 'ndjson' | 'insights'
 
 interface ToolMeta { id: ToolId; label: string; group: string; json?: boolean }
 const TOOLS: ToolMeta[] = [
@@ -21,6 +31,11 @@ const TOOLS: ToolMeta[] = [
   { id: 'unflatten', label: '扁平还原', group: 'JSON 变换', json: true },
   { id: 'removeEmpty', label: '去空值', group: 'JSON 变换', json: true },
   { id: 'dedup', label: '去重', group: 'JSON 变换', json: true },
+  { id: 'keyCase', label: '键名风格', group: '数据处理', json: true },
+  { id: 'merge', label: '深度合并', group: '数据处理', json: true },
+  { id: 'redact', label: '敏感脱敏', group: '数据处理', json: true },
+  { id: 'ts', label: '时间戳互转', group: '数据处理', json: true },
+  { id: 'tableExport', label: '表格导出', group: '数据处理', json: true },
   { id: 'base64', label: 'Base64', group: '编解码' },
   { id: 'url', label: 'URL 编码', group: '编解码' },
   { id: 'jwt', label: 'JWT 解析', group: '编解码' },
@@ -44,6 +59,13 @@ export default function ToolsPanel() {
   const [base, setBase] = useState(10)
   const [mockCount, setMockCount] = useState('5')
   const [ndjsonMode, setNdjsonMode] = useState('toJson')
+  const [keyCaseStyle, setKeyCaseStyle] = useState<KeyCase>('camel')
+  const [mergeStrategy, setMergeStrategy] = useState<MergeArrayStrategy>('replace')
+  const [mergePrefer, setMergePrefer] = useState<'left' | 'right'>('right')
+  const [redactEdges, setRedactEdges] = useState('keep')
+  const [tsMode, setTsMode] = useState<'toHuman' | 'toEpoch'>('toHuman')
+  const [tsFormat, setTsFormat] = useState<TimestampFormat>('iso')
+  const [tableFormat, setTableFormat] = useState<'markdown' | 'html'>('markdown')
   const [hashOut, setHashOut] = useState<{ result: string; error: string | null }>({ result: '', error: null })
   const [groupOpen, setGroupOpen] = useState(true)
   const toolsTool = useAppStore(s => s.toolsTool)
@@ -76,7 +98,7 @@ export default function ToolsPanel() {
   }, [])
 
   // 同步计算结果（哈希为异步，单独处理）
-  const result = useMemo<TransformResult | { result: string; error: string | null }>(() => {
+  const result = useMemo<ToolOutcome>(() => {
     if (tool === 'hash') return hashOut
     if (!input.trim()) return { result: '', error: null }
     switch (tool) {
@@ -85,6 +107,11 @@ export default function ToolsPanel() {
       case 'unflatten': return unflattenJson(input)
       case 'removeEmpty': return removeEmptyValues(input, removeOnlyNull)
       case 'dedup': return dedupJson(input)
+      case 'keyCase': return convertKeys(input, keyCaseStyle)
+      case 'merge': return mergeJson(content, input, { arrayStrategy: mergeStrategy, prefer: mergePrefer })
+      case 'redact': return redactJson(input, { keepEdges: redactEdges === 'keep' })
+      case 'ts': return tsMode === 'toHuman' ? humanizeTimestamps(input, { format: tsFormat }) : toEpochTimestamps(input)
+      case 'tableExport': return exportTable(input, tableFormat)
       case 'base64': return decode ? base64Decode(input) : base64Encode(input)
       case 'url': return decode ? urlDecode(input) : urlEncode(input)
       case 'jwt': return decodeJwt(input)
@@ -99,7 +126,10 @@ export default function ToolsPanel() {
       }
       default: return { result: '', error: null }
     }
-  }, [input, tool, decode, sortOrder, removeOnlyNull, base, hashOut, mockCount, ndjsonMode])
+  }, [input, tool, decode, sortOrder, removeOnlyNull, base, hashOut, mockCount, ndjsonMode,
+    keyCaseStyle, content, mergeStrategy, mergePrefer, redactEdges, tsMode, tsFormat, tableFormat])
+
+  const hitCount = result.hits?.length ?? 0
 
   // 哈希异步
   useEffect(() => {
@@ -115,6 +145,7 @@ export default function ToolsPanel() {
   const activeMeta = TOOLS.find(t => t.id === tool)!
   const hasOptions =
     tool === 'sort' || tool === 'removeEmpty' || tool === 'base64' || tool === 'url' || tool === 'hash' || tool === 'numbase' || tool === 'mock' || tool === 'ndjson'
+    || tool === 'keyCase' || tool === 'merge' || tool === 'redact' || tool === 'ts' || tool === 'tableExport'
 
   const copyOut = async () => {
     if (!result.result) { showToast('没有可复制的内容'); return }
@@ -218,6 +249,88 @@ export default function ToolsPanel() {
                   ]}
                 />
               )}
+              {tool === 'keyCase' && (
+                <CustomSelect
+                  value={keyCaseStyle}
+                  onChange={v => setKeyCaseStyle(v as KeyCase)}
+                  minWidth={120}
+                  options={[
+                    { value: 'camel', label: 'camelCase' },
+                    { value: 'snake', label: 'snake_case' },
+                    { value: 'kebab', label: 'kebab-case' },
+                    { value: 'pascal', label: 'PascalCase' },
+                  ]}
+                />
+              )}
+              {tool === 'merge' && (
+                <>
+                  <CustomSelect
+                    value={mergeStrategy}
+                    onChange={v => setMergeStrategy(v as MergeArrayStrategy)}
+                    minWidth={130}
+                    options={[
+                      { value: 'replace', label: '数组：整体替换' },
+                      { value: 'concat', label: '数组：拼接' },
+                      { value: 'union', label: '数组：并集去重' },
+                    ]}
+                  />
+                  <CustomSelect
+                    value={mergePrefer}
+                    onChange={v => setMergePrefer(v as 'left' | 'right')}
+                    minWidth={130}
+                    options={[
+                      { value: 'right', label: '标量冲突：取增量' },
+                      { value: 'left', label: '标量冲突：取基准' },
+                    ]}
+                  />
+                </>
+              )}
+              {tool === 'redact' && (
+                <CustomSelect
+                  value={redactEdges}
+                  onChange={v => setRedactEdges(v)}
+                  minWidth={130}
+                  options={[
+                    { value: 'keep', label: '保留首尾 2 位' },
+                    { value: 'full', label: '整值打码' },
+                  ]}
+                />
+              )}
+              {tool === 'ts' && (
+                <>
+                  <CustomSelect
+                    value={tsMode}
+                    onChange={v => setTsMode(v as 'toHuman' | 'toEpoch')}
+                    minWidth={140}
+                    options={[
+                      { value: 'toHuman', label: '时间戳 → 日期' },
+                      { value: 'toEpoch', label: '日期 → 时间戳(ms)' },
+                    ]}
+                  />
+                  {tsMode === 'toHuman' && (
+                    <CustomSelect
+                      value={tsFormat}
+                      onChange={v => setTsFormat(v as TimestampFormat)}
+                      minWidth={110}
+                      options={[
+                        { value: 'iso', label: 'ISO 8601' },
+                        { value: 'local', label: '本地可读' },
+                      ]}
+                    />
+                  )}
+                </>
+              )}
+              {tool === 'tableExport' && (
+                <CustomSelect
+                  value={tableFormat}
+                  onChange={v => setTableFormat(v as 'markdown' | 'html')}
+                  minWidth={120}
+                  options={[
+                    { value: 'markdown', label: 'Markdown 表' },
+                    { value: 'html', label: 'HTML 表' },
+                  ]}
+                />
+              )}
             </div>
           )}
           {activeMeta.json && (
@@ -236,7 +349,10 @@ export default function ToolsPanel() {
         </div>
         <div className="tools-body">
           <div className="tools-io">
-            <div className="tools-io-title">输入 {detectFormat(input) !== 'text' && input.trim() && <span className="tools-detect">识别为 {detectFormat(input).toUpperCase()}</span>}</div>
+            <div className="tools-io-title">
+              输入 {detectFormat(input) !== 'text' && input.trim() && <span className="tools-detect">识别为 {detectFormat(input).toUpperCase()}</span>}
+              {tool === 'merge' && <span className="tools-detect">{content.trim() ? '基准 = 编辑器当前内容' : '编辑器内容为空，无合并基准'}</span>}
+            </div>
             <textarea
               className="tools-input"
               name="tools-input"
@@ -247,7 +363,9 @@ export default function ToolsPanel() {
             />
           </div>
           <div className="tools-io">
-            <div className="tools-io-title">输出</div>
+            <div className="tools-io-title">
+              输出 {hitCount > 0 && <span className="tools-detect">命中 {hitCount} 处</span>}
+            </div>
             {result.error
               ? <div className="tools-error">{result.error}</div>
               : <pre className="tools-output">{result.result || '结果将显示在这里'}</pre>}
