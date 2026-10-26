@@ -57,6 +57,7 @@ src/
 │   └── main.scss               # 主样式文件
 ├── store.ts              # Zustand 全局状态（含工作区持久化）
 ├── updateStore.ts        # 更新流程状态
+├── tools.ts              # 工具箱清单（id/标签/分组）唯一来源
 ├── commands.ts           # 命令面板命令定义与搜索
 ├── editorRegistry.ts     # 编辑器实例注册表（跨组件联动）
 ├── monaco-entry.ts / monaco-setup.ts  # Monaco 按需打包与主题/Schema 配置

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { searchCommands, COMMANDS } from './commands'
+import { TOOLS } from './tools'
 
 describe('searchCommands', () => {
   it('空查询返回全部命令', () => {
@@ -28,5 +29,11 @@ describe('searchCommands', () => {
   it('命令 id 唯一', () => {
     const ids = COMMANDS.map(c => c.id)
     expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('每个工具箱工具都能从命令面板直达', () => {
+    const reachable = new Set(COMMANDS.filter(c => c.id.startsWith('tool.')).map(c => c.id.slice('tool.'.length)))
+    const missing = TOOLS.map(t => t.id).filter(id => !reachable.has(id))
+    expect(missing, `命令面板缺少工具：${missing.join(', ')}`).toEqual([])
   })
 })

@@ -126,6 +126,11 @@ export const COMMANDS: AppCommand[] = [
   { id: 'mode.tools', label: '工具箱', group: '模式', keywords: 'tools toolbox 工具箱', run: () => switchMode('tools') },
 
   // 工具箱直达
+  { id: 'tool.sort', label: '键排序', group: '工具箱', keywords: 'sort keys 键排序 排序 字母序', run: () => openTool('sort') },
+  { id: 'tool.flatten', label: '扁平化', group: '工具箱', keywords: 'flatten dot 扁平 点号路径 展开', run: () => openTool('flatten') },
+  { id: 'tool.unflatten', label: '扁平还原', group: '工具箱', keywords: 'unflatten dot 还原 嵌套 点号路径', run: () => openTool('unflatten') },
+  { id: 'tool.removeEmpty', label: '去空值', group: '工具箱', keywords: 'remove empty null 去空 删除空值 清理', run: () => openTool('removeEmpty') },
+  { id: 'tool.dedup', label: '数组去重', group: '工具箱', keywords: 'dedup unique 去重 唯一 数组', run: () => openTool('dedup') },
   { id: 'tool.base64', label: 'Base64 编解码', group: '工具箱', keywords: 'base64 b64', run: () => openTool('base64') },
   { id: 'tool.url', label: 'URL 编解码', group: '工具箱', keywords: 'url encode uri', run: () => openTool('url') },
   { id: 'tool.jwt', label: 'JWT 解析', group: '工具箱', keywords: 'jwt token decode', run: () => openTool('jwt') },
@@ -142,6 +147,8 @@ export const COMMANDS: AppCommand[] = [
   { id: 'tool.tableExport', label: '表格导出', group: '工具箱', keywords: 'markdown html table 表格 导出', run: () => openTool('tableExport') },
   { id: 'tool.paths', label: '字段路径统计', group: '工具箱', keywords: 'paths 路径 字段 覆盖率 类型 null 结构', run: () => openTool('paths') },
   { id: 'tool.pick', label: '字段剔除 / 保留', group: '工具箱', keywords: 'pick omit 剔除 删除字段 保留字段 typename 瘦身', run: () => openTool('pick') },
+  { id: 'tool.sql', label: 'SQL 导出', group: '工具箱', keywords: 'sql insert create table 建表 落库 数据库', run: () => openTool('sql') },
+  { id: 'tool.sortByField', label: '数组按字段排序', group: '工具箱', keywords: 'sort order by 排序 字段 升序 降序 列表', run: () => openTool('sortByField') },
 
   // 其他
   { id: 'app.settings', label: '打开设置', group: '其他', keywords: 'settings 设置 偏好', run: () => s().setSettingsOpen(true) },
