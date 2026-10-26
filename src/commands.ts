@@ -140,6 +140,7 @@ export const COMMANDS: AppCommand[] = [
   { id: 'tool.redact', label: '敏感字段脱敏', group: '工具箱', keywords: 'redact mask 脱敏 打码 隐私 手机号 身份证', run: () => openTool('redact') },
   { id: 'tool.ts', label: '时间戳批量互转', group: '工具箱', keywords: 'epoch timestamp 时间戳 日期 批量 互转', run: () => openTool('ts') },
   { id: 'tool.tableExport', label: '表格导出', group: '工具箱', keywords: 'markdown html table 表格 导出', run: () => openTool('tableExport') },
+  { id: 'tool.paths', label: '字段路径统计', group: '工具箱', keywords: 'paths 路径 字段 覆盖率 类型 null 结构', run: () => openTool('paths') },
 
   // 其他
   { id: 'app.settings', label: '打开设置', group: '其他', keywords: 'settings 设置 偏好', run: () => s().setSettingsOpen(true) },

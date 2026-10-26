@@ -14,6 +14,7 @@ import { mergeJson, type MergeArrayStrategy } from '../utils/merge'
 import { redactJson } from '../utils/redact'
 import { humanizeTimestamps, toEpochTimestamps, type TimestampFormat } from '../utils/timestamps'
 import { exportTable } from '../utils/tableExport'
+import { collectPaths } from '../utils/paths'
 import { BackIcon, ChevronDown } from './Icons'
 import CustomSelect from './CustomSelect'
 
@@ -21,7 +22,7 @@ type ToolOutcome = { result: string; error: string | null; hits?: { path: string
 
 type ToolId =
   | 'sort' | 'flatten' | 'unflatten' | 'removeEmpty' | 'dedup'
-  | 'keyCase' | 'merge' | 'redact' | 'ts' | 'tableExport'
+  | 'keyCase' | 'merge' | 'redact' | 'ts' | 'tableExport' | 'paths'
   | 'base64' | 'url' | 'jwt' | 'hash' | 'timestamp' | 'numbase' | 'mock' | 'ndjson' | 'insights'
 
 interface ToolMeta { id: ToolId; label: string; group: string; json?: boolean }
@@ -36,6 +37,7 @@ const TOOLS: ToolMeta[] = [
   { id: 'redact', label: '敏感脱敏', group: '数据处理', json: true },
   { id: 'ts', label: '时间戳互转', group: '数据处理', json: true },
   { id: 'tableExport', label: '表格导出', group: '数据处理', json: true },
+  { id: 'paths', label: '字段路径', group: '数据处理', json: true },
   { id: 'base64', label: 'Base64', group: '编解码' },
   { id: 'url', label: 'URL 编码', group: '编解码' },
   { id: 'jwt', label: 'JWT 解析', group: '编解码' },
@@ -63,6 +65,7 @@ export default function ToolsPanel() {
   const [mergeStrategy, setMergeStrategy] = useState<MergeArrayStrategy>('replace')
   const [mergePrefer, setMergePrefer] = useState<'left' | 'right'>('right')
   const [redactEdges, setRedactEdges] = useState('keep')
+  const [redactPattern, setRedactPattern] = useState('')
   const [tsMode, setTsMode] = useState<'toHuman' | 'toEpoch'>('toHuman')
   const [tsFormat, setTsFormat] = useState<TimestampFormat>('iso')
   const [tableFormat, setTableFormat] = useState<'markdown' | 'html'>('markdown')
@@ -109,9 +112,10 @@ export default function ToolsPanel() {
       case 'dedup': return dedupJson(input)
       case 'keyCase': return convertKeys(input, keyCaseStyle)
       case 'merge': return mergeJson(content, input, { arrayStrategy: mergeStrategy, prefer: mergePrefer })
-      case 'redact': return redactJson(input, { keepEdges: redactEdges === 'keep' })
+      case 'redact': return redactJson(input, { keepEdges: redactEdges === 'keep', extraKeyPattern: redactPattern.trim() || undefined })
       case 'ts': return tsMode === 'toHuman' ? humanizeTimestamps(input, { format: tsFormat }) : toEpochTimestamps(input)
       case 'tableExport': return exportTable(input, tableFormat)
+      case 'paths': return collectPaths(input)
       case 'base64': return decode ? base64Decode(input) : base64Encode(input)
       case 'url': return decode ? urlDecode(input) : urlEncode(input)
       case 'jwt': return decodeJwt(input)
@@ -127,7 +131,7 @@ export default function ToolsPanel() {
       default: return { result: '', error: null }
     }
   }, [input, tool, decode, sortOrder, removeOnlyNull, base, hashOut, mockCount, ndjsonMode,
-    keyCaseStyle, content, mergeStrategy, mergePrefer, redactEdges, tsMode, tsFormat, tableFormat])
+    keyCaseStyle, content, mergeStrategy, mergePrefer, redactEdges, redactPattern, tsMode, tsFormat, tableFormat])
 
   const hitCount = result.hits?.length ?? 0
 
@@ -286,15 +290,24 @@ export default function ToolsPanel() {
                 </>
               )}
               {tool === 'redact' && (
-                <CustomSelect
-                  value={redactEdges}
-                  onChange={v => setRedactEdges(v)}
-                  minWidth={130}
-                  options={[
-                    { value: 'keep', label: '保留首尾 2 位' },
-                    { value: 'full', label: '整值打码' },
-                  ]}
-                />
+                <>
+                  <CustomSelect
+                    value={redactEdges}
+                    onChange={v => setRedactEdges(v)}
+                    minWidth={130}
+                    options={[
+                      { value: 'keep', label: '保留首尾 2 位' },
+                      { value: 'full', label: '整值打码' },
+                    ]}
+                  />
+                  <input
+                    className="tools-opt-input"
+                    placeholder="附加键名正则，如 uid|uuid"
+                    value={redactPattern}
+                    spellCheck={false}
+                    onChange={e => setRedactPattern(e.target.value)}
+                  />
+                </>
               )}
               {tool === 'ts' && (
                 <>

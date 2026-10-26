@@ -17,6 +17,7 @@ import { mergeJson, type MergeArrayStrategy, type MergePrefer } from '../src/uti
 import { redactJson } from '../src/utils/redact'
 import { humanizeTimestamps, toEpochTimestamps, type TimestampFormat } from '../src/utils/timestamps'
 import { exportTable } from '../src/utils/tableExport'
+import { collectPaths } from '../src/utils/paths'
 import { JSONPath } from 'jsonpath-plus'
 import { search as jmesSearch } from 'jmespath'
 
@@ -298,6 +299,15 @@ export const TOOLS: ToolDef[] = [
     run: ({ text: input, format }) => {
       const r = exportTable(input, format as 'markdown' | 'html')
       return r.error ? fail(r.error) : ok(r.result)
+    },
+  }),
+  tool({
+    name: 'json_paths',
+    description: '统计 JSON 字段结构：每个路径的出现次数、父级覆盖率、类型分布、null 数与示例值（数组折叠为 [*]），用于分析接口字段是否可选/类型混杂',
+    schema: { text: z.string().describe('JSON 文本') },
+    run: ({ text: input }) => {
+      const r = collectPaths(input)
+      return r.error ? fail(r.error) : ok({ total: r.stats.length, paths: r.stats })
     },
   }),
 ]

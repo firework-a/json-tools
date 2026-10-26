@@ -185,6 +185,7 @@ const MCP_TOOLS: { name: string; desc: string }[] = [
   { name: 'json_redact', desc: '敏感字段脱敏 + 命中清单' },
   { name: 'json_timestamps', desc: '递归时间戳 ↔ 日期互转' },
   { name: 'json_table_export', desc: '对象数组导出 Markdown / HTML 表格' },
+  { name: 'json_paths', desc: '字段路径覆盖率 / 类型分布 / null 率' },
 ]
 
 const MCP_EXE_PLACEHOLDER = '<安装目录>\\binaries\\json-tools-mcp.exe'

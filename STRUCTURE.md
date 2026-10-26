@@ -36,6 +36,7 @@ src/
 │   ├── redact.ts               # 敏感字段脱敏（键名 + 值格式双识别）
 │   ├── timestamps.ts           # 递归时间戳 ↔ 日期互转
 │   ├── tableExport.ts          # 对象数组导出 Markdown / HTML
+│   ├── paths.ts                # 字段路径统计（次数/覆盖率/类型/null 率）
 │   ├── jsonDiffer.ts           # 行级 diff
 │   ├── codeGen.ts / jsonToTs.ts # 多语言类型生成（quicktype）
 │   ├── mockData.ts             # Mock 数据生成

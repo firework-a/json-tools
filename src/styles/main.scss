@@ -3033,6 +3033,36 @@ select {
   outline: none;
   &:focus { border-color: $blue; }
 }
+/* 工具箱内的行内文本参数（如脱敏附加键名正则） */
+.tools-opt-input {
+  height: 26px;
+  width: 190px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: $bg-input;
+  border: 1px solid $border;
+  color: $text-primary;
+  font-size: 12px;
+  font-family: $font-mono;
+  outline: none;
+  transition: border-color 0.14s $ease-out, box-shadow 0.14s $ease-out;
+
+  &::placeholder { color: $text-muted; font-family: $font-ui; }
+  &:hover { border-color: $hairline-strong; }
+  &:focus {
+    border-color: rgba($blue, 0.6);
+    box-shadow: 0 0 0 3px rgba($blue, 0.18);
+  }
+}
+
+[data-theme='light'] .tools-opt-input {
+  background: linear-gradient(180deg, #ffffff, #f3f5f9);
+  border-color: #dbe1ea;
+  color: #1f2937;
+
+  &::placeholder { color: #94a3b8; }
+}
+
 .tools-body {
   flex: 1;
   min-height: 0;
