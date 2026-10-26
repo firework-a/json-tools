@@ -1446,7 +1446,7 @@ select {
 }
 
 [data-theme='light'] .set-seg-item {
-  color: #64748b;
+  color: #5b6472;
 
   &:hover {
     color: #0f172a;
@@ -1542,12 +1542,12 @@ select {
     transition: all 0.12s;
 
     &.primary {
-      background: $blue;
+      background: var(--accent-fill);
       color: #fff;
       border: none;
 
       &:hover {
-        background: color.adjust($blue, $lightness: 10%);
+        background: #2456bd;
       }
     }
 
@@ -1793,12 +1793,12 @@ select {
   }
 
   &.confirm {
-    background: $green;
+    background: #15803d;
     border: none;
     color: #fff;
 
     &:hover {
-      background: color.adjust($green, $lightness: 10%);
+      background: #116b33;
     }
   }
 }
@@ -2183,7 +2183,7 @@ select {
 
 .pill.active.purple {
   background: rgba($purple, 0.25);
-  color: $purple;
+  color: #c9a2f5;
   border-color: rgba($purple, 0.5);
 }
 
@@ -2210,7 +2210,7 @@ select {
     border-radius: 8px;
 
     &.active {
-      background: $blue;
+      background: var(--accent-fill);
       color: #fff;
     }
   }
@@ -3347,14 +3347,14 @@ select {
 
   /* macOS 菜单：悬停项用强调色实心高亮 + 白字 */
   &:hover, &.focused {
-    background: rgba($blue, 0.9);
+    background: var(--accent-fill);
     color: #fff;
   }
 
   &.active { color: $blue; }
   &:hover.active, &.focused.active { color: #fff; }
 }
-.csel-check { color: $blue; font-size: 12px; }
+.csel-check { color: inherit; font-size: 12px; }
 [data-theme='light'] .csel-trigger {
   background: linear-gradient(180deg, #ffffff, #f3f5f9);
   border-color: #dbe1ea;
@@ -3368,8 +3368,10 @@ select {
 [data-theme='light'] .csel-menu { background: rgba(255, 255, 255, 0.96); border-color: #dbe1ea; box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18), 0 0 0 0.5px rgba(15, 23, 42, 0.06); }
 [data-theme='light'] .csel-item { color: #475569; }
 [data-theme='light'] .csel-item:hover,
-[data-theme='light'] .csel-item.focused { background: #2563eb; color: #fff; }
-[data-theme='light'] .csel-item:hover, [data-theme='light'] .csel-item.focused { background: #f1f5f9; color: #1f2937; }
+[data-theme='light'] .csel-item.focused { background: var(--accent-fill); color: #fff; }
+[data-theme='light'] .csel-item.active { color: #1d4ed8; }
+[data-theme='light'] .csel-item:hover.active,
+[data-theme='light'] .csel-item.focused.active { color: #fff; }
 
 /* 浅色主题：工具箱侧栏回退纯色 */
 [data-theme='light'] .tools-sidebar {
@@ -3449,7 +3451,7 @@ select {
 }
 .cmdk-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .cmdk-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cmdk-group { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.cmdk-group { font-size: 11px; color: #9aa2b1; flex-shrink: 0; }
 .cmdk-hint { font-size: 10px; padding: 1px 5px; border-radius: 4px; border: 1px solid $border; color: var(--text-muted); font-family: $font-mono; flex-shrink: 0; }
 .cmdk-foot {
   display: flex;
@@ -3461,6 +3463,7 @@ select {
   kbd { font-family: $font-mono; font-size: 10px; padding: 1px 4px; border: 1px solid $border; border-radius: 3px; margin: 0 2px; }
 }
 [data-theme='light'] .cmdk-overlay { background: rgba(15,23,42,0.3); }
+[data-theme='light'] .cmdk-group { color: var(--text-muted); }
 [data-theme='light'] .cmdk-panel { background: #fff; border-color: #d9dee7; box-shadow: 0 24px 64px rgba(15,23,42,0.2); }
 [data-theme='light'] .cmdk-item.active { background: rgba(37,99,235,0.1); color: #1f2937; }
 

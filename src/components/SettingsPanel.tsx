@@ -40,6 +40,7 @@ function ToggleRow({ label, desc, value, onChange }: {
         className={`set-switch ${value ? 'on' : ''}`}
         role="switch"
         aria-checked={value}
+        aria-label={label}
         onClick={() => onChange(!value)}
       >
         <span className="set-switch-knob" />
@@ -67,6 +68,7 @@ function SliderRow({ label, value, min, max, step = 1, unit = '', onChange }: {
         <input
           type="range"
           className="set-slider"
+          aria-label={label}
           min={min}
           max={max}
           step={step}

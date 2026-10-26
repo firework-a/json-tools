@@ -15,6 +15,8 @@
     "icon": "node scripts/icon.mjs",
     "scripts:info": "node scripts/info.mjs",
     "test": "vitest run",
+    "a11y": "node scripts/a11y.mjs",
+    "smoke": "pnpm build:mcp && node mcp-server/smoke.mjs && node mcp-server/smoke2.mjs && node mcp-server/smoke-dist.mjs && node mcp-server/smoke3.mjs",
     "mcp": "tsx mcp-server/index.ts",
     "build:mcp": "esbuild mcp-server/index.ts --bundle --platform=node --format=esm --outfile=mcp-server/dist/index.js",
     "build:mcp:exe": "node scripts/build-mcp-exe.mjs",

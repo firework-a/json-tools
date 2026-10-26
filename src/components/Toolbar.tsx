@@ -278,16 +278,16 @@ function Toolbar() {
         <button className="tb-icon-btn" onClick={() => useAppStore.getState().setPaletteOpen(true)} title="命令面板 (Ctrl+K)" aria-label="命令面板">
           <CommandIcon size={15} />
         </button>
-        <button className={`tb-icon-btn ${treeOpen ? 'selected' : ''}`} onClick={() => setTreeOpen(!treeOpen)} title={treeOpen ? '隐藏树形视图' : '显示树形视图'}>
+        <button className={`tb-icon-btn ${treeOpen ? 'selected' : ''}`} onClick={() => setTreeOpen(!treeOpen)} title={treeOpen ? '隐藏树形视图' : '显示树形视图'} aria-label={treeOpen ? '隐藏树形视图' : '显示树形视图'}>
           <TreeIcon size={16} />
         </button>
-        <button className="tb-icon-btn" onClick={toggleTheme} title="切换主题">
+        <button className="tb-icon-btn" onClick={toggleTheme} title="切换主题" aria-label="切换主题">
           <ThemeIcon size={16} />
         </button>
-        <button className={`tb-icon-btn ${settingsOpen ? 'selected' : ''}`} onClick={() => setSettingsOpen(!settingsOpen)} title="设置">
+        <button className={`tb-icon-btn ${settingsOpen ? 'selected' : ''}`} onClick={() => setSettingsOpen(!settingsOpen)} title="设置" aria-label="设置">
           <SettingsIcon size={16} />
         </button>
-        <button className={`tb-icon-btn ${pinned ? 'selected pinned' : ''}`} onClick={togglePinned} title={pinned ? '取消置顶' : '窗口置顶'}>
+        <button className={`tb-icon-btn ${pinned ? 'selected pinned' : ''}`} onClick={togglePinned} title={pinned ? '取消置顶' : '窗口置顶'} aria-label={pinned ? '取消置顶' : '窗口置顶'}>
           {pinned ? <PinOffIcon size={15} /> : <PinIcon size={15} />}
         </button>
       </div>
