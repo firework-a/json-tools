@@ -38,6 +38,7 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 - 表格导出：对象数组一键导出 Markdown / HTML 表格文本
 - 字段路径统计：递归汇总每个路径的次数、父级覆盖率、类型分布、null 数与示例值，用于判断接口字段是否可选、类型是否混杂
 - 字段剔除 / 保留：按路径批量删字段或只留白名单（与路径统计同一套记法，`__typename` 这类简写匹配任意层级），贴日志给别人前很有用
+- 深浅主题文本对比度按 WCAG AA 校准（脚本化全量可见文本扫描 + 交互元素可访问名检查）
 - JSON Schema 应用到编辑器实时校验（Monaco diagnostics）
 - YAML / XML / TOML / CSV 格式转换（支持反向：YAML/XML/TOML/CSV → JSON），NDJSON ↔ JSON 互转
 - TypeScript / Python / Go / Java / C# / Rust / Kotlin 多语言类型生成

@@ -2,6 +2,19 @@
 @use './mixins' as *;
 @use 'sass:color';
 
+/* 主题级文字色变量：深浅主题各取一套满足 WCAG AA 的取值（Sass 变量是单值的，做不到随主题切换） */
+:root {
+  --text-secondary: #8f96a5;
+  --text-muted: #828b9c;
+  --accent-fill: #2a63d6;
+}
+
+[data-theme='light'] {
+  --text-secondary: #5b6472;
+  --text-muted: #5b6472;
+  --accent-fill: #2563eb;
+}
+
 *,
 *::before,
 *::after {
@@ -187,7 +200,7 @@ body {
   text-align: center;
   font-size: 12px;
   font-weight: 500;
-  color: $text-secondary;
+  color: var(--text-secondary);
   pointer-events: none;
   letter-spacing: 0.2px;
   opacity: 0.85;
@@ -342,6 +355,17 @@ select {
 [data-theme='light'] .diff-topbar {
   background: #ffffff;
   border-color: #d9dee7;
+}
+
+/* 状态栏文字此前沿用深色主题色，白底上对比度只有 1.4~3.0，这里补齐浅色取值 */
+[data-theme='light'] .status-bar {
+  color: #5b6472;
+
+  .status-filename { color: #0f172a; }
+  .status-sep { color: #6b7280; }
+  .status-center { color: #15803d; }
+  .status-center strong { color: #b45309; }
+  .status-error { color: #dc2626; }
 }
 
 /* 浅色下同样把标题栏 + 工具栏 + 标签栏并成一块浅灰 chrome */
@@ -649,7 +673,7 @@ select {
   min-width: 100px;
   max-width: 200px;
   font-size: 12px;
-  color: $text-secondary;
+  color: var(--text-secondary);
   border-radius: $radius-sm $radius-sm 0 0;
   cursor: pointer;
   position: relative;
@@ -697,12 +721,23 @@ select {
   width: 16px;
   height: 16px;
   border-radius: 3px;
-  color: $text-muted;
+  color: var(--text-muted);
   flex-shrink: 0;
-  opacity: 0.6;
+  /* Safari 式：关闭按钮只在悬停/当前页显示，避免标签上永远挂着灰点 */
+  opacity: 0;
+  transition: opacity 0.14s $ease-out, background 0.14s $ease-out;
+
+  .tab:hover &,
+  .tab.active & {
+    opacity: 0.7;
+  }
+
+  &:focus-visible {
+    opacity: 1;
+  }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.1);
     color: $text-primary;
     opacity: 1;
   }
@@ -712,7 +747,7 @@ select {
   @include flex-center;
   width: 34px;
   font-size: 18px;
-  color: $text-secondary;
+  color: var(--text-secondary);
   flex-shrink: 0;
   border-left: 1px solid $border;
   transition: background 0.12s;
@@ -805,7 +840,7 @@ select {
   padding: 0 10px;
   border-radius: 5px;
   background: transparent;
-  color: $text-secondary;
+  color: var(--text-secondary);
   font-size: 12px;
   white-space: nowrap;
   @include press;
@@ -852,7 +887,7 @@ select {
   width: 30px;
   height: 30px;
   border-radius: $radius-sm;
-  color: $text-secondary;
+  color: var(--text-secondary);
 
   &:hover {
     background: rgba(255, 255, 255, 0.08);
@@ -933,7 +968,7 @@ select {
   padding: 0 10px;
   border-radius: $radius-sm;
   font-size: 13px;
-  color: $text-secondary;
+  color: var(--text-secondary);
   @include press;
 
   &:hover {
@@ -943,7 +978,7 @@ select {
 
   /* 与工具箱侧栏一致：选中项为强调色实心圆角块 */
   &.active {
-    background: rgba($blue, 0.85);
+    background: var(--accent-fill);
     color: #fff;
     font-weight: 600;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -976,7 +1011,7 @@ select {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  color: $text-muted;
+  color: var(--text-muted);
 
   &:hover {
     background: rgba(255, 255, 255, 0.07);
@@ -994,7 +1029,7 @@ select {
 .set-section-title {
   font-size: 12px;
   font-weight: 600;
-  color: $text-muted;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin: 16px 0 8px;
@@ -1022,7 +1057,7 @@ select {
 
 .set-row-desc {
   font-size: 11px;
-  color: $text-muted;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
@@ -1092,7 +1127,7 @@ select {
   text-align: right;
   font-size: 12px;
   font-family: $font-mono;
-  color: $text-secondary;
+  color: var(--text-secondary);
 }
 
 /* 设置页文本输入项 */
@@ -1110,7 +1145,7 @@ select {
   outline: none;
   transition: border-color 0.14s $ease-out, box-shadow 0.14s $ease-out;
 
-  &::placeholder { color: $text-muted; font-family: $font-ui; }
+  &::placeholder { color: var(--text-muted); font-family: $font-ui; }
   &:hover { border-color: $hairline-strong; }
   &:focus {
     border-color: rgba($blue, 0.6);
@@ -1124,7 +1159,7 @@ select {
   color: #1f2937;
   box-shadow: inset 0 1px 1px rgba(15, 23, 42, 0.05);
 
-  &::placeholder { color: #94a3b8; }
+  &::placeholder { color: #6b7280; }
 }
 
 /* 分段选择：选中段为中性抬起面，与工具栏 segmented control 一致 */
@@ -1144,7 +1179,7 @@ select {
   padding: 0 12px;
   border-radius: 5px;
   font-size: 12px;
-  color: $text-secondary;
+  color: var(--text-secondary);
   @include press;
 
   &:hover {
@@ -1195,14 +1230,14 @@ select {
 
 .about-version {
   font-size: 12px;
-  color: $text-muted;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
 .about-desc {
   font-size: 12.5px;
   line-height: 1.7;
-  color: $text-secondary;
+  color: var(--text-secondary);
   margin: 0 0 18px;
 }
 
@@ -1224,7 +1259,7 @@ select {
 
 .about-update-status {
   font-size: 12px;
-  color: $text-secondary;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -1235,7 +1270,7 @@ select {
   white-space: pre-wrap;
   font-size: 11.5px;
   line-height: 1.55;
-  color: $text-muted;
+  color: var(--text-muted);
   @include scroll;
 }
 
@@ -1265,7 +1300,7 @@ select {
 .about-tech-title {
   font-size: 12px;
   font-weight: 600;
-  color: $text-muted;
+  color: var(--text-muted);
   margin-bottom: 8px;
 }
 
@@ -1304,7 +1339,7 @@ select {
   padding: 2px 8px;
   font-size: 10px;
   font-family: $font-mono;
-  color: $text-secondary;
+  color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-bottom-width: 2px;
@@ -1313,7 +1348,7 @@ select {
 }
 
 .about-key-desc {
-  color: $text-secondary;
+  color: var(--text-secondary);
 }
 
 [data-theme='light'] .about-kbd {
@@ -1364,7 +1399,7 @@ select {
 }
 
 [data-theme='light'] .settings-close {
-  color: #94a3b8;
+  color: #64748b;
 
   &:hover {
     background: rgba(15, 23, 42, 0.06);
@@ -1373,7 +1408,7 @@ select {
 }
 
 [data-theme='light'] .set-section-title {
-  color: #94a3b8;
+  color: #5b6472;
 }
 
 [data-theme='light'] .set-row {
@@ -1381,7 +1416,7 @@ select {
 }
 
 [data-theme='light'] .set-row-desc {
-  color: #94a3b8;
+  color: #5b6472;
 }
 
 [data-theme='light'] .set-switch {
@@ -1519,7 +1554,7 @@ select {
     &:not(.primary) {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid $border;
-      color: $text-secondary;
+      color: var(--text-secondary);
 
       &:hover {
         background: rgba(255, 255, 255, 0.14);
@@ -1600,7 +1635,7 @@ select {
   }
 
   &.downloading {
-    color: $text-secondary;
+    color: var(--text-secondary);
     cursor: default;
   }
 }
@@ -1621,7 +1656,7 @@ select {
 .update-percent {
   font-family: $font-mono;
   font-size: 11px;
-  color: $text-secondary;
+  color: var(--text-secondary);
   white-space: nowrap;
 }
 
@@ -1721,13 +1756,13 @@ select {
 
 .update-install-version {
   font-size: 12px;
-  color: $text-muted;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
 .update-install-message {
   font-size: 13px;
-  color: $text-secondary;
+  color: var(--text-secondary);
   line-height: 1.6;
   text-align: center;
   margin-bottom: 20px;
@@ -1749,7 +1784,7 @@ select {
   &.cancel {
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid $border;
-    color: $text-secondary;
+    color: var(--text-secondary);
 
     &:hover {
       background: rgba(255, 255, 255, 0.12);
@@ -2042,12 +2077,13 @@ select {
 
 .tool-back-flat {
   @include flex-center;
+  @include press;
   width: 30px;
   height: 30px;
-  border-radius: 6px;
+  border-radius: $radius-sm;
   background: transparent;
-  color: $text-secondary;
-  transition: background 0.1s;
+  color: var(--text-secondary);
+  transition: background 0.14s $ease-out, color 0.14s $ease-out, transform 0.12s $ease-out;
   flex-shrink: 0;
 
   &:hover {
@@ -2062,7 +2098,7 @@ select {
   height: 28px;
   margin-left: auto;
   border-radius: 5px;
-  color: $text-muted;
+  color: var(--text-muted);
   transition: color 0.12s, background 0.12s, transform 0.1s;
   flex-shrink: 0;
 
@@ -2112,7 +2148,7 @@ select {
   backdrop-filter: blur(4px);
   background: rgba(13, 15, 20, 0.8);
   border: 1px solid $border;
-  color: $text-secondary;
+  color: var(--text-secondary);
   white-space: nowrap;
   @include press;
 
@@ -2142,7 +2178,7 @@ select {
 }
 
 .pill.active.blue {
-  background: $blue;
+  background: var(--accent-fill);
 }
 
 .pill.active.purple {
@@ -2229,7 +2265,7 @@ select {
   text-align: left;
   padding: 7px 10px;
   font-size: 12px;
-  color: $text-secondary;
+  color: var(--text-secondary);
   background: transparent;
   border: none;
   border-radius: 5px;
@@ -2295,7 +2331,7 @@ select {
   &.chk {
     background: rgba(13, 15, 20, 0.7);
     border: 1px solid $border;
-    color: $text-secondary;
+    color: var(--text-secondary);
 
     &:hover {
       color: $text-primary;
@@ -2450,7 +2486,7 @@ select {
   flex-shrink: 0;
   /* 固定尺寸图标按钮不参与挤压变形 */
   border-radius: $radius-sm;
-  color: $text-muted;
+  color: var(--text-muted);
 
   &:hover {
     background: rgba(255, 255, 255, 0.06);
@@ -2495,7 +2531,7 @@ select {
       color: $text-primary;
 
       &::placeholder {
-        color: $text-muted;
+        color: var(--text-muted);
       }
     }
   }
@@ -2532,12 +2568,12 @@ select {
   @include flex-center;
   flex-direction: column;
   height: 100%;
-  color: $text-muted;
+  color: var(--text-muted);
   gap: 6px;
   padding: 24px;
 
   .tree-empty-title {
-    color: $text-secondary;
+    color: var(--text-secondary);
     font-family: $font-ui;
     font-size: 13px;
     margin-top: 4px;
@@ -2569,16 +2605,48 @@ select {
     line-height: 1.6;
   }
 
-  .w-json-view-theme {
-    --w-rjv-key-string: #{$blue};
-    --w-rjv-info-color: #{$text-muted};
-    --w-rjv-indent: 12px;
+  /* 库的主题变量必须设在真实存在的容器上（DOM 中没有 .w-json-view-theme 元素，旧写法一直没生效） */
+  .w-json-view-container {
+    --w-rjv-key-string: #6cb6f5 !important;
+    --w-rjv-info-color: var(--text-muted) !important;
+    --w-rjv-colon-color: var(--text-muted) !important;
+    --w-rjv-quotes-color: var(--text-muted) !important;
+    --w-rjv-curlybraces-color: var(--text-muted) !important;
+    --w-rjv-brackets-color: var(--text-muted) !important;
+    --w-rjv-arrow-color: var(--text-muted) !important;
+    --w-rjv-ellipsis-color: var(--text-muted) !important;
+    --w-rjv-quotes-string-color: #9ece6a !important;
+    --w-rjv-type-string-color: #9ece6a !important;
+    --w-rjv-type-int-color: #b5cea8 !important;
+    --w-rjv-type-float-color: #b5cea8 !important;
+    --w-rjv-type-boolean-color: #6cb6f5 !important;
+    --w-rjv-type-null-color: var(--text-muted) !important;
+    --w-rjv-key-number: #9aa3b2 !important;
+    --w-rjv-indent: 12px !important;
   }
 }
 
 [data-theme='light'] .rjv-host .w-json-view-container {
-  --w-rjv-key-string: #2563eb;
-  --w-rjv-info-color: #64748b;
+  --w-rjv-key-string: #2563eb !important;
+  --w-rjv-info-color: #5b6472 !important;
+  --w-rjv-colon-color: #5b6472 !important;
+  --w-rjv-quotes-color: #5b6472 !important;
+  --w-rjv-curlybraces-color: #5b6472 !important;
+  --w-rjv-brackets-color: #5b6472 !important;
+  --w-rjv-arrow-color: #5b6472 !important;
+  --w-rjv-ellipsis-color: #5b6472 !important;
+  --w-rjv-quotes-string-color: #0b6e37 !important;
+  --w-rjv-type-string-color: #0b6e37 !important;
+  --w-rjv-type-int-color: #0f6a4f !important;
+  --w-rjv-type-float-color: #0f6a4f !important;
+  --w-rjv-type-boolean-color: #1d4ed8 !important;
+  --w-rjv-type-null-color: #5b6472 !important;
+  --w-rjv-key-number: #475569 !important;
+}
+
+/* 标签栏「+」在新底色上偏浅，单独压深一档 */
+[data-theme='light'] .tab-new {
+  color: #475569;
 }
 
 /* =================== JMESPath 速查浮层 =================== */
@@ -2644,7 +2712,7 @@ select {
 
 .jmespath-section-title {
   font-size: 12px;
-  color: $text-muted;
+  color: var(--text-muted);
   font-weight: 600;
   margin-bottom: 8px;
   margin-top: 14px;
@@ -2678,7 +2746,7 @@ select {
     width: 24px;
     height: 24px;
     border-radius: 4px;
-    color: $text-muted;
+    color: var(--text-muted);
 
     &:hover {
       background: rgba(255, 255, 255, 0.06);
@@ -2762,7 +2830,7 @@ select {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   padding: 0 12px;
   font-size: 11px;
-  color: $text-secondary;
+  color: var(--text-secondary);
   font-family: $font-mono;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
@@ -2794,7 +2862,7 @@ select {
   }
 
   .status-sep {
-    color: $text-muted;
+    color: var(--text-muted);
     margin: 0 4px;
   }
 
@@ -2829,7 +2897,7 @@ select {
     width: 22px;
     height: 22px;
     border-radius: 4px;
-    color: $text-secondary;
+    color: var(--text-secondary);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -2854,7 +2922,7 @@ select {
 /* =================== MCP 配置页 =================== */
 .mcp-desc {
   font-size: 12px;
-  color: $text-secondary;
+  color: var(--text-secondary);
   line-height: 1.8;
   margin-bottom: 12px;
 
@@ -2874,7 +2942,7 @@ select {
   font-size: 12px;
   border-radius: 8px;
   cursor: pointer;
-  color: $text-secondary;
+  color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid $border;
   transition: all 0.14s $ease-out;
@@ -2920,6 +2988,14 @@ select {
   }
 }
 
+[data-theme='light'] .mcp-copy {
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.35);
+
+  &:hover { background: rgba(37, 99, 235, 0.18); }
+}
+
 .mcp-code {
   margin: 0;
   padding: 10px 12px;
@@ -2936,13 +3012,13 @@ select {
 
 .mcp-tip {
   font-size: 11px;
-  color: $text-muted;
+  color: var(--text-muted);
   line-height: 1.7;
   margin-top: 6px;
 
   code {
     font-family: $font-mono;
-    color: $text-secondary;
+    color: var(--text-secondary);
     background: rgba(255, 255, 255, 0.06);
     padding: 1px 5px;
     border-radius: 4px;
@@ -2978,7 +3054,7 @@ select {
 }
 
 .mcp-tool-desc {
-  color: $text-secondary;
+  color: var(--text-secondary);
 }
 
 /* 浅色主题 MCP 配置页 */
@@ -3015,7 +3091,7 @@ select {
   padding: 4px 14px 10px;
   font-size: 12px;
   font-weight: 700;
-  color: $text-secondary;
+  color: var(--text-secondary);
   cursor: pointer;
   .collapsed { transform: rotate(-90deg); }
 }
@@ -3025,7 +3101,7 @@ select {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.04em;
-  color: $text-muted;
+  color: var(--text-muted);
   text-transform: uppercase;
 }
 /* macOS 系统设置式侧栏选择：圆角填充块取代左侧竖条 */
@@ -3036,7 +3112,7 @@ select {
   margin: 1px 0;
   padding: 6px 10px;
   font-size: 12px;
-  color: $text-secondary;
+  color: var(--text-secondary);
   background: transparent;
   border: none;
   border-radius: $radius-sm;
@@ -3049,7 +3125,7 @@ select {
 
   &.active {
     color: #fff;
-    background: rgba($blue, 0.85);
+    background: var(--accent-fill);
     font-weight: 600;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 1px 3px rgba(0, 0, 0, 0.3);
   }
@@ -3095,7 +3171,7 @@ select {
   outline: none;
   transition: border-color 0.14s $ease-out, box-shadow 0.14s $ease-out;
 
-  &::placeholder { color: $text-muted; font-family: $font-ui; }
+  &::placeholder { color: var(--text-muted); font-family: $font-ui; }
   &:hover { border-color: $hairline-strong; }
   &:focus {
     border-color: rgba($blue, 0.6);
@@ -3110,7 +3186,7 @@ select {
   border-color: #dbe1ea;
   color: #1f2937;
 
-  &::placeholder { color: #94a3b8; }
+  &::placeholder { color: #6b7280; }
 }
 
 .tools-body {
@@ -3136,7 +3212,7 @@ select {
   padding: 0 12px;
   font-size: 11px;
   font-weight: 600;
-  color: $text-muted;
+  color: var(--text-muted);
   background: $bg-panel;
   border-bottom: 1px solid $border;
 }
@@ -3207,7 +3283,7 @@ select {
 }
 [data-theme='light'] .tools-input,
 [data-theme='light'] .tools-output { background: #fff; color: #1f2937; }
-[data-theme='light'] .tools-io-title { background: #f6f7f9; color: #64748b; }
+[data-theme='light'] .tools-io-title { background: #f6f7f9; color: #5b6472; }
 
 /* =================== 自定义下拉框 CustomSelect =================== */
 .csel { position: relative; display: inline-block; }
@@ -3262,7 +3338,7 @@ select {
   padding: 6px 9px;
   border-radius: 6px;
   font-size: 12px;
-  color: $text-secondary;
+  color: var(--text-secondary);
   background: transparent;
   border: none;
   text-align: left;
@@ -3336,7 +3412,7 @@ select {
   padding: 0 14px;
   height: 52px;
   border-bottom: 1px solid $border;
-  color: $text-muted;
+  color: var(--text-muted);
 }
 .cmdk-input {
   flex: 1;
@@ -3345,18 +3421,18 @@ select {
   outline: none;
   font-size: 15px;
   color: $text-primary;
-  &::placeholder { color: $text-muted; }
+  &::placeholder { color: var(--text-muted); }
 }
 .cmdk-esc {
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 4px;
   border: 1px solid $border;
-  color: $text-muted;
+  color: var(--text-muted);
   font-family: $font-mono;
 }
 .cmdk-list { max-height: 340px; overflow-y: auto; padding: 6px; @include scroll; }
-.cmdk-empty { padding: 28px; text-align: center; color: $text-muted; font-size: 13px; }
+.cmdk-empty { padding: 28px; text-align: center; color: var(--text-muted); font-size: 13px; }
 .cmdk-item {
   @include flex-between;
   gap: 10px;
@@ -3365,7 +3441,7 @@ select {
   border-radius: 7px;
   background: transparent;
   border: none;
-  color: $text-secondary;
+  color: var(--text-secondary);
   font-size: 13px;
   text-align: left;
   cursor: pointer;
@@ -3373,15 +3449,15 @@ select {
 }
 .cmdk-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .cmdk-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cmdk-group { font-size: 11px; color: $text-muted; flex-shrink: 0; }
-.cmdk-hint { font-size: 10px; padding: 1px 5px; border-radius: 4px; border: 1px solid $border; color: $text-muted; font-family: $font-mono; flex-shrink: 0; }
+.cmdk-group { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.cmdk-hint { font-size: 10px; padding: 1px 5px; border-radius: 4px; border: 1px solid $border; color: var(--text-muted); font-family: $font-mono; flex-shrink: 0; }
 .cmdk-foot {
   display: flex;
   gap: 16px;
   padding: 8px 14px;
   border-top: 1px solid $border;
   font-size: 11px;
-  color: $text-muted;
+  color: var(--text-muted);
   kbd { font-family: $font-mono; font-size: 10px; padding: 1px 4px; border: 1px solid $border; border-radius: 3px; margin: 0 2px; }
 }
 [data-theme='light'] .cmdk-overlay { background: rgba(15,23,42,0.3); }
@@ -3396,7 +3472,7 @@ select {
   @include flex-center;
   font-size: 11px;
   font-weight: 600;
-  color: $text-secondary;
+  color: var(--text-secondary);
   background: rgba(255,255,255,0.04);
   border: 1px solid $border;
   border-radius: 4px;
@@ -3427,8 +3503,8 @@ select {
   max-height: 220px;
   overflow-y: auto;
 }
-.tree-history-title { font-size: 10px; color: $text-muted; padding: 4px 8px 6px; letter-spacing: 0.04em; display: flex; align-items: center; justify-content: space-between; }
-.tree-history-clear { background: transparent; border: none; color: $text-muted; font-size: 10px; cursor: pointer; padding: 1px 4px; border-radius: 3px; font-family: inherit; transition: all 0.12s; &:hover { color: $red; background: rgba($red, 0.1); } }
+.tree-history-title { font-size: 10px; color: var(--text-muted); padding: 4px 8px 6px; letter-spacing: 0.04em; display: flex; align-items: center; justify-content: space-between; }
+.tree-history-clear { background: transparent; border: none; color: var(--text-muted); font-size: 10px; cursor: pointer; padding: 1px 4px; border-radius: 3px; font-family: inherit; transition: all 0.12s; &:hover { color: $red; background: rgba($red, 0.1); } }
 .tree-history-item {
   display: flex;
   align-items: center;
@@ -3438,14 +3514,39 @@ select {
   border: none;
   border-radius: 5px;
   background: transparent;
-  color: $text-secondary;
+  color: var(--text-secondary);
   font-size: 12px;
   text-align: left;
   cursor: pointer;
   span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   &:hover { background: rgba(255,255,255,0.06); color: $text-primary; }
 }
-[data-theme='light'] .tree-lang-badge { background: #f5f7fa; border-color: #d9dee7; color: #64748b; }
+[data-theme='light'] .tree-lang-badge { background: #f5f7fa; border-color: #d9dee7; color: #5b6472; }
 [data-theme='light'] .tree-history { background: #fff; border-color: #d9dee7; box-shadow: 0 12px 28px rgba(15,23,42,0.14); }
 [data-theme='light'] .tree-history-item { color: #475569; }
 [data-theme='light'] .tree-history-item:hover { background: #f1f5f9; color: #1f2937; }
+
+/* =================== 浅色主题对比度补漏（审计发现：彩色语义文字在白底不达 AA） =================== */
+[data-theme='light'] {
+  .action-btn.gen {
+    background: #fef6dd;
+    border-color: #ecd9a0;
+    color: #8a5a06;
+    box-shadow: none;
+
+    &:hover { background: #fdf0cd; }
+  }
+
+  .tools-detect {
+    background: #e7f6ea;
+    color: #15702f;
+  }
+
+  .status-sep { color: #6b7280; }
+
+  .pill.active.purple {
+    background: #f1e9fb;
+    border-color: #e0cff6;
+    color: #6b21a8;
+  }
+}
