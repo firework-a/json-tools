@@ -1,33 +1,11 @@
 {
-  "name": "@firework-a/json-tools-mcp",
+  "name": "json-tools-mcp",
+  "private": true,
   "version": "0.2.0",
-  "description": "JSON Tools MCP Server — 修复/格式化/校验/转换/变换/diff/Mock/统计/查询/表格提取/Schema 生成/智能分析等 13 个 JSON 工具，通过 Model Context Protocol 暴露给 AI 助手",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/firework-a/json-tools.git",
-    "directory": "mcp-server"
-  },
+  "description": "JSON Tools 的 MCP Server + CLI 入口（随桌面安装包以单文件 exe 分发，不发布到 npm）",
   "type": "module",
-  "bin": {
-    "json-tools-mcp": "dist/index.js"
-  },
-  "files": [
-    "dist",
-    "README.md"
-  ],
   "scripts": {
-    "build": "esbuild index.ts --bundle --platform=node --format=esm --outfile=dist/index.js"
-  },
-  "keywords": [
-    "mcp",
-    "model-context-protocol",
-    "json",
-    "json-tools",
-    "json-repair",
-    "json-query",
-    "jsonpath",
-    "jmespath"
-  ],
-  "license": "MIT"
+    "build": "esbuild index.ts --bundle --platform=node --format=esm --outfile=dist/index.js",
+    "exe": "node ../scripts/build-mcp-exe.mjs"
+  }
 }

@@ -16,7 +16,7 @@
 - **全局 Ctrl+V**：编辑器外直接粘贴剪贴板内容到当前编辑器。
 - **最近打开文件**：命令面板直达（Tauri 原生路径，持久化最近 10 条）。
 - **工作区状态恢复**：标签页内容跨启动持久化（超大内容跳过，恢复后保留未保存标记）。
-- **新增 MCP Server**（`mcp-server/index.ts`）：12 个核心 JSON 工具（修复/格式化/校验/转换/变换/diff/Mock/统计/查询/表格提取/Schema 生成/智能分析）通过 Model Context Protocol 暴露给 AI 助手，`pnpm mcp` 运行，stdio transport，复用 src/utils 纯函数与桌面端逻辑一致。
+- **新增 MCP Server + CLI**（`mcp-server/`）：13 个核心 JSON 工具（修复/格式化/校验/转换/变换/diff/Mock/统计/查询/表格提取/Schema 生成/智能分析）通过 Model Context Protocol 暴露给 AI 助手，同一个程序也是命令行工具（`list` / `run <tool> --text data.json` / `--help`）；参数校验与默认值共用 `tools.ts` 一份定义，逻辑复用 src/utils 纯函数与桌面端一致。
 - **新增智能分析功能**（工具箱「智能分析」）：本地规则引擎对 JSON 做结构摘要、字段类型统计、数据质量检查（类型混杂/null 占比/深嵌套/空数组对象）与优化建议，输出可读分析报告，离线无需 API key。
 - **大文件打开提示**；表格渲染上限 2000 行保护。
 - **无障碍**：图标按钮 aria-label 补齐、全局 :focus-visible 焦点环、空状态下一步动作（表格视图）。
@@ -51,6 +51,7 @@
 - 浏览器（vite dev）环境下 TitleBar 不再因缺少 Tauri 环境而崩溃。
 - 前端包名从 `dev-tools` 统一为 `json-tools`。
 - 关于页版本号不再写死为静态文本。
+- MCP 分发方式改为随安装包走单文件 exe（`bun --compile` → 安装目录 `binaries/json-tools-mcp.exe`），用户无需 Node.js 也无需打开应用；移除 npm 发布 workflow 与 `@firework-a/json-tools-mcp` 包配置。「设置 → MCP」改为自动读取本机安装路径生成客户端配置，并补充 CLI 用法。构建链路新增 bun 依赖（`pnpm build:mcp:exe`，`tauri:dev`/`build:app`/CI 已串好）。安装包体积相应增大（实测 debug 包 ~38MB，含 83MB 未压缩 exe）。
 
 ### Notes
 - 更新签名公钥已替换为真实密钥，GitHub Releases 签名更新链路就绪。

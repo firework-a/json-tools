@@ -54,11 +54,17 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --config.onlyBuiltDependencies=@parcel/watcher,esbuild
 
       - name: Build frontend (required by Tauri compile-time checks)
         run: pnpm build
+
+      - name: Build MCP exe (Tauri resource must exist before cargo check)
+        run: pnpm build:mcp:exe
 
       - name: Check Tauri backend
         run: cargo check --manifest-path src-tauri/Cargo.toml

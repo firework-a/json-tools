@@ -39,6 +39,8 @@ Desktop.ini
 # Tauri
 src-tauri/target
 src-tauri/gen
+# bun 编译出的 MCP 单文件 exe（pnpm build:mcp:exe 产物）
+src-tauri/binaries
 
 # Rust
 *.rs.bk

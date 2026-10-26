@@ -62,20 +62,34 @@ JSON TOOLS是一个面向开发者的桌面 JSON 工作台，基于 Tauri 2、Re
 
 `json_repair` · `json_format` · `json_validate` · `json_convert` · `json_ndjson` · `json_transform` · `json_diff` · `json_mock` · `json_stats` · `json_query`（JSONPath/JMESPath） · `json_table_extract` · `json_to_schema` · `json_insights`（智能分析）
 
-### 配置（与 chrome-devtools-mcp 同款，一行即可）
+它同时是一个命令行程序，随安装包分发为单文件 `json-tools-mcp.exe`，**不发布到 npm**：用户不需要 Node.js，也不需要打开应用。
+
+### 配置（装完即用）
+
+应用内「设置 → MCP」会读取本机安装路径并生成配置，可一键复制；手工填就是：
 
 ```json
 {
   "mcpServers": {
     "json-tools": {
-      "command": "npx",
-      "args": ["json-tools-mcp"]
+      "command": "C:\\Program Files\\JSON TOOLS\\binaries\\json-tools-mcp.exe"
     }
   }
 }
 ```
 
-首次使用 npx 会自动从 npm 下载（需 npm 包已发布：`cd mcp-server && npm publish`）。
+**无需手动启动**——AI 客户端会在需要时自动拉起它（stdio 通信）。直接双击运行会看到它卡在等标准输入，属正常现象。
+
+### 命令行用法
+
+```bash
+json-tools-mcp.exe list                                 # 列出 13 个工具
+json-tools-mcp.exe run json_repair --text broken.json  # 值传文件路径自动读取内容
+echo '{a:1,}' | json-tools-mcp.exe run json_repair      # 管道灌入主字段
+json-tools-mcp.exe run json_query --help                # 查看参数
+```
+
+退出码：0 成功 / 1 工具报错 / 2 用法错误。
 
 ### 从源码运行（开发调试）
 
@@ -99,7 +113,11 @@ pnpm mcp        # 等价于 tsx mcp-server/index.ts，stdio transport
 }
 ```
 
-MCP Server 复用 `src/utils/` 下的纯函数模块，与桌面端逻辑完全一致。`pnpm build:mcp` 用 esbuild 把服务打包为自包含单文件（`mcp-server/dist/index.js`，即 bin 入口）；`mcp-server/smoke*.mjs` 为 stdio 冒烟测试脚本。配置后重启 AI 客户端即可在对话中使用，例如：「用 json_repair 修复这段 JSON」。应用内「设置 → MCP」页也提供配置说明与一键复制。
+### 打进安装包
+
+`pnpm build:app` 会经 `beforeBuildCommand` 自动执行 `pnpm build:mcp:exe`（bun 编译，需本机装 [bun](https://bun.sh)），产物落到 `src-tauri/binaries/json-tools-mcp.exe`，再由 `bundle.resources` 装入安装包的 `binaries/` 目录（与主程序同级的安装目录下）。
+
+MCP 与 CLI 共用 `mcp-server/tools.ts` 里的同一份工具定义（同一套 zod 参数校验与默认值），逻辑复用 `src/utils/` 下的纯函数模块，与桌面端完全一致；`mcp-server/smoke*.mjs` 为 stdio 冒烟测试脚本。
 
 ## 安装与更新
 

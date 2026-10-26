@@ -46,6 +46,9 @@ jobs:
         with:
           targets: x86_64-pc-windows-msvc
 
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --config.onlyBuiltDependencies=@parcel/watcher,esbuild
 
@@ -63,6 +66,8 @@ jobs:
           releaseName: JSON TOOLS ${{ inputs.tag && format('v{0}', inputs.tag) || github.ref_name }}
           releaseBody: |
             GitHub Actions 自动构建 Windows 安装包和 Tauri 更新元数据。
+
+            安装包内置 `json-tools-mcp.exe`（MCP Server + CLI），装完即可在 AI 客户端配置使用，无需安装 Node.js。
 
             更新方式：安装旧版本后，在「设置 → 关于 → 检查更新」中检查 GitHub Releases 更新。
           releaseDraft: ${{ inputs.draft || false }}

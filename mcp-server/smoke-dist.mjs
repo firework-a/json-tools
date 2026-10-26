@@ -1,4 +1,4 @@
-// 编译产物冒烟测试：node mcp-server/dist/index.js（bin 入口，模拟 npm 全局安装后的调用）
+// 编译产物冒烟测试：node mcp-server/dist/index.js（本地调试入口，与安装包 exe 同一份代码）
 import { spawn } from 'node:child_process'
 
 const child = spawn('node', ['mcp-server/dist/index.js'], { stdio: ['pipe', 'pipe', 'pipe'] })

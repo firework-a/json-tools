@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { isTauri, invoke } from '@tauri-apps/api/core'
 import { useAppStore, type ThemeMode } from '../store'
 import appLogo from '../../src-tauri/icons/icon.png'
 import { getAppVersion } from '../utils/updater'
@@ -181,24 +182,34 @@ const MCP_TOOLS: { name: string; desc: string }[] = [
   { name: 'json_insights', desc: '智能分析：结构摘要 / 质量评分 / 建议' },
 ]
 
-const MCP_PUBLISH_CMD = 'cd mcp-server && npm publish'
+const MCP_EXE_PLACEHOLDER = '<安装目录>\\binaries\\json-tools-mcp.exe'
 
-const MCP_CONFIG_NPX = JSON.stringify({
+type McpBinary = { path: string; exists: boolean }
+
+const mcpConfig = (command: string) => JSON.stringify({
   mcpServers: {
-    'json-tools': {
-      command: 'npx',
-      args: ['@firework-a/json-tools-mcp'],
-    },
+    'json-tools': { command },
   },
 }, null, 2)
 
 function McpSection() {
   const showToast = useAppStore(s => s.showToast)
   const [copied, setCopied] = useState(false)
+  const [binary, setBinary] = useState<McpBinary | null>(null)
+
+  useEffect(() => {
+    if (!isTauri()) return
+    invoke<McpBinary>('mcp_binary_path').then(setBinary).catch(() => setBinary(null))
+  }, [])
+
+  // 安装包里带 exe 就用真实路径；否则回落为占位/源码方式说明
+  const command = binary?.exists ? binary.path : MCP_EXE_PLACEHOLDER
+  const configText = mcpConfig(command)
+  const ready = !!binary?.exists
 
   const copyConfig = async () => {
     try {
-      await navigator.clipboard.writeText(MCP_CONFIG_NPX)
+      await navigator.clipboard.writeText(configText)
       setCopied(true)
       showToast('配置已复制到剪贴板')
       setTimeout(() => setCopied(false), 1500)
@@ -211,29 +222,34 @@ function McpSection() {
     <div className="set-section">
       <div className="set-section-title">MCP Server（AI 助手集成）</div>
       <p className="mcp-desc">
-        与 chrome-devtools-mcp 同样的使用方式：配置一行 <code>npx @firework-a/json-tools-mcp</code>，
-        AI 助手即可调用 JSON Tools 的 13 个工具。<b>无需手动启动</b>——配置完成后，AI
-        客户端会在需要时自动拉起本服务（stdio 通信），首次使用 npx 会自动下载。
+        安装包已内置独立的 MCP 程序 <code>json-tools-mcp.exe</code>，
+        把 {MCP_TOOLS.length} 个 JSON 工具暴露给 AI 助手（Claude Desktop / Codex / Cursor 等）。
+        <b>无需安装 Node.js、无需打开本应用</b>——配置一次后，AI 客户端会自己拉起它（stdio 通信）。
       </p>
       <div className="mcp-block">
         <div className="mcp-block-title">
-          客户端配置（Claude Desktop / Codex / Cursor 等）
+          客户端配置（claude_desktop_config.json 等）
           <button className="mcp-copy" onClick={copyConfig}>
             {copied ? '已复制 ✓' : '复制配置'}
           </button>
         </div>
-        <pre className="mcp-code">{MCP_CONFIG_NPX}</pre>
+        <pre className="mcp-code">{configText}</pre>
         <div className="mcp-tip">
-          需要本机已安装 <b>Node.js</b>。配置后重启 AI 客户端即可使用，
-          例如：「用 json_repair 修复这段 JSON」。
+          {ready
+            ? <>已自动填入本机安装路径。把上面这段并入客户端的 MCP 配置后<b>重启客户端</b>，例如：「用 json_repair 修复这段 JSON」。</>
+            : <>未能读到本机 MCP 程序路径（开发模式或未随安装包分发）。请把 <code>command</code> 换成安装目录下的{' '}
+              <code>binaries\\json-tools-mcp.exe</code> 绝对路径；开发者可直接用 <code>pnpm mcp</code> 源码运行。</>}
         </div>
       </div>
       <div className="mcp-block">
-        <div className="mcp-block-title">发布说明</div>
+        <div className="mcp-block-title">命令行用法（同一个 exe）</div>
+        <pre className="mcp-code">{`"${command}" list
+"${command}" run json_repair --text broken.json
+"${command}" run json_format --text data.json --indent 4
+"${command}" run json_diff --left a.json --right b.json`}</pre>
         <div className="mcp-tip">
-          <code>@firework-a/json-tools-mcp</code> 需要先发布到 npm 才能被 npx 拉取（发布命令：{' '}
-          <code>{MCP_PUBLISH_CMD}</code>，需 npm 账号）。发布前的本地调试可以直接运行{' '}
-          <code>pnpm mcp</code>，或参考仓库 README 中的源码配置方式。
+          直接双击或在终端运行会等待标准输入——那是它在等 AI 客户端喂 MCP 请求，属正常现象。
+          <code>run &lt;工具名&gt; --help</code> 可查看每个工具的参数；值传文件路径会自动读取内容，也支持管道输入。
         </div>
       </div>
       <div className="mcp-block">

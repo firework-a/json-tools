@@ -1,288 +1,219 @@
 #!/usr/bin/env node
-// JSON Tools MCP Server
-// 把 JSON Tools 的核心 JSON 能力暴露为 MCP (Model Context Protocol) 工具，
-// 供 AI 助手（Claude Desktop / Codex / Cursor 等）通过 stdio 调用。
+// JSON Tools MCP Server + CLI 单入口。
 //
-// 运行：pnpm mcp  （等价于 tsx mcp-server/index.ts）
-// 复用 src/utils 下的纯函数模块（无 DOM / Tauri 依赖），与桌面端逻辑一致。
+//   无参数            → 以 stdio transport 启动 MCP Server（AI 客户端自动拉起）
+//   list / run <tool> → 一次性 CLI 调用，结果写 stdout
+//
+// 工具实现与参数 schema 全部来自 tools.ts，与桌面端共用 src/utils 纯函数。
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod'
 
-import { repairJsonDeep, formatJson, compressJson, tryParseJson, getJsonStats, detectFormat } from '../src/utils/json'
-import { sortJsonKeys, flattenJson, unflattenJson, removeEmptyValues, dedupJson } from '../src/utils/jsonTransform'
-import { jsonToYaml, yamlToJson } from '../src/utils/jsonYaml'
-import { jsonToXml, xmlToJson, jsonToToml, tomlToJson, jsonToCsv, csvToJson } from '../src/utils/jsonFormats'
-import { convertNdjson } from '../src/utils/ndjson'
-import { generateMock } from '../src/utils/mockData'
-import { analyzeJson } from '../src/utils/insights'
-import { jsonToSchema } from '../src/utils/jsonSchema'
-import { validateJsonSchema } from '../src/utils/schemaValidator'
-import { computeDiff } from '../src/utils/jsonDiffer'
-import { buildTable } from '../src/utils/table'
-import { JSONPath } from 'jsonpath-plus'
-import { search as jmesSearch } from 'jmespath'
+import { SERVER_NAME, SERVER_VERSION, TOOLS, type ToolDef } from './tools'
 
-const text = (body: unknown) => ({ content: [{ type: 'text' as const, text: typeof body === 'string' ? body : JSON.stringify(body, null, 2) }] })
-const fail = (msg: string) => ({ content: [{ type: 'text' as const, text: `错误：${msg}` }], isError: true as const })
+const CLI = 'json-tools-mcp'
 
-const server = new McpServer({ name: 'json-tools', version: '0.2.0' })
+const fieldNames = (t: ToolDef) => Object.keys(t.schema)
 
-// 1. 修复非标准 JSON
-server.registerTool(
-  'json_repair',
-  {
-    description: '修复非标准 JSON（注释/单引号/尾逗号/无引号键/截断 payload），返回合法 JSON',
-    inputSchema: { text: z.string().describe('待修复的 JSON 文本') },
-  },
-  async ({ text: input }) => {
-    const r = repairJsonDeep(input)
-    if (r.error) return fail(r.error)
-    return text(r.result)
-  },
-)
+/** 取工具的主输入字段（长文本 JSON 从 stdin 或文件灌入的那一个）。 */
+const primaryField = (t: ToolDef) => fieldNames(t).find(k => ['text', 'sample', 'left'].includes(k))
 
-// 2. 格式化 / 压缩
-server.registerTool(
-  'json_format',
-  {
-    description: '格式化（beautify）或压缩（minify）JSON',
-    inputSchema: {
-      text: z.string().describe('JSON 文本'),
-      mode: z.enum(['beautify', 'minify']).default('beautify').describe('beautify=格式化, minify=压缩'),
-      indent: z.number().int().min(2).max(8).default(2).describe('格式化缩进空格数'),
-    },
-  },
-  async ({ text: input, mode, indent }) => {
-    const r = mode === 'minify' ? compressJson(input) : formatJson(input, indent)
-    if (r.error) return fail(r.error)
-    return text(r.result)
-  },
-)
+const fieldHint = (field: unknown): string => {
+  const f = field as { description?: string; _zod?: { def?: { description?: string } } }
+  return f?.description ?? f?._zod?.def?.description ?? ''
+}
 
-// 3. 校验（语法 + 可选 Schema）
-server.registerTool(
-  'json_validate',
-  {
-    description: '校验 JSON 语法，可选按 JSON Schema 校验；返回 ok/errors 与基础统计',
-    inputSchema: {
-      text: z.string().describe('JSON 文本'),
-      schema: z.string().optional().describe('JSON Schema（字符串形式，可选）'),
-    },
-  },
-  async ({ text: input, schema }) => {
-    if (schema) {
-      const v = validateJsonSchema(input, schema)
-      return text({ valid: v.valid, errors: v.errors })
+type ZodField = { safeParse: (data: unknown) => { success: boolean } } | undefined
+
+const isOptionalField = (field: ZodField) => !!field && field.safeParse(undefined).success
+
+const usage = (t: ToolDef) => {
+  const lines = fieldNames(t).map(k => {
+    const field = t.schema[k] as unknown as ZodField
+    return `  --${k} <值>  ${isOptionalField(field) ? '可选' : '必填'}  ${fieldHint(field)}`
+  })
+  return [`用法：${CLI} run ${t.name} [参数]`, ...lines].join('\n')
+}
+
+const help = () => [
+  `${CLI} ${SERVER_VERSION} — JSON Tools 的 13 个 JSON 工具`,
+  '',
+  '用法：',
+  `  ${CLI}                        以 stdio 启动 MCP Server（AI 客户端用这个，不要手动运行）`,
+  `  ${CLI} list                   列出全部工具`,
+  `  ${CLI} run <tool> [参数]       一次性调用，结果打印到 stdout`,
+  `  ${CLI} help / --help / -v     版本与帮助`,
+  '',
+  'run 参数：',
+  '  --<字段> <值>          值为已存在的文件路径时自动读取文件内容',
+  '  --<字段> -             该字段从 stdin 读取',
+  '  管道输入且未指定主字段时，自动灌入 text / sample / left',
+  '',
+  '示例：',
+  `  echo '{a:1,}' | ${CLI} run json_repair`,
+  `  ${CLI} run json_format --text broken.json --indent 4`,
+  `  ${CLI} run json_diff --left a.json --right b.json`,
+].join('\n')
+
+const readStdin = () => {
+  try {
+    return readFileSync(0, 'utf8')
+  } catch {
+    return ''
+  }
+}
+
+const parseFlags = (tokens: string[]) => {
+  const out: Record<string, string> = {}
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]
+    if (token === '-h' || token === '--help') {
+      out.help = 'true'
+      continue
     }
-    const { parsed, error } = tryParseJson(input)
-    if (error) return text({ valid: false, errors: [error] })
-    const stats = getJsonStats(input)
-    return text({ valid: true, keys: stats.keyCount, depth: stats.depth, size: stats.size, lines: stats.lineCount })
-  },
-)
-
-// 4. 格式互转
-server.registerTool(
-  'json_convert',
-  {
-    description: 'JSON 与 YAML / XML / TOML / CSV / NDJSON 互转（json 目标时按内容自动识别源格式）',
-    inputSchema: {
-      text: z.string().describe('输入文本'),
-      to: z.enum(['yaml', 'xml', 'toml', 'csv', 'ndjson', 'json']).describe('目标格式'),
-    },
-  },
-  async ({ text: input, to }) => {
-    if (to === 'json') {
-      // 反向：YAML/XML/TOML/CSV → JSON（依次尝试解析，成功即用）
-      const attempts = [yamlToJson(input), xmlToJson(input), tomlToJson(input), csvToJson(input)]
-      const ok = attempts.find(r => !r.error && r.result.trim())
-      if (!ok) return fail('无法识别输入格式（支持 YAML / XML / TOML / CSV / NDJSON）')
-      return text(ok.result)
+    if (!token.startsWith('--')) throw new Error(`未识别的参数：${token}`)
+    const eq = token.indexOf('=')
+    if (eq > 0) {
+      out[token.slice(2, eq)] = token.slice(eq + 1)
+      continue
     }
-    if (to === 'ndjson') {
-      const r = convertNdjson(input, false)
-      if (r.error) return fail(r.error)
-      return text(r.result)
+    const key = token.slice(2)
+    if (key === 'help') {
+      out.help = 'true'
+      continue
     }
-    const parsed = JSON.parse(input)
-    const r = to === 'yaml' ? jsonToYaml(JSON.stringify(parsed))
-      : to === 'xml' ? jsonToXml(JSON.stringify(parsed))
-      : to === 'toml' ? jsonToToml(JSON.stringify(parsed))
-      : jsonToCsv(JSON.stringify(parsed))
-    if (r.error) return fail(r.error)
-    return text(r.result)
-  },
-)
+    const next = tokens[i + 1]
+    if (next === undefined || next.startsWith('--')) throw new Error(`参数 --${key} 缺少值`)
+    out[key] = next
+    i++
+  }
+  return out
+}
 
-// 5. NDJSON（含反向 NDJSON → JSON）
-server.registerTool(
-  'json_ndjson',
-  {
-    description: 'NDJSON 与 JSON 数组互转（to=json 解析 NDJSON；to=ndjson 把 JSON 数组转为 NDJSON）',
-    inputSchema: {
-      text: z.string().describe('输入文本'),
-      to: z.enum(['json', 'ndjson']).describe('目标格式'),
-    },
-  },
-  async ({ text: input, to }) => {
-    const r = convertNdjson(input, to === 'json')
-    if (r.error) return fail(r.error)
-    return text(r.result)
-  },
-)
+const fileContent = (value: string) => {
+  try {
+    return existsSync(value) && statSync(value).isFile() ? readFileSync(value, 'utf8') : null
+  } catch {
+    return null
+  }
+}
 
-// 6. 结构变换
-server.registerTool(
-  'json_transform',
-  {
-    description: 'JSON 结构变换：按键排序 / 扁平化 / 扁平还原 / 去 null / 去空值 / 数组去重',
-    inputSchema: {
-      text: z.string().describe('JSON 文本'),
-      op: z.enum(['sortAsc', 'sortDesc', 'flatten', 'unflatten', 'removeNull', 'removeEmpty', 'dedup']).describe('变换操作'),
-    },
-  },
-  async ({ text: input, op }) => {
-    const map: Record<string, (c: string) => { result: string; error: string | null }> = {
-      sortAsc: c => sortJsonKeys(c, 'asc'),
-      sortDesc: c => sortJsonKeys(c, 'desc'),
-      flatten: c => flattenJson(c),
-      unflatten: c => unflattenJson(c),
-      removeNull: c => removeEmptyValues(c, true),
-      removeEmpty: c => removeEmptyValues(c, false),
-      dedup: c => dedupJson(c),
+/** 依次尝试：文件内容 → 字面值 → JSON 解析值，取第一个通过该字段校验的。 */
+const resolveValue = (field: ZodField, raw: string): unknown => {
+  if (raw === '-') return readStdin()
+  const candidates: unknown[] = [raw]
+  const fromFile = fileContent(raw)
+  if (fromFile !== null) candidates.unshift(fromFile)
+  try {
+    candidates.push(JSON.parse(raw))
+  } catch {
+    // 非 JSON 字面量，按字符串处理
+  }
+  for (const c of candidates) if (!field || field.safeParse(c).success) return c
+  return raw
+}
+
+async function cli(argv: string[]): Promise<number> {
+  const [cmd, ...rest] = argv
+  if (cmd === 'help' || cmd === '--help' || cmd === '-h') {
+    console.log(help())
+    return 0
+  }
+  if (cmd === 'version' || cmd === '--version' || cmd === '-v') {
+    console.log(`${CLI} ${SERVER_VERSION}`)
+    return 0
+  }
+  if (cmd === 'list') {
+    for (const t of TOOLS) console.log(`${t.name}  ${t.description}`)
+    console.log(`\n共 ${TOOLS.length} 个工具，参数详情：${CLI} run <tool>`)
+    return 0
+  }
+  if (cmd !== 'run' && !TOOLS.some(t => t.name === cmd)) {
+    console.error(`未知命令：${cmd}\n\n${help()}`)
+    return 2
+  }
+
+  const name = cmd === 'run' ? rest[0] : cmd
+  const def = TOOLS.find(t => t.name === name)
+  if (!def) {
+    console.error(`缺少工具名。可用工具：\n${TOOLS.map(t => `  ${t.name}`).join('\n')}`)
+    return 2
+  }
+
+  let provided: Record<string, string>
+  try {
+    provided = parseFlags(cmd === 'run' ? rest.slice(1) : rest)
+  } catch (e) {
+    console.error(`${e instanceof Error ? e.message : String(e)}\n\n${usage(def)}`)
+    return 2
+  }
+  if ('help' in provided) {
+    console.log(usage(def))
+    return 0
+  }
+
+  const unknown = Object.keys(provided).filter(k => !fieldNames(def).includes(k))
+  if (unknown.length) {
+    console.error(`参数 ${unknown.map(k => `--${k}`).join(', ')} 不属于 ${def.name}\n\n${usage(def)}`)
+    return 2
+  }
+
+  const primary = primaryField(def)
+  if (primary && !(primary in provided) && !process.stdin.isTTY) {
+    const piped = readStdin()
+    if (piped.trim()) provided[primary] = piped
+  }
+  if (!Object.keys(provided).length) {
+    console.log(usage(def))
+    return 2
+  }
+
+  const raw: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(provided)) raw[k] = resolveValue(def.schema[k] as unknown as ZodField, v)
+
+  let input: unknown
+  try {
+    input = z.object(def.schema).parse(raw)
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      console.error(`${def.name} 参数校验失败：\n${e.issues.map(i => `  ${i.path.join('.')}: ${i.message}`).join('\n')}`)
+      return 2
     }
-    const r = map[op](input)
-    if (r.error) return fail(r.error)
-    return text(r.result)
-  },
-)
+    throw e
+  }
 
-// 7. Diff
-server.registerTool(
-  'json_diff',
-  {
-    description: '对比两个 JSON，返回行级差异摘要（变更行数与差异行号）',
-    inputSchema: {
-      left: z.string().describe('左侧 JSON'),
-      right: z.string().describe('右侧 JSON'),
-    },
-  },
-  async ({ left, right }) => {
-    const d = computeDiff(left, right)
-    return text({
-      changedLines: d.leftRemoved.size + d.rightAdded.size,
-      removedOnLeft: [...d.leftRemoved].sort((a, b) => a - b),
-      addedOnRight: [...d.rightAdded].sort((a, b) => a - b),
-    })
-  },
-)
+  const out = await def.run(input as Parameters<typeof def.run>[0])
+  const body = out.content.map(c => c.text).join('\n')
+  if (out.isError) {
+    console.error(body)
+    return 1
+  }
+  process.stdout.write(`${body}\n`)
+  return 0
+}
 
-// 8. Mock 数据生成
-server.registerTool(
-  'json_mock',
-  {
-    description: '从样例 JSON 结构或 JSON Schema 生成仿真 Mock 数据',
-    inputSchema: {
-      sample: z.string().describe('样例 JSON 或 JSON Schema'),
-      count: z.number().int().min(1).max(100).default(5).describe('生成条数'),
-    },
-  },
-  async ({ sample, count }) => {
-    const r = generateMock(sample, count)
-    if (r.error) return fail(r.error)
-    return text(r.result)
-  },
-)
+function startMcpServer() {
+  const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION })
+  for (const t of TOOLS) {
+    server.registerTool(t.name, { description: t.description, inputSchema: t.schema }, args =>
+      t.run(args as Parameters<typeof t.run>[0]),
+    )
+  }
+  return server.connect(new StdioServerTransport())
+}
 
-// 9. 统计
-server.registerTool(
-  'json_stats',
-  {
-    description: 'JSON 统计：键数 / 嵌套深度 / 大小 / 行数 / 格式识别',
-    inputSchema: { text: z.string().describe('JSON 文本') },
-  },
-  async ({ text: input }) => {
-    const s = getJsonStats(input)
-    return text({ keys: s.keyCount, depth: s.depth, sizeBytes: s.size, lines: s.lineCount, detectedFormat: detectFormat(input) })
-  },
-)
+async function main(): Promise<number> {
+  if (process.argv[2]) return cli(process.argv.slice(2))
+  await startMcpServer()
+  return 0
+}
 
-// 10. 查询
-server.registerTool(
-  'json_query',
-  {
-    description: '用 JSONPath 或 JMESPath 查询 JSON',
-    inputSchema: {
-      text: z.string().describe('JSON 文本'),
-      path: z.string().describe('查询表达式（JSONPath 如 $.a[*].b，或 JMESPath）'),
-      lang: z.enum(['jsonpath', 'jmespath']).default('jsonpath').describe('查询语言'),
-    },
-  },
-  async ({ text: input, path, lang }) => {
-    const { parsed, error } = tryParseJson(input)
-    if (error) return fail(error)
-    try {
-      if (lang === 'jmespath') return text(JSON.stringify(jmesSearch(parsed, path), null, 2))
-      const r = JSONPath({ json: parsed as object, path, wrap: false })
-      return text(JSON.stringify(r, null, 2))
-    } catch (e) {
-      return fail(e instanceof Error ? e.message : String(e))
-    }
-  },
-)
-
-// 11. 表格提取
-server.registerTool(
-  'json_table_extract',
-  {
-    description: '把 JSON 中的对象数组提取为表格行/列（自动下钻根下数组字段）',
-    inputSchema: { text: z.string().describe('JSON 文本，需包含对象数组') },
-  },
-  async ({ text: input }) => {
-    let t
-    try {
-      t = buildTable(JSON.parse(input))
-    } catch (e) {
-      return fail('输入不是合法 JSON')
-    }
-    if (!t) return fail('未找到对象数组（需要根数组或根下的对象数组字段）')
-    return text({
-      title: t.title,
-      rows: t.rows.length,
-      columns: t.columns,
-      data: t.rows.slice(0, 50),
-    })
-  },
-)
-
-// 12. Schema 生成
-server.registerTool(
-  'json_to_schema',
-  {
-    description: '从 JSON 样本推断 JSON Schema (draft-07)',
-    inputSchema: { text: z.string().describe('JSON 样本') },
-  },
-  async ({ text: input }) => {
-    const r = jsonToSchema(input)
-    if (r.error) return fail(r.error)
-    return text(r.result)
-  },
-)
-
-// 13. 智能分析
-server.registerTool(
-  'json_insights',
-  {
-    description: '智能分析 JSON：结构摘要、字段类型统计、数据质量问题与优化建议（本地规则引擎）',
-    inputSchema: { text: z.string().describe('JSON 文本') },
-  },
-  async ({ text: input }) => {
-    const r = analyzeJson(input)
-    if (r.error) return fail(r.error)
-    return text(r.result)
-  },
-)
-
-const transport = new StdioServerTransport()
-await server.connect(transport)
+main()
+  .then(code => {
+    if (code) process.exit(code)
+  })
+  .catch((err: unknown) => {
+    console.error(err instanceof Error ? err.message : String(err))
+    process.exit(1)
+  })
