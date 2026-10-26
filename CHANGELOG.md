@@ -27,7 +27,7 @@
 - 工具箱结果一键写入编辑器；查询历史支持清空；树形视图 URL 值可点击打开。
 - 生成代码新增 Kotlin 语言。
 - 新增单元测试（vitest）：覆盖 JSON 修复/解析、NDJSON 互转、Mock 生成、表格构建、命令搜索等核心工具（31 个用例），`pnpm test` 运行；CI 新增测试步骤。
-- **新增两条验证脚本**：`pnpm a11y`（`scripts/a11y.mjs`，无头 Chrome + CDP 逐屏跑 WCAG AA 对比度与可访问名检查，覆盖全部视图 × 深浅主题，不达标即退出码 1，可用 `--url` / `--stops` 收窄范围，需先 `pnpm preview` 或 `pnpm dev`）；`pnpm smoke`（串联 `mcp-server/smoke*.mjs`：stdio 握手、tools/list 数量断言、dist 产物与 7 个数据处理工具逐个实调）。
+- **新增验证脚本**：`pnpm a11y`（`scripts/a11y.mjs`，无头 Chrome + CDP 逐屏跑 WCAG AA 对比度与可访问名检查，覆盖全部视图 × 深浅主题，不达标即退出码 1，可用 `--url` / `--stops` 收窄范围，需先 `pnpm preview` 或 `pnpm dev`）；`pnpm smoke` / `pnpm smoke:dist`（串联 `mcp-server/smoke*.mjs`：stdio 握手、20 工具清单断言、dist 产物与 7 个数据处理工具逐个实调；`smoke:dist` 只依赖 esbuild 产物，供 CI 使用）；`pnpm smoke:exe`（`mcp-server/smoke-exe.mjs`，对随安装包分发的 `src-tauri/binaries/json-tools-mcp.exe` 做同样的 stdio 握手 + 工具清单 + `json_keys_case` 实调，exe 不存在时自动跳过）。CI 已接入：前端 job 跑 `smoke:dist`，windows Tauri job 在 `build:mcp:exe` 之后跑 `smoke:exe`。
 - 树形视图查询新增 JSONPath 支持：查询语言徽标可点击切换 JMESPath / JSONPath，输入框占位与速查表随语言联动。
 - 新增根目录 README，补充产品介绍、开发命令、发布流程和 GitHub Releases 更新说明。
 - 设置的关于页新增真实版本显示和应用内检查更新入口。

@@ -159,7 +159,9 @@ pnpm dev            # 前端开发（http://localhost:1420）
 pnpm tauri dev      # 桌面端开发（Tauri 窗口）
 pnpm typecheck      # TypeScript 类型检查
 pnpm test           # 单元测试（vitest）
-pnpm smoke          # MCP/CLI stdio 冒烟（握手 + 20 工具清单 + 新工具实调）
+pnpm smoke          # MCP/CLI stdio 冒烟（tsx 源文件 + dist 产物 + 20 工具清单 + 新工具实调）
+pnpm smoke:dist     # 同上但只跑 esbuild dist 产物（CI 用，无需 tsx）
+pnpm smoke:exe      # 对随安装包打包的单文件 exe 做同样的 stdio 冒烟（需先 pnpm build:mcp:exe）
 pnpm a11y           # 逐屏 WCAG AA 对比度 + 可访问名审计（需先 pnpm dev 或 pnpm preview）
 pnpm build          # 前端构建
 pnpm build:app      # 打包当前平台安装包（release）
