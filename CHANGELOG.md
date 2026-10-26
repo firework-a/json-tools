@@ -55,6 +55,7 @@
 - **移除应用内「表格」视图**（GridView、工具栏按钮、命令面板项、状态栏模式与相关样式）；`src/utils/table.ts` 与 `json_table_extract` 工具保留给 MCP/CLI 使用，智能分析对对象数组的建议改为导出 CSV / JSONPath 取值。
 - **界面质感向 macOS 再推一步**：标题栏 + 工具栏 + 标签栏并为统一 chrome；标签改 Safari 式抬起文档页签（去掉蓝色下划线）；工具栏/分段选择统一为「中性抬起选中段」而非彩色底；工具箱与设置侧栏选中项改强调色圆角块；下拉菜单、设置面板、命令面板统一 vibrancy + sheet 入场动效与分层阴影；滚动条改 macOS overlay 风格（静止近乎隐形、悬停浮现，深浅主题各自适配）；开关改绿色 macOS 轨道、滑块改白色圆钮；焦点环统一 3px；新增间距/圆角/阴影/缓动 token（`variables.scss`）与 `press` / `sheet-in` / `hairline` mixin（`mixins.scss`）。
 - **修复敏感脱敏误伤**：键名规则改按「词」匹配（复用 `splitWords`），`authors` / `tokenizer` / `passenger` 不再被打码，同时 `userPassword` / `accessToken` 这类驼峰键可正确命中；补防误伤与驼峰命中用例。
+- **质感第二遍覆盖剩余控件**：树形面板搜索框/查询语言徽标/图标按钮统一内凹轨道 + 聚焦光环；JMESPath 速查浮层与设置面板、命令面板共用同一套 vibrancy + sheet 入场；pill 与动作按钮统一按压反馈（scale + 缓动曲线）。
 
 ### Notes
 - 更新签名公钥已替换为真实密钥，GitHub Releases 签名更新链路就绪。

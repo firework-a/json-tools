@@ -2076,7 +2076,7 @@ select {
   border: 1px solid $border;
   color: $text-secondary;
   white-space: nowrap;
-  transition: all 0.12s;
+  @include press;
 
   &:hover {
     color: $text-primary;
@@ -2232,6 +2232,7 @@ select {
 /* Schema 按钮 */
 .action-btn {
   @include flex-center;
+  @include press;
   gap: 5px;
   height: 26px;
   padding: 0 12px;
@@ -2405,15 +2406,16 @@ select {
 
 .tree-icon-btn {
   @include flex-center;
+  @include press;
   width: 24px;
   height: 24px;
   flex-shrink: 0;
   /* 固定尺寸图标按钮不参与挤压变形 */
-  border-radius: 4px;
+  border-radius: $radius-sm;
   color: $text-muted;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
     color: $text-primary;
   }
 }
@@ -2434,12 +2436,14 @@ select {
     height: 26px;
     padding: 0 8px;
     background: $bg-input;
-    border: 1px solid $border;
-    border-radius: 4px;
+    border: 1px solid $hairline;
+    border-radius: $radius-sm;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.28);
     gap: 6px;
 
     &:focus-within {
-      border-color: $blue;
+      border-color: rgba($blue, 0.6);
+      box-shadow: 0 0 0 3px rgba($blue, 0.18), inset 0 1px 2px rgba(0, 0, 0, 0.18);
     }
 
     input {
@@ -2462,14 +2466,18 @@ select {
     flex-shrink: 0;
     height: 26px;
     padding: 0 7px;
-    background: $bg-input;
-    border: 1px solid $border;
-    border-radius: 4px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)), $bg-input;
+    border: 1px solid $hairline;
+    border-radius: $radius-sm;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     color: $text-primary;
     font-size: 11px;
     font-weight: 600;
     outline: none;
     cursor: pointer;
+    @include press;
+
+    &:hover { border-color: $hairline-strong; }
   }
 }
 
@@ -2540,11 +2548,13 @@ select {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(10px) saturate(1.35);
+  -webkit-backdrop-filter: blur(10px) saturate(1.35);
+  animation: fade-in 0.18s $ease-out both;
 }
 
 .jmespath-panel {
@@ -2553,13 +2563,13 @@ select {
   background: rgba(30, 31, 36, 0.88);
   backdrop-filter: blur(24px) saturate(1.5);
   -webkit-backdrop-filter: blur(24px) saturate(1.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid $hairline-strong;
   border-radius: 14px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+  box-shadow: $shadow-sheet;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: cmdk-pop 0.2s $ease-out;
+  @include sheet-in;
 }
 
 .jmespath-header {
